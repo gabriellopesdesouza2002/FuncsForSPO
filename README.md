@@ -16,8 +16,10 @@ E necessario baixar o Selenium (pip install selenium), o openpyxl (pip install o
 Powered By https://github.com/gabriellopesdesouza2002
 
 
-# Current Version -> 0.0.2.6
+# Current Version -> 0.0.2.7
 
-version='0.0.2.6'
+version='0.0.2.7' ->
+Corrigido um pequeno erro nas exceções
 
+version='0.0.2.6' -> 
 Corrigido erro ao utilizar a função "faz_log()"
