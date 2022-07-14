@@ -607,7 +607,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from src.tools.functions.functions_for_py import *
 from src.tools.functions.functions_selenium import *
 from src.tools.functions.openpyxl_funcs import *
-from src.tools.log.log_manager import faz_log
+from FuncsForSPO.functions.functions_for_py import faz_log
 import os
 import pandas
 import openpyxl
@@ -622,10 +622,10 @@ class Bot:
         # --- CONFIG.INI SETTINGS --- #
         self.config = configs
         self._URL = self.config['SECTION']['site']
-        self._TIMEOUT = self.config['ROBO_ELAW']['tempo_para_achar_elementos']
+        self._TIMEOUT = self.config['SECTION']['tempo_para_achar_elementos']
         self._HEADLESS = self.config['SECTION']['headless']
-        self._USUARIO = self.config['ROBO_ELAW']['usuario']
-        self._SENHA = self.config['ROBO_ELAW']['senha']
+        self._USUARIO = self.config['SECTION']['usuario']
+        self._SENHA = self.config['SECTION']['senha']
         
         # --- CHROME OPTIONS --- #
         self._options = webdriver.ChromeOptions()
@@ -684,7 +684,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from src.tools.functions.functions_for_py import *
 from src.tools.functions.functions_selenium import *
 from src.tools.functions.openpyxl_funcs import *
-from src.tools.log.log_manager import faz_log
+from FuncsForSPO.functions.functions_for_py import faz_log
 import json
 import os
 import pandas
@@ -700,10 +700,10 @@ class Bot:
         # --- CONFIG.INI SETTINGS --- #
         self.config = configs
         self._URL = self.config['SECTION']['site']
-        self._TIMEOUT = self.config['ROBO_ELAW']['tempo_para_achar_elementos']
+        self._TIMEOUT = self.config['SECTION']['tempo_para_achar_elementos']
         self._HEADLESS = self.config['SECTION']['headless']
-        self._USUARIO = self.config['ROBO_ELAW']['usuario']
-        self._SENHA = self.config['ROBO_ELAW']['senha']
+        self._USUARIO = self.config['SECTION']['usuario']
+        self._SENHA = self.config['SECTION']['senha']
         
         # --- CHROME OPTIONS --- #
         self._options = webdriver.ChromeOptions()

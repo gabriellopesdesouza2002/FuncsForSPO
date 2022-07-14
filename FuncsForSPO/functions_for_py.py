@@ -2,9 +2,6 @@ from datetime import datetime
 from time import sleep
 import os, sys, psutil, shutil, platform, re, socket, uuid, logging
 
-from src.tools.log.log_manager import faz_log
-
-
 def verifica_se_baixou_um_arquivo(path_pasta:str, qtd_arquivos_esperados : int=1) -> bool:
     """Retorna True quando achar ao menos um arquivo na pasta com a extensão proposta
 
@@ -53,7 +50,7 @@ def verifica_se_baixou_um_arquivo(path_pasta:str, qtd_arquivos_esperados : int=1
 
 
 def pega_id(assunto: str) -> str:
-    """Função utilizada para o robô Captura de E-mails do Carrefour
+    """
     Essa função simplesmente pega uma string, separa ela por espaços e verifica se a palavra existe ou é igual a "ID",
         se existe, pega a string, caso seja igual, pega a string e um acima para pegar o id em si
 
