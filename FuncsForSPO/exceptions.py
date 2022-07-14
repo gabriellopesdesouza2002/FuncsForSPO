@@ -1,8 +1,4 @@
-from selenium.common.exceptions import (
-    TimeoutException,
-    WebDriverException,
-    ElementClickInterceptedException,
-    )
+from selenium.common.exceptions import *
 
 
 class TimeoutException(TimeoutException):
