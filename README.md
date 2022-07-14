@@ -1,5 +1,7 @@
 # FuncsForSPO - Selenium; Python; Openpyxl
 
+## pip install FuncsForSPO
+
 ### Antes de tudo instale o Psutil (pip install psutil)
 
 Aqui voce achara funcoes produzidas para maior agilidade de desenvolvimento em:
