@@ -21,7 +21,9 @@ Basta fazer pip install FuncsForSPO e pronto!
 
 Powered By https://github.com/gabriellopesdesouza2002
 
-# Current Version -> 0.0.3.3
+# Current Version -> 0.0.3.4
+
+version==0.0.3.4 -> webdriver-manager e instalado automaticamente como dependencia
 
 version==0.0.3.3 -> Adicao de varias funcoes do openpyxl* necessita TDD's
 
