@@ -358,10 +358,12 @@ def volta_paginas(driver, qtd_pages_para_voltar : int=1, espera_ao_mudar=0) -> N
     if espera_ao_mudar == 0:
         for back in range(qtd_pages_para_voltar):
             driver.back()
+            driver.refresh()
     else:
         for back in range(qtd_pages_para_voltar):
             sleep(espera_ao_mudar)
             driver.back()
+            driver.refresh()
     
     
 # Em desenvolvimento
@@ -551,7 +553,23 @@ def find_window_to_url_contain(driver, contain_url_switch: str) -> None: # quero
 #     else:
 #         print('NAO ACHOU JANELAS')
         
-        
+def pega_codigo_fonte_de_elemento(driver, wdw, locator: tuple) -> str:
+    """Retorna todo o código fonte do locator
+
+    Args:
+        driver (WebDriver): Webdriver
+        wdw (WebDriverWait): WebDriverWait
+        locator (tuple): localização do elemento no modo locator -> (By.ID, '.b')
+
+    Returns:
+        str: Código fonte do WebElement
+    """
+    
+    wdw.until(EC.element_to_be_clickable(locator))
+    element = driver.find_element(*locator)
+    return element.get_attribute("outerHTML")
+
+
 def verifica_se_diminuiu_qtd_de_janelas(driver, qtd_de_w) -> None:
     if len(driver.window_handles) == qtd_de_w:
         while len(driver.window_handles) >= qtd_de_w:

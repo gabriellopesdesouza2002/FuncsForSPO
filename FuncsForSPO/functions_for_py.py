@@ -2,6 +2,45 @@ from datetime import datetime
 from time import sleep
 import os, sys, psutil, shutil, platform, re, socket, uuid, logging
 
+def pega_caminho_atual(print_value: bool=False) -> str: 
+    """ Envia o caminho absoluto da execução do script Python 
+    
+    Args: print_value (bool, optional): Printa e retorna o path. Defaults to False. 
+    
+    Returns: str: retorna o caminho absoluto da execução atual do script Python 
+    """ 
+    if print_value: 
+        print(os.getcwd()) 
+        return os.getcwd() 
+    else: 
+        return os.getcwd()
+
+def pega_caminho_atual_e_concatena_novo_dir(dir: str, print_value: bool=False, criar_diretorio: bool=False) -> str:
+    """Faz essas funções 
+    
+    1 - Pega o caminho atual de execução do script 
+    
+    2 - Concatena o "dir" com o caminho atual de execução do script 
+    
+    3 - Cria o diretório novo no caminho atual (optional) 
+    
+    
+    Args: dir (str): Diretório que poderá ser criado print_value (bool, optional): Printa na tela a saida do caminho com o diretório criado. Defaults to False. 
+          cria_diretorio (bool, optional): Cria o diretório enviado no caminho em que o script está sendo utilizado. Defaults to False. 
+          
+    Returns: str: Retorna o caminho do dir com o caminho absoluto """
+    current_path = pega_caminho_atual()
+    path_new_dir = os.path.join(current_path, dir) 
+    if print_value: 
+        print(path_new_dir) 
+        if criar_diretorio: 
+            os.makedirs(path_new_dir, exist_ok=True)  # Se existir, não cria
+            return (path_new_dir)
+    else: 
+        if criar_diretorio: 
+            os.makedirs(path_new_dir, exist_ok=True) 
+        return (path_new_dir)
+
 def verifica_se_baixou_um_arquivo(path_pasta:str, qtd_arquivos_esperados : int=1) -> bool:
     """Retorna True quando achar ao menos um arquivo na pasta com a extensão proposta
 
