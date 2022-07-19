@@ -3,6 +3,19 @@ from time import sleep
 import os, sys, psutil, shutil, platform, re, socket, uuid, logging
 
 def remove_extensao_de_str(arquivo :str, extensao_do_arquivo :str):
+    """Remove extensão de um arquivo
+    faz nada mais que um replace
+    
+    Use:
+        remove_extensao_de_str('file.xlsx', 'xlsx')
+
+    Args:
+        arquivo (str): nome do arquivo
+        extensao_do_arquivo (str): extensao do arquivo
+
+    Returns:
+        _type_: _description_
+    """
     replacement =  arquivo.replace(f'.{extensao_do_arquivo}', '')
     replacement =  replacement.replace(f'{extensao_do_arquivo}', '')
     return replacement
@@ -42,7 +55,7 @@ def pega_caminho_atual(print_value: bool=False) -> str:
     else: 
         return os.getcwd()
 
-def pega_caminho_atual_e_concatena_novo_dir(dir: str, print_value: bool=False, criar_diretorio: bool=False) -> str:
+def cria_dir_no_dir_de_trabalho_atual(dir: str, print_value: bool=False, criar_diretorio: bool=False) -> str:
     """Faz essas funções 
     
     1 - Pega o caminho atual de execução do script 
@@ -199,15 +212,27 @@ def psutil_verifica(nome_do_exe : str) -> bool:
     """Função verifica se executavel está ativo ou não
 
     Args:
-        nome_do_exe (str): Nome do executavel -> notepad.exe, chrome.exe
+        nome_do_exe (str): Nome do executável -> notepad.exe, chrome.exe
     """
-    exe = nome_do_exe in (i.name() for i in psutil.process_iter())
+    exe_ativo = nome_do_exe in (i.name() for i in psutil.process_iter())
 
-    while exe:
-        exe = nome_do_exe in (i.name() for i in psutil.process_iter())
-        return exe
+    while exe_ativo:
+        exe_ativo = nome_do_exe in (i.name() for i in psutil.process_iter())
+        return exe_ativo
     else:
-        return exe
+        return exe_ativo
+    
+def lista_todos_os_processos_atuais() -> object:
+    """Esse é um gerador que mostra todos os processos e executáveis atívos no momento.
+    
+    para utilizar (ver os processos em execução):
+        for i in lista_todos_os_processos_atuais():
+            print(i)
+
+    Returns:
+        object: generator
+    """
+    return (i.name() for i in psutil.process_iter())
 
 def verifica_se_caminho_existe(path_file_or_dir: str) -> bool:
     if os.path.exists(path_file_or_dir):
@@ -314,10 +339,13 @@ def instalar_bibliotecas_globalmente() -> None:
         print('\nPronto')
         sleep(3)
     
-def criar_ambiente_virtual() -> None:
-    nome_da_env = input('')
-    os.system(f'python -m venv {nome_da_env}')
-    print(f'Ambiente Virtual com o nome {nome_da_env} foi criado com sucesso!')
+def criar_ambiente_virtual(nome_da_venv: str) -> None:
+    nome_da_venv = nome_da_venv.strip()
+    nome_da_venv = nome_da_venv.replace('.', '')
+    nome_da_venv = nome_da_venv.replace('/', '')
+    nome_da_venv = nome_da_venv.replace(',', '')
+    os.system(f'python -m venv {nome_da_venv}')
+    print(f'Ambiente Virtual com o nome {nome_da_venv} foi criado com sucesso!')
     sleep(2)
     
 def restart_program() -> None:
@@ -454,7 +482,7 @@ def move_arquivos(path_origem: str, path_destino: str, extension: str) -> None:
     Args:
         path_origem (str): caminho de origem
         path_destino (str): caminho de destino
-        ext (str): Estensão do arquivo.
+        extension (str): Estensão do arquivo.
     """
 
     arquivos_da_pasta_origem = os.listdir(path_origem)
