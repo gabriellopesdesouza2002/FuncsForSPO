@@ -1,4 +1,5 @@
 from selenium.common.exceptions import *
+from urllib.error import URLError
 
 # --- Exceptions Selenium Base ---- #
 class TimeoutException(TimeoutException):
@@ -21,3 +22,10 @@ class EmailOuLoginIncorretoElawException(Exception):
 class EmailOuLoginIncorretoGmailException(Exception):
     pass
 # --- Exceptions Python Base ---- #
+
+
+# --- Exceptions urllib Base ---- #
+class ErroNaURLUrllib(URLError):
+    pass
+
+

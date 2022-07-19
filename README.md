@@ -21,7 +21,9 @@ Basta fazer pip install FuncsForSPO e pronto!
 
 Powered By https://github.com/gabriellopesdesouza2002
 
-# Current Version -> 0.0.3.4
+# Current Version -> 0.0.3.5
+
+version==0.0.3.5 -> adicionada uma funcao para retornar uma tupla ao reverso, (1,2,3,4,5,6,7,8,9,0), -> (0,9,8,7,6,5,4,3,2,1); adicionada execao do wget, correcoes: 1- correcao ao fazer log, ao enviar um objeto, automaticamente ele e convertido para string removido os print na funcao de pegar colunas no openpyxl
 
 version==0.0.3.4 -> webdriver-manager e instalado automaticamente como dependencia
 

@@ -7,6 +7,7 @@ For use, please, install openpyxl with pip install openpyxl
 
 import os
 from time import sleep
+from FuncsForSPO.functions_for_py import remove_extensao_de_str
 
 import openpyxl
 
@@ -55,7 +56,7 @@ def len_columns(plan, print_value: bool=False) -> int:
         return plan.max_column
     
 
-def get_colun_data(plan, column: int, convert_tuple: bool=True, print_values: bool=True) -> list[str]:
+def get_colun_data(plan, column: int, convert_tuple: bool=True, print_values: bool=False) -> list[str]:
     """Retorna os dados da coluna enviada, (tem que ser o indice da coluna)
 
         
@@ -87,8 +88,9 @@ def get_colun_data(plan, column: int, convert_tuple: bool=True, print_values: bo
                 dados_da_coluna.append(cell)
         else:
             dados_da_coluna.append('None')
-
-    print(f'O nome da coluna é {dados_da_coluna[0]}')  # delete o nome da coluna
+    if print_values:
+        print(f'O nome da coluna é {dados_da_coluna[0]}')  # delete o nome da coluna
+        
     del dados_da_coluna[0]  # deleta o nome da coluna
     if convert_tuple:
         dados_da_coluna = tuple(dados_da_coluna)
@@ -100,7 +102,7 @@ def get_colun_data(plan, column: int, convert_tuple: bool=True, print_values: bo
         return (dados_da_coluna)
 
 
-def return_columns_names(plan, len_columns: int, convert_to_tuple: bool=True, print_values :bool=True):
+def return_columns_names(plan, len_columns: int, convert_to_tuple: bool=True, print_values :bool=False):
     nomes_das_colunas = []
     for coluna_index in range(len_columns):
         for linha in plan:
@@ -163,19 +165,17 @@ def verifica_se_existe_na_coluna(a_procurar :str, dados : tuple or list, return_
                 return lista_de_achados
             
             
-def remove_extensao_de_str(arquivo :str, extensao_do_arquivo :str):
-    replacement =  arquivo.replace(f'.{extensao_do_arquivo}', '')
-    replacement =  replacement.replace(f'{extensao_do_arquivo}', '')
-    return replacement
 
 arquivo = 'arq.xlsx'
 
-def cria_planilha(sheets : tuple, nome_da_planilha : str='Table') -> None:
-    """Cria uma planilha
-    Atenção as sheets deverão ser enviadas desse modo:
-    sheets = (('sheet1', 0), ('sheet2', 1),)
+def cria_planilha(sheets : tuple, nome_da_planilha : str='Table', create_file :bool=True) -> None:
+    """Cria uma planilha 
+    ### (CASO ELA JÁ EXISTA, SERÁ SUBSTITUIDA!)
     
-    sheets = (('sheet1', 0), ('sheet2', 1), ('sheet3', -1),)
+    ## Atenção as sheets deverão ser enviadas desse modo:
+    #### sheets = (('sheet1', 0), ('sheet2', 1),)
+    
+    #### sheets = (('sheet1', 0), ('sheet2', 1), ('sheet3', -1),)
     
     As sheets serão desempacotadas na função create_sheet('sheet1', 0)
 
@@ -191,11 +191,11 @@ def cria_planilha(sheets : tuple, nome_da_planilha : str='Table') -> None:
     for sheet in sheets:
         ws = wb.create_sheet(*sheet)
         print(f'A WorkSheet "{ws.title}" foi criada!')
-    # wb.save(os.path.abspath(f"{nome_da_planilha}.xlsx"))
-    print(f'\nO arquivo {nome_da_planilha}.xlsx foi criado!')
-    return wb
-
-    # print(worksheet)
+    if create_file:
+        print(f'\nO arquivo {nome_da_planilha}.xlsx foi criado!')
+        wb.save(nome_da_planilha+'.xlsx')
+    else:
+        return wb
     
     
 def recupera_worksheet_do_arquivo(file_plan, ws_a_recuperar):

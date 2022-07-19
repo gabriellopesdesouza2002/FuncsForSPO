@@ -2,6 +2,33 @@ from datetime import datetime
 from time import sleep
 import os, sys, psutil, shutil, platform, re, socket, uuid, logging
 
+def remove_extensao_de_str(arquivo :str, extensao_do_arquivo :str):
+    replacement =  arquivo.replace(f'.{extensao_do_arquivo}', '')
+    replacement =  replacement.replace(f'{extensao_do_arquivo}', '')
+    return replacement
+
+def reverse_tuples(tuples):
+    """Converte tuplas
+    
+    ### Antes da utilização:
+    (1,2,3,4,5,6,7,8,9,0)
+    
+    
+    ### Após a utilização:
+    (0,9,8,7,6,5,4,3,2,1)
+
+    Args:
+        tuples (tuple): Tupla para ter seu valor reverso
+
+    Returns:
+        tuple: tupla com seus valores reversos -> (1,2,3,4,5,6,7,8,9,0) -> (0,9,8,7,6,5,4,3,2,1)
+
+
+    By https://www.geeksforgeeks.org/python-reversing-tuple/#:~:text=Since%20tuples%20are%20immutable%2C%20there,all%20of%20the%20existing%20elements.
+    """
+    new_tup = tuples[::-1]
+    return new_tup
+
 def pega_caminho_atual(print_value: bool=False) -> str: 
     """ Envia o caminho absoluto da execução do script Python 
     
@@ -653,8 +680,10 @@ def faz_log(msg: str, level: str = 'i'):
 
     if isinstance(msg, (str)):
         pass
-    else:
-        print('COLOQUE UMA STING NO PARAMETRO MSG!')
+    
+    if isinstance(msg, (object)):
+        msg = str(msg)    
+    
 
     if isinstance(level, (str)):
         pass
@@ -724,3 +753,5 @@ def faz_log(msg: str, level: str = 'i'):
                                 )
             logging.critical(msg, exc_info=True)
             print('!!! ' + msg + ' !!!')
+            
+    
