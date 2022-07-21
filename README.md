@@ -2,7 +2,7 @@
 
 ## pip install FuncsForSPO
 
-### Antes de tudo instale o Psutil (pip install psutil)
+### Antes de tudo instale o Psutil para evitar erros. (pip install psutil)
 
 Aqui voce achara funcoes produzidas para ter maior agilidade nos desenvolvimentos nas tecnologias abaixo:
 
@@ -15,13 +15,15 @@ Aqui voce achara funcoes produzidas para ter maior agilidade nos desenvolvimento
 
 ## Instalacao
 
-E necessario baixar o Selenium (pip install selenium), o openpyxl (pip install openpyxl) e o psutil (pip install psutil) para comecar a utilizar.
+**Para evitar erros, por favor, instale anteriormente o psutil (pip install psutil)**
 
-Basta fazer pip install FuncsForSPO e pronto!
+de pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By https://github.com/gabriellopesdesouza2002
 
-# Current Version -> 0.0.3.6
+# Current Version -> 0.0.3.7
+
+version==0.0.3.7 -> criada uma funcao que retorna um user-agent do tipo random
 
 version==0.0.3.6 -> melhoria na funcao pega_id
 

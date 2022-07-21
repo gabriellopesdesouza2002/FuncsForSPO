@@ -385,6 +385,20 @@ def volta_paginas(driver, qtd_pages_para_voltar : int=1, espera_ao_mudar=0) -> N
     
 # Em desenvolvimento
 
+def cria_user_agent() -> str:
+    """Cria um user-agent automaticamente com a biblio fake_useragent
+
+    Use:
+        https://stackoverflow.com/questions/48454949/how-do-i-create-a-random-user-agent-in-python-selenium
+
+    Returns:
+        str: user_agent
+    """
+    from fake_useragent import UserAgent
+    _ua = UserAgent()
+    user_agent = _ua.random
+    return user_agent
+
 def espera_input_limpa_e_envia_send_keys_preessiona_esc(driver, wdw, keys : str, locator : tuple) -> None:
     from selenium.common.exceptions import StaleElementReferenceException
     from selenium.webdriver.common.keys import Keys
