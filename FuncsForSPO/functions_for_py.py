@@ -156,10 +156,16 @@ def pega_id(assunto: str) -> str:
                 return id_
             if assunto_list[i] == 'ID' and 'ELAW' in assunto_list[i+1]:
                 list_string_official.append(assunto_list[i])
-                list_string_official.append(assunto_list[i+1])
+                try:
+                    list_string_official.append(assunto_list[i+2])
+                except Exception:
+                    list_string_official.append(assunto_list[i+1])
+                    id_ = ' '.join(list_string_official)
+                    num_id = re.findall(r'\d+', id_)  # pega somente números da string
+                    id_ = f'ID {num_id[0]}'#EX (ID 111111)#
+                    faz_log(id_)
+                    return id_
                 id_ = ' '.join(list_string_official)
-                num_id = re.findall(r'\d+', id_)  # pega somente números da string
-                id_ = f'ID {num_id[0]}'#EX (ID 111111)#
                 faz_log(id_)
                 return id_
             if assunto_list[i] == 'ID' or assunto_list[i] == 'ID:' or assunto_list[i] == 'ID.' or assunto_list[i] == '-ID':
