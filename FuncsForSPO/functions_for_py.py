@@ -124,8 +124,39 @@ def verifica_se_baixou_um_arquivo(path_pasta:str, qtd_arquivos_esperados : int=1
     else:
         faz_log('O arquivo foi baixado...')
         return True
+     
         
-        
+def deleta_arquivos_duplicados(path_dir :str, qtd_copyes :int):
+    """Deleta arquivos que contenham (1), (2) até a quantidade desejada
+    
+    Use:
+        deleta_arquivos_duplicados('dir', 2)
+            dir--|
+
+                    |---File.txt
+                    
+                    |---File (1).txt -> This is deleted!
+                    
+                    |---File (2).txt -> This is deleted!
+                    
+                    |---File (3).txt -> This is not deleted!
+                
+    
+
+    Args:
+        path_dir (str): _description_
+        qtd_copyes (int): quantidade de possíveis arquivos repetidos
+    """
+    path_downloads = os.path.abspath(path_dir)
+    arquivos = os.listdir(path_downloads)
+    if len(arquivos) > 1 or len(arquivos) > 2:
+        copyes = [f'({i})' for i in range(qtd_copyes)]
+        print(copyes)
+        for copye in copyes:
+            for arquivo in arquivos:
+                if copye in arquivo:
+                    print(f'deletando {path_downloads}\\{arquivo}')
+                    os.remove(path_downloads+'\\'+arquivo)  
 
 
 def pega_id(assunto: str) -> str:

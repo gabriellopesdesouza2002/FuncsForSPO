@@ -21,7 +21,9 @@ de pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By https://github.com/gabriellopesdesouza2002
 
-# Current Version -> 0.0.3.7
+# Current Version -> 0.0.3.8
+
+version==0.0.3.8 -> adicionada 2 funcoes 1-> retorna os valores absolutos de qualquer arquivo 2-> remove qualquer arquivo que contenha (1), (2), (3) (etc) em qualquer pasta
 
 version==0.0.3.7 -> criada uma funcao que retorna um user-agent do tipo random
 
