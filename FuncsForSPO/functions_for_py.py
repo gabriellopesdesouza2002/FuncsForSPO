@@ -532,8 +532,23 @@ def move_arquivos(path_origem: str, path_destino: str, extension: str) -> None:
             shutil.move(arquivo, path_destino)
             os.remove(arquivo)
 
-
+def pega_somente_numeros(string :str) -> str or int:
+    """Função pega somente os números de qualquer string
     
+    * remove inclusive . e ,
+    
+    Args:
+        string (str): sua string com números e outros caracteres
+
+    Returns:
+        str: somente os números
+    """
+    if isinstance(string, (str)):
+        r = re.compile(r'\D')
+        return r.sub('', string)
+    else:
+        print('Por favor, envie uma string como essa -> "2122 asfs 245"')
+        return
     
 def remove_arquivo(file_path : str) -> None:
     os.remove(os.path.abspath(file_path))

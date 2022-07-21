@@ -21,7 +21,9 @@ de pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By https://github.com/gabriellopesdesouza2002
 
-# Current Version -> 0.0.3.8
+# Current Version -> 0.0.3.9
+
+version==0.0.3.9 -> criada uma funcao que retorna somente numeros utilizando re
 
 version==0.0.3.8 -> adicionada 2 funcoes 1-> retorna os valores absolutos de qualquer arquivo 2-> remove qualquer arquivo que contenha (1), (2), (3) (etc) em qualquer pasta
 

@@ -1,6 +1,7 @@
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
+from fake_useragent import UserAgent
 from time import sleep
 
 def url_atual(driver) -> str:
@@ -394,7 +395,6 @@ def cria_user_agent() -> str:
     Returns:
         str: user_agent
     """
-    from fake_useragent import UserAgent
     _ua = UserAgent()
     user_agent = _ua.random
     return user_agent
