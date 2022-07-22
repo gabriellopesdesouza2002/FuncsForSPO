@@ -1,59 +1,71 @@
+"""
+Várias funções para ajudar no desenvolvimento de qualquer aplicação em Python
+
+Nesse módulo você achará desde funções simples, até funções complexas que levariam um bom tempo para desenvolve-las.
+
+Para usar esse módulo, será necessário instalar o psutil, pois existe uma função que coleta informações do sistema
+-> pip install psutil
+"""
+
 from datetime import datetime
 from time import sleep
 import os, sys, psutil, shutil, platform, re, socket, uuid, logging
 
-def remove_extensao_de_str(arquivo :str, extensao_do_arquivo :str):
-    """Remove extensão de um arquivo
-    faz nada mais que um replace
+def remove_extensao_de_str(arquivo :str, extensao_do_arquivo :str) -> str:
+    """Remove a extensão de um nome de arquivo.
     
-    Use:
-        remove_extensao_de_str('file.xlsx', 'xlsx')
 
     Args:
-        arquivo (str): nome do arquivo
-        extensao_do_arquivo (str): extensao do arquivo
+        arquivo (str): arquivo com a extensão em seu nome -> file.xlsx
+        extensao_do_arquivo (str): extensão que deseja remover
 
     Returns:
-        _type_: _description_
+        str: Nome do arquivo sem a extensão.
     """
     replacement =  arquivo.replace(f'.{extensao_do_arquivo}', '')
     replacement =  replacement.replace(f'{extensao_do_arquivo}', '')
     return replacement
 
-def reverse_tuples(tuples):
-    """Converte tuplas
+
+def reverse_iter(iteravel :str | tuple | list) -> str | tuple | list:
+    """Retorna qualquer iterável ao reverso
     
-    ### Antes da utilização:
-    (1,2,3,4,5,6,7,8,9,0)
+    Use:
+        Antes da utilização: '1234567890'
+        Antes da utilização: (1,2,3,4,5,6,7,8,9,0)
+        Antes da utilização: [1,2,3,4,5,6,7,8,9,0]
     
     
-    ### Após a utilização:
-    (0,9,8,7,6,5,4,3,2,1)
+        Após a utilização: '0987654321'
+        Após a utilização: (0,9,8,7,6,5,4,3,2,1)
+        Após a utilização: [0,9,8,7,6,5,4,3,2,1]
+
+    * By https://www.geeksforgeeks.org/python-reversing-tuple/#:~:text=Since%20tuples%20are%20immutable%2C%20there,all%20of%20the%20existing%20elements.
 
     Args:
-        tuples (tuple): Tupla para ter seu valor reverso
+        iteravel (str | tuple | list): Qualquer iterável para ter seu valor reverso
 
     Returns:
-        tuple: tupla com seus valores reversos -> (1,2,3,4,5,6,7,8,9,0) -> (0,9,8,7,6,5,4,3,2,1)
-
-
-    By https://www.geeksforgeeks.org/python-reversing-tuple/#:~:text=Since%20tuples%20are%20immutable%2C%20there,all%20of%20the%20existing%20elements.
+        str | tuple | list: iterável com seus valores reversos
     """
-    new_tup = tuples[::-1]
-    return new_tup
+    return iteravel[::-1]
+
 
 def pega_caminho_atual(print_value: bool=False) -> str: 
-    """ Envia o caminho absoluto da execução do script Python 
+    """Retorna o caminho absoluto do diretório de execução atual do script Python 
     
-    Args: print_value (bool, optional): Printa e retorna o path. Defaults to False. 
+    Args: 
+        print_value (bool, optional): Printa e retorna o path. Defaults to False. 
     
-    Returns: str: retorna o caminho absoluto da execução atual do script Python 
+    Returns: 
+        str: retorna o caminho absoluto da execução atual do script Python 
     """ 
     if print_value: 
         print(os.getcwd()) 
         return os.getcwd() 
     else: 
         return os.getcwd()
+
 
 def cria_dir_no_dir_de_trabalho_atual(dir: str, print_value: bool=False, criar_diretorio: bool=False) -> str:
     """Faz essas funções 
@@ -68,7 +80,9 @@ def cria_dir_no_dir_de_trabalho_atual(dir: str, print_value: bool=False, criar_d
     Args: dir (str): Diretório que poderá ser criado print_value (bool, optional): Printa na tela a saida do caminho com o diretório criado. Defaults to False. 
           cria_diretorio (bool, optional): Cria o diretório enviado no caminho em que o script está sendo utilizado. Defaults to False. 
           
-    Returns: str: Retorna o caminho do dir com o caminho absoluto """
+    Returns: 
+        str: Retorna o caminho do dir com o caminho absoluto 
+    """
     current_path = pega_caminho_atual()
     path_new_dir = os.path.join(current_path, dir) 
     if print_value: 
@@ -81,12 +95,18 @@ def cria_dir_no_dir_de_trabalho_atual(dir: str, print_value: bool=False, criar_d
             os.makedirs(path_new_dir, exist_ok=True) 
         return (path_new_dir)
 
+
 def verifica_se_baixou_um_arquivo(path_pasta:str, qtd_arquivos_esperados : int=1) -> bool:
     """Retorna True quando achar ao menos um arquivo na pasta com a extensão proposta
-
+    
+    ## ATENÇÃO: ESTA FUNÇÃO AINDA ESTÁ EM DESENVOLVIMENTO
+    
     Args:
         path_pasta (str): caminho da pasta para pesquisar se exite arquivos
         extensao (str): extenção do arquivo
+        
+    Returns:
+        bool: True caso exista o arquivo; False caso não exista o arquivo
     """
     
     # pega todos os arquivos e pastas do diretório
@@ -124,9 +144,9 @@ def verifica_se_baixou_um_arquivo(path_pasta:str, qtd_arquivos_esperados : int=1
     else:
         faz_log('O arquivo foi baixado...')
         return True
-     
-        
-def deleta_arquivos_duplicados(path_dir :str, qtd_copyes :int):
+
+
+def deleta_arquivos_duplicados(path_dir :str, qtd_copyes :int) -> None:
     """Deleta arquivos que contenham (1), (2) até a quantidade desejada
     
     Use:
@@ -159,6 +179,24 @@ def deleta_arquivos_duplicados(path_dir :str, qtd_copyes :int):
                     os.remove(path_downloads+'\\'+arquivo)  
 
 
+def arquivos_com_caminho_absoluto_do_arquivo(path_dir: str) -> tuple[str] | str:
+    """Retorna uma tupla com vários caminhos dos arquivos e diretórios ou o caminho do arquivo / diretório apenas
+
+    ### O script pegará esse caminho relativo, pegará o caminho absoluto dele e concatenará com os arquivo(s) e/ou diretório(s) encontrado(s)
+    
+    Args:
+        path_dir (str): caminho relativo do diretório
+
+    Returns:
+        tuple[str] | str: Retorna uma tupla com os arquivos ou o caminho do arquivo (str)
+    """
+    ARQUIVOS = tuple(f'{os.path.abspath(path_dir)}\\{arquivo}' for arquivo in os.listdir(path_dir))
+    if len(ARQUIVOS) > 1:
+        return ARQUIVOS
+    else:
+        return ARQUIVOS[0]
+
+
 def pega_id(assunto: str) -> str:
     """
     Essa função simplesmente pega uma string, separa ela por espaços e verifica se a palavra existe ou é igual a "ID",
@@ -168,7 +206,7 @@ def pega_id(assunto: str) -> str:
         assunto (str): Assunto do E-mail
 
     Returns:
-        str or bool: Retorna o id com o número ou False se não tiver um assunto com ID
+        str | bool: Retorna o id com o número ou False se não tiver um assunto com ID
     """
     assunto = assunto.upper()
     assunto = assunto.strip()
@@ -211,12 +249,41 @@ def pega_id(assunto: str) -> str:
     else:
         faz_log(f'Não existe ID para o ASSUNTO: {assunto}', 'w')
         return False
-    
+
 
 def data_atual() -> str:
-    """Função retorna a data atual no formato dd/mm/yyyy"""
+    """Retorna a data atual
+    A data a ser retornada tem essa formatação -> DD/MM/YYYY
+
+    Returns:
+        str: Data nessa formatação -> DD/MM/YYYY
+    """
     e = datetime.now()
     return f'{e.day}/{e.month}/{e.year}'
+
+
+def download_file(link: str, dest_path: str):
+    import requests
+    """Faz o Download de arquivos
+    É necessário que o arquivo venha com a sua extensão no http; exemplo de uso abaixo:
+    
+    Use:
+        donwload('https://filesamples.com/samples/document/xlsx/sample3.xlsx', file_xlsx.xlsx)
+
+    Args:
+        link (str): link do arquivo que será baixado
+        dest_path (str): destino do arquivo que será baixado (com a sua extensão)
+    """
+    r = requests.get(link, allow_redirects=True)
+    try:
+        with open(dest_path, 'wb') as file:
+            file.write(r.content)
+            print(f'Download completo! -> {os.path.abspath(dest_path)}')
+    except Exception as e:
+        print(f'Ocorreu um erro:\n{str(e)}')
+    finally:
+        del r
+
 
 def hora_atual(segundos: bool=False) -> str:
     """Função retorna a hora atual no formato hh:mm ou hh:mm:ss com segundos ativado"""
@@ -226,6 +293,7 @@ def hora_atual(segundos: bool=False) -> str:
         return f'{e.hour}:{e.minute}:{e.second}'
     else:
         return f'{e.hour}:{e.minute}'
+
 
 def times() -> str:
     """Função retorna o tempo do dia, por exemplo, Bom dia, Boa tarde e Boa noite
@@ -243,7 +311,6 @@ def times() -> str:
         return 'Boa noite!'
 
 
-
 def psutil_verifica(nome_do_exe : str) -> bool:
     # pip install psutil
     """Função verifica se executavel está ativo ou não
@@ -258,7 +325,8 @@ def psutil_verifica(nome_do_exe : str) -> bool:
         return exe_ativo
     else:
         return exe_ativo
-    
+
+
 def lista_todos_os_processos_atuais() -> object:
     """Esse é um gerador que mostra todos os processos e executáveis atívos no momento.
     
@@ -270,6 +338,7 @@ def lista_todos_os_processos_atuais() -> object:
         object: generator
     """
     return (i.name() for i in psutil.process_iter())
+
 
 def verifica_se_caminho_existe(path_file_or_dir: str) -> bool:
     if os.path.exists(path_file_or_dir):
@@ -296,12 +365,13 @@ def deixa_arquivos_ocultos_ou_n(path_file_or_dir : str, oculto : bool) -> None:
 
 def fazer_requirements_txt() -> None:
     os.system("pip freeze > requirements.txt")
-    
-    
+
+
 def limpa_terminal_e_cmd() -> None:
     """Essa função limpa o Terminal / CMD no Linux e no Windows"""
     
     os.system('cls' if os.name == 'nt' else 'clear')
+
 
 def print_bonito(string : str, efeito='=', quebra_ultima_linha : bool=True) -> str:
     """Faz um print com separadores
@@ -341,7 +411,8 @@ def print_bonito(string : str, efeito='=', quebra_ultima_linha : bool=True) -> s
             print(efeito*2 + efeito*len(string) + efeito*4)
     except TypeError:
         print('O tipo de string, tem que ser obviamente, string | texto')
-    
+
+
 def instalar_bibliotecas_globalmente() -> None:
     """
         Instalar bibliotecas
@@ -375,7 +446,8 @@ def instalar_bibliotecas_globalmente() -> None:
         os.system(f'pip install {dependencias}')
         print('\nPronto')
         sleep(3)
-    
+
+
 def criar_ambiente_virtual(nome_da_venv: str) -> None:
     nome_da_venv = nome_da_venv.strip()
     nome_da_venv = nome_da_venv.replace('.', '')
@@ -387,7 +459,8 @@ def criar_ambiente_virtual(nome_da_venv: str) -> None:
     
 def restart_program() -> None:
     os.execl(sys.executable, sys.executable, *sys.argv)
-    
+
+
 def print_colorido(string : str, color='default', bolder : bool=False) -> str:
     """Dê um print com saida do terminal colorida
 
@@ -448,6 +521,7 @@ def print_colorido(string : str, color='default', bolder : bool=False) -> str:
                 print(f'\033[1;30m{string}\033[m')
     else:
         print(string)
+
 
 def input_color(color : str='default', bolder : bool=False, input_ini: str='>>>') -> None:
     """A cor do input que você pode desejar
@@ -511,8 +585,8 @@ def input_color(color : str='default', bolder : bool=False, input_ini: str='>>>'
             print('Isso não foi compreensivel.\nVeja na doc da função (input_color), as cores válidas')
     else:
         print('Não entendi, veja a doc da função (input_color), para utiliza-lá corretamente')
-   
-    
+
+
 def move_arquivos(path_origem: str, path_destino: str, extension: str) -> None:
     """Move arquivos para outra pasta
 
@@ -532,6 +606,7 @@ def move_arquivos(path_origem: str, path_destino: str, extension: str) -> None:
             shutil.move(arquivo, path_destino)
             os.remove(arquivo)
 
+
 def pega_somente_numeros(string :str) -> str or int:
     """Função pega somente os números de qualquer string
     
@@ -549,10 +624,12 @@ def pega_somente_numeros(string :str) -> str or int:
     else:
         print('Por favor, envie uma string como essa -> "2122 asfs 245"')
         return
-    
+
+
 def remove_arquivo(file_path : str) -> None:
     os.remove(os.path.abspath(file_path))
-    
+
+
 def remove_diretorio(dir_path : str):
     """Remove diretórios recursivamente
 
@@ -560,8 +637,8 @@ def remove_diretorio(dir_path : str):
         dir_path (str): caminho do diretório a ser removido
     """
     shutil.rmtree(os.path.abspath(dir_path))
-    
-    
+
+
 def ver_tamanho_de_objeto(objeto : object) -> int:
     """Veja o tamanho em bytes de um objeto
 
@@ -572,7 +649,7 @@ def ver_tamanho_de_objeto(objeto : object) -> int:
         int: tamanho do objeto
     """
     print(sys.getsizeof(objeto))
-    
+
 
 def remove_espacos_pontos_virgulas_de_um_int(numero: int, remove_2_ultimos_chars: bool=False) -> int:
     """Remove espaços, pontos, virgulas e se quiser os 2 últimos caracteres
@@ -591,7 +668,6 @@ def remove_espacos_pontos_virgulas_de_um_int(numero: int, remove_2_ultimos_chars
     if remove_2_ultimos_chars:
         numero = numero[:-2]
     return int(numero)
-
 
 
 def fecha() -> None:
@@ -617,8 +693,6 @@ def fecha_em_x_segundos(qtd_de_segundos_p_fechar : int) -> None:
     fecha()
     
     
-
-    
 def resource_path(relative_path) -> str:
     """ Get absolute path to resource, works for dev and for PyInstaller 
     
@@ -630,6 +704,7 @@ def resource_path(relative_path) -> str:
         '_MEIPASS',
         os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)
+
 
 def pega_infos_da_maquina():
     """
@@ -649,6 +724,7 @@ def pega_infos_da_maquina():
             if bytes < factor:
                 return f"{bytes:.2f}{unit}{suffix}"
             bytes /= factor
+         
             
     faz_log("==== INFORMAÇÃO DO SISTEMA ====", 'i*')
     uname = platform.uname()
@@ -663,12 +739,6 @@ def pega_infos_da_maquina():
     faz_log(f"PROCESSADOR: {uname.processor}", 'i*')
     faz_log(f"ENDEREÇO IP: {socket.gethostbyname(socket.gethostname())}", 'i*')
     faz_log(f"ENDEREÇO MAC: {':'.join(re.findall('..', '%012x' % uuid.getnode()))}", 'i*')
-
-    # # Boot Time
-    # faz_log("==== HORA QUE LIGOU O COMPUTADOR ====", 'i*')
-    # boot_time_timestamp = psutil.boot_time()
-    # bt = datetime.fromtimestamp(boot_time_timestamp)
-    # faz_log(f"HORA DO BOOT: {bt.year}/{bt.month}/{bt.day} {bt.hour}:{bt.minute}:{bt.second}", 'i*')
 
     # print CPU information
     faz_log("==== INFOS DA CPU ====", 'i*')
@@ -714,7 +784,6 @@ def pega_infos_da_maquina():
     net_io = psutil.net_io_counters()
     faz_log(f"TOTAL DE Bytes ENVIADOS: {get_size(net_io.bytes_sent)}", 'i*')
     faz_log(f"TOTAL DE Bytes RECEBIDOS: {get_size(net_io.bytes_recv)}", 'i*')
-    
     
     
 def limpa_logs():
@@ -833,5 +902,3 @@ def faz_log(msg: str, level: str = 'i'):
                                 )
             logging.critical(msg, exc_info=True)
             print('!!! ' + msg + ' !!!')
-            
-    

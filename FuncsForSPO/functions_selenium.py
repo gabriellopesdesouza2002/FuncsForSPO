@@ -16,6 +16,7 @@ def url_atual(driver) -> str:
     """
     return driver.current_url
 
+
 def atualiza_page_atual(driver) -> None:
     """
     ### Função atualiza a página atual da janela atual
@@ -58,6 +59,7 @@ def espera_elemento(wdw, locator: tuple) -> WebElement:
     """
     return wdw.until(EC.element_to_be_clickable(locator))
 
+
 def espera_2_elementos(wdw, locator1: tuple, locator2 : tuple) -> WebElement:
     """
     ### Função que espera pelo elemento enviado do locator
@@ -72,7 +74,6 @@ def espera_2_elementos(wdw, locator1: tuple, locator2 : tuple) -> WebElement:
     except Exception:
         wdw.until(EC.element_to_be_clickable(locator2))
         
-
 
 def espera_elemento_e_envia_send_keys(driver, wdw, string, locator: tuple) -> None:
     """
@@ -133,6 +134,7 @@ def espera_e_retorna_lista_de_elementos_text_from_id(driver, wdw, locator: tuple
         id += 1
     else:
         return elementos_com_id
+
     
 # utilizado para o STJ   
 # def espera_e_retorna_lista_de_elementos_text_from_id_esse_tribunal(driver, wdw, locator: tuple=("BY_SELECTOR", "WEBELEMENT")):
@@ -177,7 +179,6 @@ def espera_e_retorna_lista_de_elementos_text(driver, wdw, locator: tuple) -> lis
     """
     wdw.until(EC.element_to_be_clickable(locator))
     return [element.text for element in driver.find_elements(*locator)]
-
 
 
 def espera_e_retorna_conteudo_do_atributo_do_elemento_text(driver, wdw, atributo, locator: tuple) -> str:
@@ -286,6 +287,7 @@ def fecha_janela_atual(driver) -> None:
     """
     driver.close()
 
+
 def fecha_ultima_janela(driver) -> None:
     qtd_de_windows = driver.window_handles
     while len(qtd_de_windows) !=2:
@@ -378,11 +380,7 @@ def volta_paginas(driver, qtd_pages_para_voltar : int=1, espera_ao_mudar=0) -> N
 # def muda_p_alerta_e_clica_em_dismiss(self):
     # alerta = self.chrome.switch_to.alert
     # alerta.dismiss()
-    
-    
-# def espera_input_e_limpa(driver, wdw, locator : tuple):
-    # wdw.until(EC.element_to_be_clickable(locator))
-    # driver.find_element(*locator).clear
+
     
 # Em desenvolvimento
 
@@ -398,6 +396,7 @@ def cria_user_agent() -> str:
     _ua = UserAgent()
     user_agent = _ua.random
     return user_agent
+
 
 def espera_input_limpa_e_envia_send_keys_preessiona_esc(driver, wdw, keys : str, locator : tuple) -> None:
     from selenium.common.exceptions import StaleElementReferenceException
@@ -424,6 +423,7 @@ def espera_input_limpa_e_envia_send_keys_preessiona_esc(driver, wdw, keys : str,
         driver.find_element(*locator).send_keys(Keys.ESCAPE)
         driver.find_element(*locator).clear()
         driver.find_element(*locator).send_keys(keys)
+
     
 def espera_input_limpa_e_envia_send_keys(driver, wdw, keys : str, locator : tuple) -> None:
     from selenium.common.exceptions import StaleElementReferenceException
@@ -447,12 +447,11 @@ def espera_input_limpa_e_envia_send_keys(driver, wdw, keys : str, locator : tupl
         driver.find_element(*locator).clear()
         driver.find_element(*locator).send_keys(keys)
     
-    
-    
+        
 def espera_elemento_sair_do_dom(wdw, locator) -> WebElement:
     return wdw.until_not(EC.presence_of_element_located(locator))
     
-    
+
 def pega_somente_numeros_de_uma_str(string) -> list:
     """
     ### Função que retorna uma LISTA somente com os números de uma string
@@ -475,8 +474,7 @@ def espera_elemento_ficar_ativo_e_clica(driver, wdw, locator : tuple) -> None:
 
     driver.find_element(*locator).click()
         
-    
-    
+        
 def espera_elemento_nao_estar_mais_visivel(wdw, locator) -> WebElement:
     return wdw.until_not(EC.visibility_of(*locator))
     
@@ -523,6 +521,7 @@ def find_window_to_url(driver, url_switch: str) -> None: # quero uma url que sej
         else:
             print(f'Janela não encontrada!\n'
                 f'Verifique o valor enviado "{url_switch}"')
+    
           
 def find_window_to_url_contain(driver, contain_url_switch: str) -> None: # quero uma url que seja str
     """
@@ -595,10 +594,7 @@ def verifica_se_diminuiu_qtd_de_janelas(driver, qtd_de_w) -> None:
     else:
         verifica_se_diminuiu_qtd_de_janelas(driver, qtd_de_w)
         
-        
-        
-        
-        
+            
 def find_window_to_url_contain_and_close_window(driver, contain_url_to_switch: str) -> None: # quero uma url que seja str
     """
     ### Essa função muda de janela quando a url conter no parametro enviado
@@ -619,16 +615,11 @@ def find_window_to_url_contain_and_close_window(driver, contain_url_to_switch: s
             break
         
 
-    
-    
-    
-    
 ###########################################################
 ######### Padrão de classe __init__ para projetos #########
 ###########################################################
 
 """
-from datetime import datetime
 from selenium.webdriver import Chrome
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -636,33 +627,45 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from src.tools.functions.functions_for_py import *
-from src.tools.functions.functions_selenium import *
-from src.tools.functions.openpyxl_funcs import *
-from FuncsForSPO.functions.functions_for_py import faz_log
+from FuncsForSPO.functions_for_py import *
+from FuncsForSPO.functions_selenium import *
+from FuncsForSPO.exceptions import *
+import json
 import os
-import pandas
-import openpyxl
-from src.tools.exceptions.exceptions import *
 
 
 class Bot:    
-    def __init__(self, configs):
-        # --- PATH BASE DIR --- #
-        # self.__PATH_BASE_DIR = os.path.abspath(r".\base")
-
-        # --- CONFIG.INI SETTINGS --- #
-        self.config = configs
-        self._URL = self.config['SECTION']['site']
-        self._TIMEOUT = self.config['SECTION']['tempo_para_achar_elementos']
-        self._HEADLESS = self.config['SECTION']['headless']
-        self._USUARIO = self.config['SECTION']['usuario']
-        self._SENHA = self.config['SECTION']['senha']
-        
+    def __init__(self, headless) -> None:
         # --- CHROME OPTIONS --- #
         self._options = webdriver.ChromeOptions()
+        
+        
+        # --- PATH BASE DIR --- #
+        self.__DOWNLOAD_DIR = pega_caminho_atual_e_concatena_novo_dir(dir='base', print_value=False, criar_diretorio=True)
+        self._SETTINGS_SAVE_AS_PDF = {
+                    "recentDestinations": [
+                        {
+                            "id": "Save as PDF",
+                            "origin": "local",
+                            "account": ""
+                        }
+                    ],
+                    "selectedDestinationId": "Save as PDF",
+                    "version": 2,
+                }
+
+    
+        self._PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(self._SETTINGS_SAVE_AS_PDF),
+                "savefile.default_directory":  f"{self.__DOWNLOAD_DIR}",
+                "download.default_directory":  f"{self.__DOWNLOAD_DIR}",
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": True}
+            
+        self._options.add_experimental_option('prefs', self._PROFILE)
+        
         self._options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        if self._HEADLESS == 'True':
+        if headless == 'True':
             self._options.add_argument('--headless')
         self._options.add_argument("--disable-print-preview")
         self._options.add_argument("--disable-web-security")
@@ -680,15 +683,21 @@ class Bot:
         self._options.add_argument("--proxy-server='direct://'")
         self._options.add_argument('--proxy-bypass-list=*')
         self._options.add_argument('--disable-dev-shm-usage')
+        self._options.add_argument('--block-new-web-contents')
+        self._options.add_argument('--incognito')
+        self._options.add_argument('–disable-notifications')
+        self._options.add_argument('--suppress-message-center-popups')
         
         self.__service = Service(ChromeDriverManager().install())
-        self.CHROME = Chrome(service=self.__service, options=self._options)
-        self.WDW = WebDriverWait(self.CHROME, timeout=int(self._TIMEOUT))
-        self.WDW3 = WebDriverWait(self.CHROME, timeout=3)
-        self.CHROME.maximize_window()
         
-        # --- READ BASE --- #
-        self._DADOS_BASE = self.le_base()
+    def instance_chrome(self):
+        self.DRIVER = Chrome(service=self.__service, options=self._options)
+        self.WDW3 = WebDriverWait(self.DRIVER, timeout=3)
+        self.DRIVER.maximize_window()
+        return self.DRIVER
+
+    def quit_web(self):
+        self.DRIVER.quit()
 """
 
 ###########################################################
