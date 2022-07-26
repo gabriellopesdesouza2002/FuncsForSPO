@@ -23,7 +23,7 @@ Powered By https://github.com/gabriellopesdesouza2002
 
 # Current Version -> 0.0.3.11
 
-version==0.0.3.11 -> criada uma funcao que retorna somente numeros utilizando re
+version==0.0.3.11 -> melhoria na Licenca. Adicionada funcao que executa o garbage_collector, melhorias na documentacao, melhoria na funcao que pega data e hora atual via formatacao strftime, adiciona data no caminho de qualquer arquivo, que pode ter inclusive sufixo em caso de arquivos repetidos, melhoria da funcao de baixar arquivo via link. adicionada um modulo com varias funcoes regex. melhoria na recuperacao de dados de coluna que ao achar um datetime, convertera para uma data normal
 
 version==0.0.3.10 -> removida funcao que retorna uma tupla ao reverso, e adicionada a funcao (reverse_iter) que retorna ao reverso qualquer iteravel | adicionada a funcao que retorna os valores absolutos de qualquer arquivo e/ou diretorio de um caminho relativo de um diretorio (arquivos_com_caminho_absoluto_do_arquivo); adicionada tambem uma funcao que faz download de arquivos na internet (download_file); melhorias nas DocStrings
 
