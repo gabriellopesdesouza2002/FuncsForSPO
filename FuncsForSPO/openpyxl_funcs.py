@@ -56,7 +56,7 @@ def len_columns(plan, print_value: bool=False) -> int:
         return plan.max_column
     
 
-def get_colun_data(plan, column: int, convert_tuple: bool=True, print_values: bool=False) -> list[str]:
+def pega_dados_de_coluna(plan, column: int, convert_tuple: bool=True, print_values: bool=False, formatting_date: str="%d/%m/%Y") -> list[str]:
     """Retorna os dados da coluna enviada, (tem que ser o indice da coluna)
 
         
@@ -75,6 +75,7 @@ def get_colun_data(plan, column: int, convert_tuple: bool=True, print_values: bo
         plan (planilha): planilha feita no openpyxl
         column (int): indice da coluna na tabela
         convert_tuple (bool): converte a lista de dados para tupla
+        formatting_date (str): Formatação da data em caso de celulas que sejam datetime.datetime
     Returns:
         tuple or list: _description_
     """
@@ -82,8 +83,12 @@ def get_colun_data(plan, column: int, convert_tuple: bool=True, print_values: bo
     for linha in plan:
         if linha[column].value is not None:  # se o valor da planilha não for none
             cell = linha[column].value
+            if "datetime" in str(type(cell)):
+                cell = str(cell.strftime(formatting_date))
+                dados_da_coluna.append(cell)
             if cell is None:
                 dados_da_coluna.append('None')
+                
             else:
                 dados_da_coluna.append(cell)
         else:
@@ -117,7 +122,7 @@ def return_columns_names(plan, len_columns: int, convert_to_tuple: bool=True, pr
     else:
         return nomes_das_colunas
     
-# from FuncsForSPO.openpyxl_funcs import get_colun_data
+# from FuncsForSPO.openpyxl_funcs import pega_dados_de_coluna
 
 ## functions_selenium ##
 def volta_paginas(driver, qtd_pages_para_voltar : int=1, espera_ao_mudar : int=0) -> None:
@@ -297,6 +302,6 @@ if __name__ == '__main__':
     cols = (('A1', 'NOME'), ('B1', 'SOBRENOME'), ('C1', 'IDADE'))
     sheet = ('Resultado', 0)
     ws = recupera_worksheet_do_arquivo('MeuArquivo.xlsx', 'Resultado')
-    dados_verifica = get_colun_data(plan=ws, column=0, print_values=True)
+    dados_verifica = pega_dados_de_coluna(plan=ws, column=0, print_values=True)
     criador_de_arquvos_xlsx(nome_do_arquivo='MeuArquivo', sheet=sheet, colunas=cols, dados=dados)
     verifica_se_existe_na_coluna(a_procurar='10', dados=dados_verifica, return_list_de_achados=True)

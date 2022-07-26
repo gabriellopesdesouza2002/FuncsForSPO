@@ -1,15 +1,53 @@
 """
-Várias funções para ajudar no desenvolvimento de qualquer aplicação em Python
+## Várias funções para ajudar no desenvolvimento de qualquer aplicação em Python
 
-Nesse módulo você achará desde funções simples, até funções complexas que levariam um bom tempo para desenvolve-las.
+### Nesse módulo você achará desde funções simples, até funções complexas que levariam um bom tempo para desenvolve-las.
 
 Para usar esse módulo, será necessário instalar o psutil, pois existe uma função que coleta informações do sistema
 -> pip install psutil
 """
 
+################################## IMPORTS #############################################
 from datetime import datetime
+import gc
 from time import sleep
 import os, sys, psutil, shutil, platform, re, socket, uuid, logging
+import requests
+################################## IMPORTS #############################################
+
+def executa_garbage_collector(generation :int=False) -> int:
+    """
+    Portuguese:
+    
+    Execute o coletor de lixo.
+
+    Sem argumentos, execute uma coleção completa. O argumento opcional pode ser um inteiro especificando qual geração coletar. Um ValueError é gerado se o número de geração for inválido.
+
+    O número de objetos inacessíveis é retornado.
+    
+    #################################
+    
+    English:
+    
+    Run the garbage collector.
+
+    With no arguments, run a full collection. The optional argument may be an integer specifying which generation to collect. A ValueError is raised if the generation number is invalid.
+
+    The number of unreachable objects is returned.
+    """
+    if generation:
+        return gc.collect(generation)
+    else:
+        return gc.collect()
+
+
+def transforma_lista_em_string(lista :list):
+    try:
+        return ', '.join(lista)
+    except TypeError:
+        lista = [str(i) for i in lista]
+        return ', '.join(lista)
+
 
 def remove_extensao_de_str(arquivo :str, extensao_do_arquivo :str) -> str:
     """Remove a extensão de um nome de arquivo.
@@ -67,8 +105,8 @@ def pega_caminho_atual(print_value: bool=False) -> str:
         return os.getcwd()
 
 
-def cria_dir_no_dir_de_trabalho_atual(dir: str, print_value: bool=False, criar_diretorio: bool=False) -> str:
-    """Faz essas funções 
+def cria_dir_no_dir_de_trabalho_atual(dir: str, print_value: bool=False, criar_diretorio: bool=True) -> str:
+    """Cria diretório no diretório de trabalho atual
     
     1 - Pega o caminho atual de execução do script 
     
@@ -179,8 +217,8 @@ def deleta_arquivos_duplicados(path_dir :str, qtd_copyes :int) -> None:
                     os.remove(path_downloads+'\\'+arquivo)  
 
 
-def arquivos_com_caminho_absoluto_do_arquivo(path_dir: str) -> tuple[str] | str:
-    """Retorna uma tupla com vários caminhos dos arquivos e diretórios ou o caminho do arquivo / diretório apenas
+def arquivos_com_caminho_absoluto_do_arquivo(path_dir: str) -> tuple[str]:
+    """Retorna uma tupla com vários caminhos dos arquivos e diretórios
 
     ### O script pegará esse caminho relativo, pegará o caminho absoluto dele e concatenará com os arquivo(s) e/ou diretório(s) encontrado(s)
     
@@ -188,101 +226,79 @@ def arquivos_com_caminho_absoluto_do_arquivo(path_dir: str) -> tuple[str] | str:
         path_dir (str): caminho relativo do diretório
 
     Returns:
-        tuple[str] | str: Retorna uma tupla com os arquivos ou o caminho do arquivo (str)
+        tuple[str]: Retorna uma tupla com os arquivos e/ou diretórios
     """
-    ARQUIVOS = tuple(f'{os.path.abspath(path_dir)}\\{arquivo}' for arquivo in os.listdir(path_dir))
-    if len(ARQUIVOS) > 1:
-        return ARQUIVOS
-    else:
-        return ARQUIVOS[0]
+    return tuple(f'{os.path.abspath(path_dir)}\\{arquivo}' for arquivo in os.listdir(path_dir))
 
 
-def pega_id(assunto: str) -> str:
-    """
-    Essa função simplesmente pega uma string, separa ela por espaços e verifica se a palavra existe ou é igual a "ID",
-        se existe, pega a string, caso seja igual, pega a string e um acima para pegar o id em si
+
+
+def data_e_hora_atual_como_string(format: str='%d/%m/%y %Hh %Mm %Ss') -> str:
+    """Retorna data ou hora ou os dois como string
 
     Args:
-        assunto (str): Assunto do E-mail
+        format (str, optional): Formato da hora e data (ou só da hora ou só da data se preferir). Defaults to '%d/%m/%y %Hh %Mm %Ss'.
 
     Returns:
-        str | bool: Retorna o id com o número ou False se não tiver um assunto com ID
+        str: hora / data atual como string
     """
-    assunto = assunto.upper()
-    assunto = assunto.strip()
-    list_string_official = []
-    if 'ID' in assunto:
-        # Separa todos as strings por espaço
-        assunto_list = assunto.split(' ')
+    return datetime.now().strftime(format)
 
-        for i in range(len(assunto_list)):
-            # se a palavra do assunto for id e a próxima palavra for 'elaw' pega id e o número
-            if assunto_list[i] == 'ID' and assunto_list[i+1] == 'ELAW':
-                list_string_official.append(assunto_list[i])
-                list_string_official.append(assunto_list[i+2])
-                id_ = ' '.join(list_string_official)
-                faz_log(id_)
-                return id_
-            if assunto_list[i] == 'ID' and 'ELAW' in assunto_list[i+1]:
-                list_string_official.append(assunto_list[i])
-                try:
-                    list_string_official.append(assunto_list[i+2])
-                except Exception:
-                    list_string_official.append(assunto_list[i+1])
-                    id_ = ' '.join(list_string_official)
-                    num_id = re.findall(r'\d+', id_)  # pega somente números da string
-                    id_ = f'ID {num_id[0]}'#EX (ID 111111)#
-                    faz_log(id_)
-                    return id_
-                id_ = ' '.join(list_string_official)
-                faz_log(id_)
-                return id_
-            if assunto_list[i] == 'ID' or assunto_list[i] == 'ID:' or assunto_list[i] == 'ID.' or assunto_list[i] == '-ID':
-                list_string_official.append(assunto_list[i])
-                list_string_official.append(assunto_list[i+1])
-                id_ = ' '.join(list_string_official)
-                faz_log(id_)
-                return id_
-        else:
-            faz_log(f'Não existe ID para o ASSUNTO: {assunto}', 'w')
-            return False
+
+def adiciona_data_no_caminho_do_arquivo(file_path: str, format: str='%d/%m/%y-%Hh-%Mm-%Ss') -> str:
+    """Adiciona data no inicio do arquivo.
+
+    Args:
+        date (datetime.datetime): Objeto datetime
+        file_path (str): caminho do arquivo
+
+    Returns:
+        str: Retorna o arquivo com 
+    """
+    if isinstance(format, str):
+        sufixo = 0
+        file_name = os.path.basename(file_path)
+        file_path = os.path.dirname(file_path)
+        file_name, file_extension = os.path.splitext(file_name)
+        file_name = data_e_hora_atual_como_string(format) + ' ' + file_name
+        resultado_path = os.path.join(
+            file_path, file_name + file_extension)
+        while os.path.exists(resultado_path):  # caso o arquivo exista, haverá sufixo
+            sufixo += 1
+            resultado_path = os.path.join(
+                file_path, file_name + str(sufixo) + file_extension)
+        return resultado_path
     else:
-        faz_log(f'Não existe ID para o ASSUNTO: {assunto}', 'w')
-        return False
+        raise TypeError('Envie uma string no parâmetro format_date')
 
 
-def data_atual() -> str:
-    """Retorna a data atual
-    A data a ser retornada tem essa formatação -> DD/MM/YYYY
+def baixar_arquivo_via_link(link: str, file_path: str, directory :bool|str=False):
+    """Faz o download de arquivos pelo link que deve vir com a extensão do arquivo.
 
-    Returns:
-        str: Data nessa formatação -> DD/MM/YYYY
-    """
-    e = datetime.now()
-    return f'{e.day}/{e.month}/{e.year}'
-
-
-def download_file(link: str, dest_path: str):
-    import requests
-    """Faz o Download de arquivos
-    É necessário que o arquivo venha com a sua extensão no http; exemplo de uso abaixo:
+    ### É necessário que o arquivo venha com a sua extensão no link; exemplo de uso abaixo:
     
     Use:
-        donwload('https://filesamples.com/samples/document/xlsx/sample3.xlsx', file_xlsx.xlsx)
+        download_file(link='https://filesamples.com/samples/document/xlsx/sample3.xlsx', file_path='myplan.xlsx', directory='donwloads/')
 
     Args:
-        link (str): link do arquivo que será baixado
-        dest_path (str): destino do arquivo que será baixado (com a sua extensão)
+        link (str): link do arquivo que será baixado (deve vir com a extensão)
+        file_path (str): destino do arquivo que será baixado (deve vir com a extensão)
+        directory (str | bool): diretório de destino (será criado caso não exista), caso não envie, o arquivo ficará no diretorio de download atual. Optional, Default is False
     """
+    if directory:
+        cria_dir_no_dir_de_trabalho_atual(directory)
+        file_path = os.path.join(os.path.abspath(directory), file_path)
+        
     r = requests.get(link, allow_redirects=True)
     try:
-        with open(dest_path, 'wb') as file:
+        with open(file_path, 'wb') as file:
             file.write(r.content)
-            print(f'Download completo! -> {os.path.abspath(dest_path)}')
+            print(f'Download completo! -> {os.path.abspath(file_path)}')
     except Exception as e:
         print(f'Ocorreu um erro:\n{str(e)}')
     finally:
         del r
+        gc.collect()
 
 
 def hora_atual(segundos: bool=False) -> str:
@@ -524,7 +540,7 @@ def print_colorido(string : str, color='default', bolder : bool=False) -> str:
 
 
 def input_color(color : str='default', bolder : bool=False, input_ini: str='>>>') -> None:
-    """A cor do input que você pode desejar
+    """A cor do input da cor que você desejar
 
     Args:
         color (str, optional): cor do texto do input (não o que o user digitar). Defaults to 'default'.
