@@ -147,12 +147,12 @@ def espera_e_retorna_lista_de_elementos_text_from_id(driver, wdw, locator: tuple
 #     """Função espera e retorna 
 
 #     Args:
-#         driver (_type_): _description_
-#         wdw (_type_): _description_
+#         driver (WebDriver): _description_
+#         wdw (WebDriverWait): _description_
 #         locator (tuple, optional): _description_. Defaults to ("BY_SELECTOR", "WEBELEMENT").
 
 #     Returns:
-#         _type_: _description_
+#         list: lista_de_elementos_text_from_id_esse_tribunal
 #     """
 #     if locator == ("BY_SELECTOR", "WEBELEMENT"):
 #         print('Adicione um locator!!!!')
@@ -171,7 +171,7 @@ def espera_e_retorna_lista_de_elementos_text_from_id(driver, wdw, locator: tuple
 #         return elementos_com_id
 
 
-def espera_e_retorna_lista_de_elementos_text(driver, wdw, locator: tuple) -> list:
+def espera_e_retorna_lista_de_elementos_text(driver, wdw, locator: tuple, upper_mode :bool=False, strip_mode :bool=False) -> list:
     """
     ### Função espera e retorna uma lista com os textos dos elementos
 
@@ -184,6 +184,13 @@ def espera_e_retorna_lista_de_elementos_text(driver, wdw, locator: tuple) -> lis
         list: Lista dos textos dos elementos
     """
     wdw.until(EC.element_to_be_clickable(locator))
+    elements = driver.find_elements(*locator)
+    if upper_mode:
+        elements_not_upper = [element.text for element in elements]
+        return [element.upper() for element in elements_not_upper]
+    if strip_mode:
+        elements_not_strip = [element.text for element in elements]
+        return [element.strip() for element in elements_not_strip]
     return [element.text for element in driver.find_elements(*locator)]
 
 
@@ -242,7 +249,7 @@ def vai_para_a_primeira_janela(driver) -> None:
     """Vai para a primeira janela, geralmente a primeira que é iniciada
 
     Args:
-        driver (_type_): WebDriver
+        driver (WebDriver): WebDriver
     """
     window_ids = driver.window_handles # ids de todas as janelas
     driver.switch_to.window(window_ids[0])
@@ -357,7 +364,7 @@ def volta_paginas(driver, qtd_pages_para_voltar : int=1, espera_ao_mudar=0) -> N
     ### Essa função volta (back) quantas páginas você desejar
 
     Args:
-        driver (_type_): Seu webdriver
+        driver (WebDriver): Seu webdriver
         qtd_pages_para_voltar (int): Quantidade de páginas que serão voltadas. O padrão é uma página (1).
         espera_ao_mudar (int or float, optional): Se você quer esperar um tempo para voltar uma página. O padrão é 0.
         
@@ -412,8 +419,8 @@ def espera_input_limpa_e_envia_send_keys_preessiona_esc(driver, wdw, keys : str,
     ### Função espera pelo input ou textarea indicado pelo locator, limpa ele e envia os dados
 
     Args:
-        driver (_type_): Seu webdriver
-        wdw (_type_): WebDriverWait criado em seu código
+        driver (WebDriver): Seu webdriver
+        wdw (WebDriverWait): WebDriverWait criado em seu código
         keys (str): Sua string para enviar no input ou textarea
         locator (tuple): Tupla que contém a forma e o caminho do elemento (By.CSS_SELECTOR, '#myelementid')
     """
@@ -437,8 +444,8 @@ def espera_input_limpa_e_envia_send_keys(driver, wdw, keys : str, locator : tupl
     ### Função espera pelo input ou textarea indicado pelo locator, limpa ele e envia os dados
 
     Args:
-        driver (_type_): Seu webdriver
-        wdw (_type_): WebDriverWait criado em seu código
+        driver (WebDriver): Seu webdriver
+        wdw (WebDriverWait): WebDriverWait criado em seu código
         keys (str): Sua string para enviar no input ou textarea
         locator (tuple): Tupla que contém a forma e o caminho do elemento (By.CSS_SELECTOR, '#myelementid')
     """
@@ -484,6 +491,16 @@ def espera_elemento_ficar_ativo_e_clica(driver, wdw, locator : tuple) -> None:
 def espera_elemento_nao_estar_mais_visivel(wdw, locator) -> WebElement:
     return wdw.until_not(EC.visibility_of(*locator))
     
+    
+def espera_elemento_estar_visivel(driver, wdw, locator, with_visibility_of: bool=True):
+    if with_visibility_of:
+        element = driver.find_element(*locator)
+        return wdw.until(EC.visibility_of(element))
+    else:
+        element = driver.find_element(*locator)
+        return wdw.until(EC.element_to_be_clickable(locator))
+        
+
 
 def find_window_to_title_contain(driver, title_contain_switch: str) -> None: # quero que pelo menos um pedaco do titulo que seja str
     """

@@ -1,11 +1,11 @@
 from setuptools import setup
 
-with open("README.md", "r") as fh:
+with open("README.md", "r", encoding='utf-8') as fh:
     readme = fh.read()
 
 setup(
     name='FuncsForSPO',
-    version='0.0.3.13',
+    version='0.0.3.15',
     url='https://github.com/githubpaycon/FuncsForSPO',
     license='MIT License',
     author='Gabriel Lopes de Souza',

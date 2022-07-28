@@ -1,6 +1,6 @@
 # FuncsForSPO - Funcoes para Selenium; Python; Openpyxl; SQLite3
 
-## pip install FuncsForSPO
+## pip install FuncsForSPO | NECESSÁRIO PYTHON 3.10
 
 ### Antes de tudo instale o Psutil para evitar erros. (pip install psutil)
 
@@ -21,7 +21,11 @@ de pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By https://github.com/gabriellopesdesouza2002
 
-# Current Version -> 0.0.3.13
+# Current Version -> 0.0.3.15
+
+version==0.0.3.15 -> melhoria em funcao que recupera lista de elementos, agora e possivel enviar argumentos, como, recuperar com tudo upper
+
+version==0.0.3.14 -> adicionada 1 funcao que espera webelement estar visivel
 
 version==0.0.3.13 -> adicionada 2 funcoes que retornam data e hora dias a frente e uma que envia send_keys e da um esc. Foi adicionada também 2 funcoes do PySimpleGUI que mostra uma mensagem de erro e outra de finalizado
 
