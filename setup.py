@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='FuncsForSPO',
-    version='0.0.3.11',
+    version='0.0.3.12',
     url='https://github.com/githubpaycon/FuncsForSPO',
     license='MIT License',
     author='Gabriel Lopes de Souza',
@@ -15,5 +15,12 @@ setup(
     keywords='Funções Para Melhorar Desenvolvimento de Robôs com Selenium',
     description=u'Funções Para Melhorar Desenvolvimento de Robôs com Selenium',
     packages=['FuncsForSPO'],
-    install_requires=['selenium', 'openpyxl', 'psutil', 'webdriver-manager', 'fake_useragent', 'requests'],
+    install_requires=['selenium', 
+                      'openpyxl', 
+                      'psutil', 
+                      'webdriver-manager', 
+                      'fake_useragent', 
+                      'requests',
+                      'pretty_html_table',
+                      'pywin32',],
     )

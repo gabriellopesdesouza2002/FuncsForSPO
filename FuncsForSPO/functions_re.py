@@ -35,20 +35,20 @@ def extrair_cpfs(text :str) -> list:
     return cpfs
 
 
-def extrair_email(text: str) -> list:
+def extrair_email(text: str, case_isensitive: bool=False) -> list:
     """### Retorna os e-mails recuperados
+    Validação / Busca de e-mails com o padrão RFC2822
+    https://regexr.com/2rhq7
 
     Args:
-        text (str): texto com o(s) email(s)
- 
+        text (str): Texto com o(s) email(s)
+        case_isensitive (bool): Buscar idependente se a letra for maiúscula ou minúscula
     Returns:
         list: email(s)
     """
-    email = re.search('\S+@\S+', text)
-    if email:
-        email = email.group()
-    else:
-        email = ''
+    email = re.findall("[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?", text, )
+    if not email or len(email) == 0:
+        email = []
     return email
 
 

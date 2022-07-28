@@ -21,7 +21,9 @@ de pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By https://github.com/gabriellopesdesouza2002
 
-# Current Version -> 0.0.3.11
+# Current Version -> 0.0.3.12
+
+version==0.0.3.12 -> adicao de funcao para enviar e-mails pelo outlook; melhoria da funcao regex extrair email com base no padrão RFC2822
 
 version==0.0.3.11 -> melhoria na Licenca. Adicionada funcao que executa o garbage_collector, melhorias na documentacao, melhoria na funcao que pega data e hora atual via formatacao strftime, adiciona data no caminho de qualquer arquivo, que pode ter inclusive sufixo em caso de arquivos repetidos, melhoria da funcao de baixar arquivo via link. adicionada um modulo com varias funcoes regex. melhoria na recuperacao de dados de coluna que ao achar um datetime, convertera para uma data normal
 
