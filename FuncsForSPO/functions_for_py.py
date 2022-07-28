@@ -8,7 +8,7 @@ Para usar esse módulo, será necessário instalar o psutil, pois existe uma fun
 """
 
 ################################## IMPORTS #############################################
-from datetime import datetime
+from datetime import datetime, date
 import gc
 from time import sleep
 import os, sys, psutil, shutil, platform, re, socket, uuid, logging
@@ -918,3 +918,23 @@ def faz_log(msg: str, level: str = 'i'):
                                 )
             logging.critical(msg, exc_info=True)
             print('!!! ' + msg + ' !!!')
+    
+
+def retorna_data_e_hora_a_frente(dias_a_frente: int, sep: str='/') -> str:
+    """Retorna a data e hora com dias a frente da data atual
+    ex: 15/06/2002 18:31 -> dias_a_frente=3 -> 18/06/2002 18:31
+    """
+    hj = date.today()
+    futuro = date.fromordinal(hj.toordinal() + dias_a_frente)  # hoje + 3# dias
+    dia_futuro = futuro.strftime(f'%d{sep}%m{sep}%Y')
+    hora_futuro = datetime.today().strftime('%H:%M')
+    return f'{dia_futuro} {hora_futuro}'
+
+
+def retorna_data_a_frente_(dias_a_frente: int, sep: str='/') -> str:
+    """Retorna a data e hora com dias a frente da data atual
+    ex: 15/06/2002 -> dias_a_frente=3 -> 18/06/2002
+    """
+    hj = date.today()
+    futuro = date.fromordinal(hj.toordinal() + dias_a_frente)  # hoje + 3# dias
+    return futuro.strftime(f'%d{sep}%m{sep}%Y')

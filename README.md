@@ -21,7 +21,9 @@ de pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By https://github.com/gabriellopesdesouza2002
 
-# Current Version -> 0.0.3.12
+# Current Version -> 0.0.3.13
+
+version==0.0.3.13 -> adicionada 2 funcoes que retornam data e hora dias a frente e uma que envia send_keys e da um esc. Foi adicionada também 2 funcoes do PySimpleGUI que mostra uma mensagem de erro e outra de finalizado
 
 version==0.0.3.12 -> adicao de funcao para enviar e-mails pelo outlook; melhoria da funcao regex extrair email com base no padrão RFC2822
 

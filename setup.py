@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name='FuncsForSPO',
-    version='0.0.3.12',
+    version='0.0.3.13',
     url='https://github.com/githubpaycon/FuncsForSPO',
     license='MIT License',
     author='Gabriel Lopes de Souza',
@@ -22,5 +22,6 @@ setup(
                       'fake_useragent', 
                       'requests',
                       'pretty_html_table',
-                      'pywin32',],
+                      'pywin32',
+                      'PySimpleGUI',],
     )

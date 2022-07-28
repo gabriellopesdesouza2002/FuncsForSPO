@@ -1,6 +1,8 @@
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
+from selenium.common.exceptions import StaleElementReferenceException
+from selenium.webdriver.common.keys import Keys
 from fake_useragent import UserAgent
 from time import sleep
 from pretty_html_table import build_table
@@ -677,6 +679,30 @@ def enviar_email_outlook(to: list|str, assunto: str='Assunto do E-mail', body: s
         
     print('E-mail enviado com sucesso!')    
 
+def espera_input_limpa_e_envia_send_keys_preessiona_esc_tmb_no_final(driver, wdw, keys : str, locator : tuple):
+    """
+    ### Função espera pelo input ou textarea indicado pelo locator, limpa ele e envia os dados
+
+    Args:
+        driver (Webdriver): Seu webdriver
+        wdw (WebDriverWait): WebDriverWait criado em seu código
+        keys (str): Sua string para enviar no input ou textarea
+        locator (tuple): Tupla que contém a forma e o caminho do elemento (By.CSS_SELECTOR, '#myelementid')
+    """
+    try:
+        wdw.until(EC.element_to_be_clickable(locator))
+        driver.find_element(*locator).click()
+        driver.find_element(*locator).send_keys(Keys.ESCAPE)
+        driver.find_element(*locator).clear()
+        driver.find_element(*locator).send_keys(keys)
+        driver.find_element(*locator).send_keys(Keys.ESCAPE)
+    except StaleElementReferenceException:
+        wdw.until(EC.element_to_be_clickable(locator))
+        driver.find_element(*locator).click()
+        driver.find_element(*locator).send_keys(Keys.ESCAPE)
+        driver.find_element(*locator).clear()
+        driver.find_element(*locator).send_keys(keys)
+        driver.find_element(*locator).send_keys(Keys.ESCAPE)
 
 ###########################################################
 ######### Padrão de classe __init__ para projetos #########
