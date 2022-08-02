@@ -194,6 +194,37 @@ def espera_e_retorna_lista_de_elementos_text(driver, wdw, locator: tuple, upper_
     return [element.text for element in driver.find_elements(*locator)]
 
 
+def espera_elemento_ficar_visivel(driver, wdw, locator: tuple) -> WebElement|None:
+    """Espera elemento ficar visivel na tela
+
+    Args:
+        driver (WebDriver): Webdriver
+        wdw (WebDriverWait): WDW
+        locator (tuple): Locator
+
+    Returns:
+        WebElement|None: WebElement or None
+    """
+    element = driver.find_element(*locator)
+    return wdw.until(EC.visibility_of(element))
+
+
+def espera_elemento_ficar_visivel_ativo_e_clicavel(driver, wdw, locator: tuple) -> WebElement|None:
+    """Espera Elemento ficar visivel, ativo e clicavel
+
+    Args:
+        driver (Webdriver): Webdriver
+        wdw (WDW): WDW
+        locator (tuple): Locator Selenium
+
+    Returns:
+        WebElement|None: _description_
+    """
+    element = driver.find_element(*locator)
+    wdw.until(EC.element_to_be_clickable(locator))
+    return wdw.until(EC.visibility_of(element))
+
+
 def espera_e_retorna_conteudo_do_atributo_do_elemento_text(driver, wdw, atributo, locator: tuple) -> str:
     """
     ### Função que espera pelo elemento e retorna o texto do atributo do elemento escolhido
