@@ -51,6 +51,78 @@ def extrair_email(text: str, case_isensitive: bool=False) -> list:
         email = []
     return email
 
+def remove_caracteres_de_string():
+    """Função remove esses elementos da string
+    
+    '.'
+    
+    '/'
+    
+    ','
+    
+    '-'
+    
+    '_'
+    
+    '='
+    
+    '|'
+    
+    '#'
+    
+    '`'
+    
+    '~'
+    
+    "'"
+    
+    '"'
+    
+    ';'
+    
+    'string'.strip()
+    #### Função já converte o argumento para str()
+
+    Args:
+        string (str): str com os caracteres
+
+    Returns:
+        str: Retorna string sem nenhum desses caracteres
+    """
+    string = str(string)
+    string = string.replace('.','')
+    string = string.replace('/', '')
+    string = string.replace(',', '')
+    string = string.replace('-', '')
+    string = string.replace('_', '')
+    string = string.replace('=', '')
+    string = string.replace('|', '')
+    string = string.replace('`', '')
+    string = string.replace('~', '')
+    string = string.replace("'", '')
+    string = string.replace('"', '')
+    string = string.replace('#', '')
+    string = string.replace(';', '')
+    string = string.replace(':', '')
+    string = string.strip()
+    return string
+
+
+def extrair_numeros(str, return_first=True) -> list[str]|str:
+    """Recupera somente números de uma string
+
+    Args:
+        str (string): string com os números
+        return_first (bool, optional): retorna o primeiro conjunto de números. Defaults to True.
+
+    Returns:
+        list|str: lista com os números ou ou uma string com os números
+    """
+    if return_first:
+        return re.findall('\d+', str)[0]  # return str
+    else:
+        return re.findall('\d+', str) # return list
+
 
 def extrair_num_processo(text: str) -> list:
     """### Retorna o(s) número(s) de processo(s)

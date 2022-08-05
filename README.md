@@ -21,7 +21,9 @@ de pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By https://github.com/gabriellopesdesouza2002
 
-# Current Version -> 0.0.3.16
+# Current Version -> 0.0.3.17
+
+version==0.0.3.17 -> adicionada algumas funções úteis, como remover números de uma string, baixar pdf com o base64 entre outras...
 
 version==0.0.3.16 -> Adicao de 2 funcoes selenium uma que espera o elemento ficar visivel e outra que espera ele ficar ativo, clicavel e visivel
 

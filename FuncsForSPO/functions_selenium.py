@@ -1,13 +1,21 @@
+from base64 import b64decode
+import os
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException, StaleElementReferenceException
 from selenium.common.exceptions import StaleElementReferenceException
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver import Chrome 
+from selenium.webdriver.chrome.webdriver import WebDriver
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from webdriver_manager.chrome import ChromeDriverManager 
 from fake_useragent import UserAgent
 from time import sleep
 from pretty_html_table import build_table
 import win32com.client as win32
-from FuncsForSPO.functions_for_py import transforma_lista_em_string
+from FuncsForSPO.functions_for_py import cria_dir_no_dir_de_trabalho_atual, cria_o_ultimo_diretorio_do_arquivo, faz_log, transforma_lista_em_string
 from FuncsForSPO.functions_re import extrair_email
 
 def url_atual(driver) -> str:
@@ -207,6 +215,65 @@ def espera_elemento_ficar_visivel(driver, wdw, locator: tuple) -> WebElement|Non
     """
     element = driver.find_element(*locator)
     return wdw.until(EC.visibility_of(element))
+
+
+def baixa_pdf_via_base64_headless_only(driver: WebDriver, file_pdf_with_extension: str='MyPDF.pdf', locator: tuple=(By.CSS_SELECTOR, 'html')):
+    """
+    ## Funciona somente com headless!
+    é necessário que o driver já esteja aberto, passando somente o locator que deseja converter para pdf
+    
+        creditos
+        https://stackoverflow.com/questions/66682962/headless-chrome-webdriver-issue-after-printing-the-web-page
+    Args:
+        file_pdf_with_extension (str, optional): _description_. Defaults to 'MyPDF.pdf'.
+        locator (tuple, optional): _description_. Defaults to (By.CSS_SELECTOR, 'html').
+
+    Raises:
+        ValueError: _description_
+    """
+    FILE_PDF = os.path.abspath(file_pdf_with_extension)
+    element = driver.find_element(*locator)
+    ActionChains(driver).click(element).click_and_hold().move_by_offset(0, 0).perform()
+
+    element = driver.execute_cdp_cmd(
+        "Page.printToPDF", {"path": 'html-page.pdf', "format": 'A4'})
+    # Importar apenas a função b64decode do módulo base64
+
+    # Defina a string Base64 do arquivo PDF
+    b64 = element['data']
+
+    # Decode the Base64 string, making sure that it contains only valid characters
+    bytes = b64decode(b64, validate=True)
+
+    # Execute uma validação básica para garantir que o resultado seja um arquivo PDF válido
+    # Estar ciente! O número mágico (assinatura do arquivo) não é uma solução 100% confiável para validar arquivos PDF
+    #Além disso, se você obtiver Base64 de uma fonte não confiável, deverá higienizar o conteúdo do PDF
+    if bytes[0:4] != b'%PDF':
+        raise ValueError('Missing the PDF file signature')
+
+    # Write the PDF contents to a local file
+    try:
+        with open(FILE_PDF, 'wb') as f:
+            f.write(bytes)
+    except FileNotFoundError:
+        cria_o_ultimo_diretorio_do_arquivo(FILE_PDF)
+        with open(FILE_PDF, 'wb') as f:
+            f.write(bytes)
+
+
+def verifica_se_esta_conectado_na_vpn(ping_host :str):
+    from subprocess import getoutput
+    PING_HOST = ping_host
+    """O método verificará por ping se está conectado no ip da VPN"""
+
+    faz_log('Verificando se VPN está ativa pelo IP enviado no config.ini')
+    
+    output = getoutput(f'ping {PING_HOST} -n 1')  # -n 1 limita a saída
+    if 'Esgotado o tempo' in output or 'time out' in output:
+        faz_log('VPN NÃO CONECTADA!', 'w')
+    else:
+        faz_log("VPN conectada com sucesso!")
+
 
 
 def espera_elemento_ficar_visivel_ativo_e_clicavel(driver, wdw, locator: tuple) -> WebElement|None:

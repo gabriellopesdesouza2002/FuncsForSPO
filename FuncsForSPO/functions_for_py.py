@@ -931,6 +931,57 @@ def retorna_data_e_hora_a_frente(dias_a_frente: int, sep: str='/') -> str:
     return f'{dia_futuro} {hora_futuro}'
 
 
+def adiciona_no_inicio_de_string(string:str, add_in: str, print_exit: bool=False):
+    """Adiciona uma string no inicio de uma outra string
+
+    Args:
+        string (str): String que deseja ter algo na frente
+        add_in (str): A string que será adicionada na frente da string
+        print_exit (bool, optional): Da um print no valor pronto. Defaults to False.
+
+    Returns:
+        _type_: _description_
+    """
+    if print_exit:
+        print(add_in+string[:])
+    return add_in+string[:]
+
+
+def recupera_arquivos_xlsx_de_uma_pasta(dir: str) -> list[str]:
+    """Retorna uma lista somente com os arquivos que contenham .xlsx
+
+    Args:
+        dir (str): Caminho relativo do diretório que tem o(s) arquivo(s) .xlsx
+
+    Returns:
+        list[str]: Lista com todos os arquivos .xlsx (com o caminho absoluto)
+    """
+    DIR_PATH = os.path.abspath(dir)
+    FILES = os.listdir(DIR_PATH)
+    return [DIR_PATH + "\\" + f for f in FILES if ".xlsx"]
+
+
+def cria_o_ultimo_diretorio_do_arquivo(path: str,  print_exit :bool=False):
+    """Cria o ultimo diretório de um arquivo
+    Ex: meudir1\meudir2\meudir3\meufile.txt
+        create meudir1\meudir2\meudir3
+    https://stackoverflow.com/questions/3925096/how-to-get-only-the-last-part-of-a-path-in-python
+
+    Args:
+        path (str): caminho absoluto ou relativo do diretório
+    """
+    
+    PATH_ABS = os.path.abspath(path=path)
+    if print_exit:
+        print(os.path.basename(os.path.normpath(PATH_ABS)))
+    arquivo_para_remover =  os.path.basename(os.path.normpath(PATH_ABS))
+    PATH = path.replace(arquivo_para_remover, '')
+    try:
+        os.makedirs(PATH)
+    except FileExistsError:
+        print('Diretório já criado anteriormente...')
+
+
 def retorna_data_a_frente_(dias_a_frente: int, sep: str='/') -> str:
     """Retorna a data e hora com dias a frente da data atual
     ex: 15/06/2002 -> dias_a_frente=3 -> 18/06/2002
