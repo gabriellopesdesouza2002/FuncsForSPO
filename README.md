@@ -21,7 +21,13 @@ de pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By https://github.com/gabriellopesdesouza2002
 
-# Current Version -> 0.0.3.17
+# Current Version -> 0.0.4.0
+
+version==0.0.4.0 -> foi adicionado pacotes para melhor organizar cada modulo, adicionada tambem uma funcao que pode deletar um diretorio, com ou sem arquivos
+
+version==0.0.3.19 -> funcao que verifica por meio de ping se esta conectado com o ip, pode ser utilizado para verificar se esta conectado na vpn
+
+version==0.0.3.18 -> adicionada 3 funcoes para trabalhar com conexao ftp, download de arquivo, upload de arquivo e alternancia de permissoes dos arquivos
 
 version==0.0.3.17 -> adicionada algumas funções úteis, como remover números de uma string, baixar pdf com o base64 entre outras...
 

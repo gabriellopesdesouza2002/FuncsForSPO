@@ -238,3 +238,31 @@ def extrair_ids(text: str) -> tuple[list, int]:
     if not ids or len(ids) == 0:
         ids = []
     return ids, len(ids)
+
+
+def extrair_nome_do_arquivo_num_path(path_abs: str|list|tuple):
+    """Extrai nome de um arquivo em um caminho absoluto
+    
+    Use:
+        my_path: tuple|list = ('E:\\MyDocs\\.bin\\config.ini', 'E:\\MyDocs\\.bin\\data.db')
+        return -> ['.bin', 'data.db']
+        
+        my_path: str = 'E:\\MyDocs\\.bin\\config.ini'
+        return -> config.ini
+
+    Args:
+        path_abs (str): Caminho Absoluto
+
+    Returns:
+        list|str: um ou mais arquivos
+    """
+    if isinstance(path_abs, list) or isinstance(path_abs, tuple):
+        for path_ in path_abs:
+            files = [f.replace('\\', '') for f in re.findall(r'\\[a-z]*\.\w{2,3}', path_)]
+        return files
+    
+    if isinstance(path_abs, str):
+        pattern = re.findall(r'\\[a-z]*\.\w{2,3}', path_abs)
+        return pattern[-1].replace('\\', '')
+    
+    

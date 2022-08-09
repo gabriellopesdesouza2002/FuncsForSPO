@@ -13,6 +13,7 @@ import gc
 from time import sleep
 import os, sys, psutil, shutil, platform, re, socket, uuid, logging
 import requests
+import subprocess as sp
 ################################## IMPORTS #############################################
 
 def executa_garbage_collector(generation :int=False) -> int:
@@ -39,6 +40,19 @@ def executa_garbage_collector(generation :int=False) -> int:
         return gc.collect(generation)
     else:
         return gc.collect()
+
+
+def verifica_se_esta_conectado_na_vpn(ping_host :str):
+    PING_HOST = ping_host
+    """O método verificará por ping se está conectado no ip da VPN"""
+
+    faz_log('Verificando se VPN está ativa pelo IP enviado no config.ini')
+    
+    output = sp.getoutput(f'ping {PING_HOST} -n 1')  # -n 1 limita a saída
+    if 'Esgotado o tempo' in output or 'time out' in output:
+        faz_log('VPN NÃO CONECTADA!', 'w')
+    else:
+        faz_log("VPN conectada com sucesso!")
 
 
 def transforma_lista_em_string(lista :list):
@@ -182,6 +196,24 @@ def verifica_se_baixou_um_arquivo(path_pasta:str, qtd_arquivos_esperados : int=1
     else:
         faz_log('O arquivo foi baixado...')
         return True
+
+
+def deleta_diretorio(path_dir: str, use_rmtree: bool=True) -> None:
+    """Remove um diretório com ou sem arquivos internos
+
+    Args:
+        path_dir (str): caminho relativo do diretório
+        use_rmtree (bool, optional): Deleta arquivos e outros diretórios dentro do diretório enviado. Defaults to True.
+    """
+    DIRECTORY = os.path.abspath(path_dir)
+    if os.path.exists(DIRECTORY):
+        if use_rmtree:
+            shutil.rmtree(DIRECTORY)
+            sleep(3)
+        else:
+            os.rmdir(DIRECTORY)
+    else:
+        ...
 
 
 def deleta_arquivos_duplicados(path_dir :str, qtd_copyes :int) -> None:

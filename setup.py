@@ -5,7 +5,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 
 setup(
     name='FuncsForSPO',
-    version='0.0.3.17',
+    version='0.0.4.0',
     url='https://github.com/githubpaycon/FuncsForSPO',
     license='MIT License',
     author='Gabriel Lopes de Souza',
@@ -14,7 +14,8 @@ setup(
     author_email='githubpaycon@gmail.com',
     keywords='Funções Para Melhorar Desenvolvimento de Robôs com Selenium',
     description=u'Funções Para Melhorar Desenvolvimento de Robôs com Selenium',
-    packages=['FuncsForSPO'],
+    packages=['FuncsForSPO', 'FuncsForSPO\\fftp', 'FuncsForSPO\\fexceptions', 'FuncsForSPO\\fopenpyxl', 'FuncsForSPO\\fpysimplegui',
+              'FuncsForSPO\\fpython', 'FuncsForSPO\\fregex', 'FuncsForSPO\\fselenium', 'FuncsForSPO\\fsqlite'],
     install_requires=['selenium', 
                       'openpyxl', 
                       'psutil', 
