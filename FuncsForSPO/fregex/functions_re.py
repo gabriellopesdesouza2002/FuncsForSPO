@@ -6,9 +6,23 @@ Se necessário, colaborem =)
 
 ########### imports ##############
 import re
-
-from FuncsForSPO.functions_for_py import faz_log
+from FuncsForSPO.fpython.functions_for_py import faz_log
 ########### imports ##############
+
+def extrair_datas_re_input(text: str, pattern: str) -> str:
+    """### Retorna datas no padrão escolhido
+
+    Args:
+        text (str): texto que tem datas
+        pattern (str): pattern regex -> \d{2}.\d{2}.\d{4}|\d{2} por exemplo
+
+    Returns:
+        list: data(s)
+    """
+    datas = re.findall(pattern, text.lower())    
+    if not datas or len(datas) == 0:
+        datas = []
+    return datas
 
 def extrair_cpfs(text :str) -> list:
     """### Recupera CPF's
@@ -33,6 +47,16 @@ def extrair_cpfs(text :str) -> list:
     if not cpfs or len(cpfs) == 0:
         cpfs = []
     return cpfs
+
+
+def recupera_numero_sem_nenhum_caractere(string):
+    nums_list = re.findall('\d', string)
+
+    num  = ''
+
+    for n in nums_list:
+        num = num+n
+    return num
 
 
 def extrair_email(text: str, case_isensitive: bool=False) -> list:
@@ -238,3 +262,31 @@ def extrair_ids(text: str) -> tuple[list, int]:
     if not ids or len(ids) == 0:
         ids = []
     return ids, len(ids)
+
+
+def extrair_nome_do_arquivo_num_path(path_abs: str|list|tuple):
+    """Extrai nome de um arquivo em um caminho absoluto
+    
+    Use:
+        my_path: tuple|list = ('E:\\MyDocs\\.bin\\config.ini', 'E:\\MyDocs\\.bin\\data.db')
+        return -> ['.bin', 'data.db']
+        
+        my_path: str = 'E:\\MyDocs\\.bin\\config.ini'
+        return -> config.ini
+
+    Args:
+        path_abs (str): Caminho Absoluto
+
+    Returns:
+        list|str: um ou mais arquivos
+    """
+    if isinstance(path_abs, list) or isinstance(path_abs, tuple):
+        for path_ in path_abs:
+            files = [f.replace('\\', '') for f in re.findall(r'\\[a-z]*\.\w{2,3}', path_)]
+        return files
+    
+    if isinstance(path_abs, str):
+        pattern = re.findall(r'\\[a-z]*\.\w{2,3}', path_abs)
+        return pattern[-1].replace('\\', '')
+    
+    

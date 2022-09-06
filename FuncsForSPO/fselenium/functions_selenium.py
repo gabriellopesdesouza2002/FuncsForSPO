@@ -15,8 +15,9 @@ from fake_useragent import UserAgent
 from time import sleep
 from pretty_html_table import build_table
 import win32com.client as win32
-from FuncsForSPO.functions_for_py import cria_dir_no_dir_de_trabalho_atual, cria_o_ultimo_diretorio_do_arquivo, faz_log, transforma_lista_em_string
-from FuncsForSPO.functions_re import extrair_email
+from FuncsForSPO.fpython.functions_for_py import cria_dir_no_dir_de_trabalho_atual, cria_o_ultimo_diretorio_do_arquivo, faz_log, transforma_lista_em_string
+from FuncsForSPO.fregex.functions_re import extrair_email
+from wget import download
 
 def url_atual(driver) -> str:
     """
@@ -74,6 +75,16 @@ def espera_elemento(wdw, locator: tuple) -> WebElement:
     return wdw.until(EC.element_to_be_clickable(locator))
 
 
+def set_zoom_page(driver, zoom: int):
+    """Seta o zoom da página atual
+
+    Args:
+        driver (WebDriver): WebDriver
+        zoom (int): O zoom para setar.
+    """
+    driver.execute_script(f"document.body.style.zoom='{zoom}%'")
+
+
 def espera_2_elementos(wdw, locator1: tuple, locator2 : tuple) -> WebElement:
     """
     ### Função que espera pelo elemento enviado do locator
@@ -88,6 +99,16 @@ def espera_2_elementos(wdw, locator1: tuple, locator2 : tuple) -> WebElement:
     except Exception:
         wdw.until(EC.element_to_be_clickable(locator2))
         
+        
+def download_wget(url: str, out: str | None=None):
+    """Faz download via URL
+
+    Args:
+        url (str): _description_
+        out (str | None, optional): _description_. Defaults to None.
+    """
+    return download(url, out)
+
 
 def espera_elemento_e_envia_send_keys(driver, wdw, string, locator: tuple) -> None:
     """
@@ -105,6 +126,16 @@ def espera_elemento_e_envia_send_keys(driver, wdw, string, locator: tuple) -> No
     except StaleElementReferenceException:
         wdw.until(EC.element_to_be_clickable(locator))
         driver.find_element(*locator).send_keys(string)
+    
+    
+def set_zoom_page(driver, zoom: int):
+    """Seta o zoom da página atual
+
+    Args:
+        driver (WebDriver): WebDriver
+        zoom (int): O zoom para setar.
+    """
+    driver.execute_script(f"document.body.style.zoom='{zoom}%'")
     
     
 def espera_e_retorna_lista_de_elementos(driver, wdw, locator: tuple) -> list:
@@ -572,7 +603,6 @@ def pega_somente_numeros_de_uma_str(string) -> list:
         string (str): String que tem números com letras
     """
     numbers = [int(temp) for temp in string.split() if temp.isdigit()]
-    print(f'A string tem {len(numbers)}, {numbers}')
     return numbers
     
     
@@ -831,9 +861,9 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
-from FuncsForSPO.functions_for_py import *
-from FuncsForSPO.functions_selenium import *
-from FuncsForSPO.exceptions import *
+from FuncsForSPO.fpython.functions_for_py import *
+from FuncsForSPO.fselenium.functions_selenium import *
+from FuncsForSPO.fexceptions.exceptions import *
 import json
 import os
 
@@ -929,7 +959,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from src.tools.functions.functions_for_py import *
 from src.tools.functions.functions_selenium import *
 from src.tools.functions.openpyxl_funcs import *
-from FuncsForSPO.functions.functions_for_py import faz_log
+from FuncsForSPO.fpython.functions_for_py import faz_log
 import json
 import os
 import pandas

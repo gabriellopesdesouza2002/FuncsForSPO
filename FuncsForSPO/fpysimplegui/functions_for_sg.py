@@ -38,7 +38,7 @@ def popup_finalizado(text: str, title: str='Finalizado!', theme: str='Material1'
 def popup_erro(text: str, title: str='Erro', theme: str='Material1', autoclose: int=False, back_color: str='#E0E3E4', icon: str=False):
     sg.theme(theme)
     if isinstance(icon, str): 
-        sg.popup_ok(text,
+        sg.popup_error(text,
                     title=title,
                     auto_close=autoclose,
                     background_color=back_color,
@@ -51,4 +51,18 @@ def popup_erro(text: str, title: str='Erro', theme: str='Material1', autoclose: 
                     background_color=back_color,
                     )
         
-        
+def popup_pergunta(title: str, text: str, theme: str='Material1', autoclose: int=False, back_color: str='#E0E3E4', icon: str=False):
+    sg.theme(theme)
+    if isinstance(icon, str): 
+        return sg.popup_ok_cancel(text,
+                    title=title,
+                    auto_close=autoclose,
+                    background_color=back_color,
+                    icon=resource_path(icon),
+                    )
+    else:
+        return sg.popup_ok_cancel(text,
+                    title=title,
+                    auto_close=autoclose,
+                    background_color=back_color, 
+                    )

@@ -4,15 +4,17 @@
 ### Nesse módulo você achará desde funções simples, até funções complexas que levariam um bom tempo para desenvolve-las.
 
 Para usar esse módulo, será necessário instalar o psutil, pois existe uma função que coleta informações do sistema
--> pip install psutil
+
 """
 
 ################################## IMPORTS #############################################
+from configparser import RawConfigParser
 from datetime import datetime, date
 import gc
 from time import sleep
-import os, sys, psutil, shutil, platform, re, socket, uuid, logging
+import os, sys, shutil, platform, re, socket, uuid, logging
 import requests
+import subprocess as sp
 ################################## IMPORTS #############################################
 
 def executa_garbage_collector(generation :int=False) -> int:
@@ -39,6 +41,19 @@ def executa_garbage_collector(generation :int=False) -> int:
         return gc.collect(generation)
     else:
         return gc.collect()
+
+
+def verifica_se_esta_conectado_na_vpn(ping_host :str):
+    PING_HOST = ping_host
+    """O método verificará por ping se está conectado no ip da VPN"""
+
+    faz_log('Verificando se VPN está ativa pelo IP enviado no config.ini')
+    
+    output = sp.getoutput(f'ping {PING_HOST} -n 1')  # -n 1 limita a saída
+    if 'Esgotado o tempo' in output or 'time out' in output:
+        faz_log('VPN NÃO CONECTADA!', 'w')
+    else:
+        faz_log("VPN conectada com sucesso!")
 
 
 def transforma_lista_em_string(lista :list):
@@ -184,6 +199,24 @@ def verifica_se_baixou_um_arquivo(path_pasta:str, qtd_arquivos_esperados : int=1
         return True
 
 
+def deleta_diretorio(path_dir: str, use_rmtree: bool=True) -> None:
+    """Remove um diretório com ou sem arquivos internos
+
+    Args:
+        path_dir (str): caminho relativo do diretório
+        use_rmtree (bool, optional): Deleta arquivos e outros diretórios dentro do diretório enviado. Defaults to True.
+    """
+    DIRECTORY = os.path.abspath(path_dir)
+    if os.path.exists(DIRECTORY):
+        if use_rmtree:
+            shutil.rmtree(DIRECTORY)
+            sleep(3)
+        else:
+            os.rmdir(DIRECTORY)
+    else:
+        ...
+
+
 def deleta_arquivos_duplicados(path_dir :str, qtd_copyes :int) -> None:
     """Deleta arquivos que contenham (1), (2) até a quantidade desejada
     
@@ -231,6 +264,20 @@ def arquivos_com_caminho_absoluto_do_arquivo(path_dir: str) -> tuple[str]:
     return tuple(f'{os.path.abspath(path_dir)}\\{arquivo}' for arquivo in os.listdir(path_dir))
 
 
+def config_read(path_config: str) -> dict:
+    """Le o config e retorna um dict
+
+    Returns:
+        dict: retorna todas as configurações
+    """
+    configs = RawConfigParser()
+    configs.read(path_config)
+    config = {s: dict(configs.items(str(s))) for s in configs.sections()}  # retorna o config como dict
+    return config
+
+
+def terminal(command):
+    os.system(command)
 
 
 def data_e_hora_atual_como_string(format: str='%d/%m/%y %Hh %Mm %Ss') -> str:
@@ -327,33 +374,33 @@ def times() -> str:
         return 'Boa noite!'
 
 
-def psutil_verifica(nome_do_exe : str) -> bool:
-    # pip install psutil
-    """Função verifica se executavel está ativo ou não
+# def psutil_verifica(nome_do_exe : str) -> bool:
+#     # pip install psutil
+#     """Função verifica se executavel está ativo ou não
 
-    Args:
-        nome_do_exe (str): Nome do executável -> notepad.exe, chrome.exe
-    """
-    exe_ativo = nome_do_exe in (i.name() for i in psutil.process_iter())
+#     Args:
+#         nome_do_exe (str): Nome do executável -> notepad.exe, chrome.exe
+#     """
+#     exe_ativo = nome_do_exe in (i.name() for i in psutil.process_iter())
 
-    while exe_ativo:
-        exe_ativo = nome_do_exe in (i.name() for i in psutil.process_iter())
-        return exe_ativo
-    else:
-        return exe_ativo
+#     while exe_ativo:
+#         exe_ativo = nome_do_exe in (i.name() for i in psutil.process_iter())
+#         return exe_ativo
+#     else:
+#         return exe_ativo
 
 
-def lista_todos_os_processos_atuais() -> object:
-    """Esse é um gerador que mostra todos os processos e executáveis atívos no momento.
+# def lista_todos_os_processos_atuais() -> object:
+#     """Esse é um gerador que mostra todos os processos e executáveis atívos no momento.
     
-    para utilizar (ver os processos em execução):
-        for i in lista_todos_os_processos_atuais():
-            print(i)
+#     para utilizar (ver os processos em execução):
+#         for i in lista_todos_os_processos_atuais():
+#             print(i)
 
-    Returns:
-        object: generator
-    """
-    return (i.name() for i in psutil.process_iter())
+#     Returns:
+#         object: generator
+#     """
+#     return (i.name() for i in psutil.process_iter())
 
 
 def verifica_se_caminho_existe(path_file_or_dir: str) -> bool:
@@ -722,84 +769,84 @@ def resource_path(relative_path) -> str:
     return os.path.join(base_path, relative_path)
 
 
-def pega_infos_da_maquina():
-    """
-    ### Pega os dados da máquina
-    Necessário ter a função faz_log
-    https://stackoverflow.com/questions/3103178/how-to-get-the-system-info-with-python
-    """
-    def get_size(bytes, suffix="B"):
-        """
-        Scale bytes to its proper format
-        e.g:
-            1253656 => '1.20MB'
-            1253656678 => '1.17GB'
-        """
-        factor = 1024
-        for unit in ["", "K", "M", "G", "T", "P"]:
-            if bytes < factor:
-                return f"{bytes:.2f}{unit}{suffix}"
-            bytes /= factor
+# def pega_infos_da_maquina():
+#     """
+#     ### Pega os dados da máquina
+#     Necessário ter a função faz_log
+#     https://stackoverflow.com/questions/3103178/how-to-get-the-system-info-with-python
+#     """
+#     def get_size(bytes, suffix="B"):
+#         """
+#         Scale bytes to its proper format
+#         e.g:
+#             1253656 => '1.20MB'
+#             1253656678 => '1.17GB'
+#         """
+#         factor = 1024
+#         for unit in ["", "K", "M", "G", "T", "P"]:
+#             if bytes < factor:
+#                 return f"{bytes:.2f}{unit}{suffix}"
+#             bytes /= factor
          
             
-    faz_log("==== INFORMAÇÃO DO SISTEMA ====", 'i*')
-    uname = platform.uname()
-    faz_log(f"SISTEMA: {uname.system}", 'i*')
+#     faz_log("==== INFORMAÇÃO DO SISTEMA ====", 'i*')
+#     uname = platform.uname()
+#     faz_log(f"SISTEMA: {uname.system}", 'i*')
 
-    faz_log(f"NOME DO PC: {uname.node}", 'i*')
+#     faz_log(f"NOME DO PC: {uname.node}", 'i*')
 
-    faz_log(f"VERSÃO DO SISTEMA: {uname.release}", 'i*')
+#     faz_log(f"VERSÃO DO SISTEMA: {uname.release}", 'i*')
 
-    faz_log(f"VERSÃO DO SISTEMA (COMPLETO): {uname.version}", 'i*')
-    faz_log(f"ARQUITETURA: {uname.machine}", 'i*')
-    faz_log(f"PROCESSADOR: {uname.processor}", 'i*')
-    faz_log(f"ENDEREÇO IP: {socket.gethostbyname(socket.gethostname())}", 'i*')
-    faz_log(f"ENDEREÇO MAC: {':'.join(re.findall('..', '%012x' % uuid.getnode()))}", 'i*')
+#     faz_log(f"VERSÃO DO SISTEMA (COMPLETO): {uname.version}", 'i*')
+#     faz_log(f"ARQUITETURA: {uname.machine}", 'i*')
+#     faz_log(f"PROCESSADOR: {uname.processor}", 'i*')
+#     faz_log(f"ENDEREÇO IP: {socket.gethostbyname(socket.gethostname())}", 'i*')
+#     faz_log(f"ENDEREÇO MAC: {':'.join(re.findall('..', '%012x' % uuid.getnode()))}", 'i*')
 
-    # print CPU information
-    faz_log("==== INFOS DA CPU ====", 'i*')
-    # number of cores
-    faz_log(f"NÚCLEOS FÍSICOS: {psutil.cpu_count(logical=False)}", 'i*')
-    faz_log(f"TOTAL DE NÚCLEOS: {psutil.cpu_count(logical=True)}", 'i*')
-    # CPU frequencies
-    cpufreq = psutil.cpu_freq()
-    faz_log(f"FREQUÊNCIA MÁXIMA: {cpufreq.max:.2f}Mhz", 'i*')
-    faz_log(f"FREQUÊNCIA MÍNIMA: {cpufreq.min:.2f}Mhz", 'i*')
-    faz_log(f"FREQUÊNCIA ATUAL: {cpufreq.current:.2f}Mhz", 'i*')
-    # CPU usage
-    faz_log("USO DA CPU POR NÚCLEO:", 'i*')
-    for i, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
-        faz_log(f"NÚCLEO {i}: {percentage}%", 'i*')
-    faz_log(f"USO TOTAL DA CPU: {psutil.cpu_percent()}%", 'i*')
+#     # print CPU information
+#     faz_log("==== INFOS DA CPU ====", 'i*')
+#     # number of cores
+#     faz_log(f"NÚCLEOS FÍSICOS: {psutil.cpu_count(logical=False)}", 'i*')
+#     faz_log(f"TOTAL DE NÚCLEOS: {psutil.cpu_count(logical=True)}", 'i*')
+#     # CPU frequencies
+#     cpufreq = psutil.cpu_freq()
+#     faz_log(f"FREQUÊNCIA MÁXIMA: {cpufreq.max:.2f}Mhz", 'i*')
+#     faz_log(f"FREQUÊNCIA MÍNIMA: {cpufreq.min:.2f}Mhz", 'i*')
+#     faz_log(f"FREQUÊNCIA ATUAL: {cpufreq.current:.2f}Mhz", 'i*')
+#     # CPU usage
+#     faz_log("USO DA CPU POR NÚCLEO:", 'i*')
+#     for i, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
+#         faz_log(f"NÚCLEO {i}: {percentage}%", 'i*')
+#     faz_log(f"USO TOTAL DA CPU: {psutil.cpu_percent()}%", 'i*')
 
-    # Memory Information
-    faz_log("==== INFOS DA MEMÓRIA RAM ====", 'i*')
-    # get the memory details
-    svmem = psutil.virtual_memory()
-    faz_log(f"MEMÓRIA RAM TOTAL: {get_size(svmem.total)}", 'i*')
-    faz_log(f"MEMÓRIA RAM DISPONÍVEL: {get_size(svmem.available)}", 'i*')
-    faz_log(f"MEMÓRIA RAM EM USO: {get_size(svmem.used)}", 'i*')
-    faz_log(f"PORCENTAGEM DE USO DA MEMÓRIA RAM: {svmem.percent}%", 'i*')
+#     # Memory Information
+#     faz_log("==== INFOS DA MEMÓRIA RAM ====", 'i*')
+#     # get the memory details
+#     svmem = psutil.virtual_memory()
+#     faz_log(f"MEMÓRIA RAM TOTAL: {get_size(svmem.total)}", 'i*')
+#     faz_log(f"MEMÓRIA RAM DISPONÍVEL: {get_size(svmem.available)}", 'i*')
+#     faz_log(f"MEMÓRIA RAM EM USO: {get_size(svmem.used)}", 'i*')
+#     faz_log(f"PORCENTAGEM DE USO DA MEMÓRIA RAM: {svmem.percent}%", 'i*')
 
-    ## Network information
-    faz_log("==== INFORMAÇÕES DA INTERNET ====", 'i*')
-    ## get all network interfaces (virtual and physical)
-    if_addrs = psutil.net_if_addrs()
-    for interface_name, interface_addresses in if_addrs.items():
-        for address in interface_addresses:
-            faz_log(f"=== Interface: {interface_name} ===", 'i*')
-            if str(address.family) == 'AddressFamily.AF_INET':
-                faz_log(f"  ENDEREÇO IP: {address.address}", 'i*')
-                faz_log(f"  MASCARÁ DE REDE: {address.netmask}", 'i*')
-                faz_log(f"  IP DE TRANSMISSÃO: {address.broadcast}", 'i*')
-            elif str(address.family) == 'AddressFamily.AF_PACKET':
-                faz_log(f"  ENDEREÇO MAC: {address.address}", 'i*')
-                faz_log(f"  MASCARÁ DE REDE: {address.netmask}", 'i*')
-                faz_log(f"  MAC DE TRANSMISSÃO: {address.broadcast}", 'i*')
-    ##get IO statistics since boot
-    net_io = psutil.net_io_counters()
-    faz_log(f"TOTAL DE Bytes ENVIADOS: {get_size(net_io.bytes_sent)}", 'i*')
-    faz_log(f"TOTAL DE Bytes RECEBIDOS: {get_size(net_io.bytes_recv)}", 'i*')
+#     ## Network information
+#     faz_log("==== INFORMAÇÕES DA INTERNET ====", 'i*')
+#     ## get all network interfaces (virtual and physical)
+#     if_addrs = psutil.net_if_addrs()
+#     for interface_name, interface_addresses in if_addrs.items():
+#         for address in interface_addresses:
+#             faz_log(f"=== Interface: {interface_name} ===", 'i*')
+#             if str(address.family) == 'AddressFamily.AF_INET':
+#                 faz_log(f"  ENDEREÇO IP: {address.address}", 'i*')
+#                 faz_log(f"  MASCARÁ DE REDE: {address.netmask}", 'i*')
+#                 faz_log(f"  IP DE TRANSMISSÃO: {address.broadcast}", 'i*')
+#             elif str(address.family) == 'AddressFamily.AF_PACKET':
+#                 faz_log(f"  ENDEREÇO MAC: {address.address}", 'i*')
+#                 faz_log(f"  MASCARÁ DE REDE: {address.netmask}", 'i*')
+#                 faz_log(f"  MAC DE TRANSMISSÃO: {address.broadcast}", 'i*')
+#     ##get IO statistics since boot
+#     net_io = psutil.net_io_counters()
+#     faz_log(f"TOTAL DE Bytes ENVIADOS: {get_size(net_io.bytes_sent)}", 'i*')
+#     faz_log(f"TOTAL DE Bytes RECEBIDOS: {get_size(net_io.bytes_recv)}", 'i*')
     
     
 def limpa_logs():
@@ -958,7 +1005,12 @@ def recupera_arquivos_xlsx_de_uma_pasta(dir: str) -> list[str]:
     """
     DIR_PATH = os.path.abspath(dir)
     FILES = os.listdir(DIR_PATH)
-    return [DIR_PATH + "\\" + f for f in FILES if ".xlsx"]
+    FILES_XLSX = []
+    for fil in FILES:
+        if '.xlsx' in fil:
+            FILES_XLSX.append(DIR_PATH + "\\" + fil)
+    else:
+        return tuple(FILES_XLSX)
 
 
 def cria_o_ultimo_diretorio_do_arquivo(path: str,  print_exit :bool=False):
