@@ -154,6 +154,28 @@ def espera_e_retorna_lista_de_elementos(driver, wdw, locator: tuple) -> list:
     return driver.find_elements(*locator)
 
 
+def download_de_arquivo_com_link_sem_ext_pdf(link: str, driver, back_to_page: bool=False):
+    """Faz download do pdf com o link do href, ele entrará no pdf e dará print_page
+
+    Args:
+        link (str): link do arquivo que deseja baixar
+        driver (WebDriver): Driver
+        back_to_page (bool): Se deseja voltar para a page anterior. Optional, default is False
+
+    Use:
+        >>> link = espera_e_retorna_conteudo_do_atributo_do_elemento_text(self.DRIVER, self.WDW3, 'href', (By.CSS_SELECTOR, 'div>a'))
+        >>> download_de_arquivo_com_link_sem_ext_pdf(link, mywebdriver, False)
+    
+    """
+    driver.get(link)
+    sleep(3)
+    driver.print_page()
+    if back_to_page:
+        driver.back()
+        driver.refresh()
+
+
+
 def espera_e_retorna_lista_de_elementos_text_from_id(driver, wdw, locator: tuple) -> list:
     """
     ### Função espera e retorna uma lista de elementos com id

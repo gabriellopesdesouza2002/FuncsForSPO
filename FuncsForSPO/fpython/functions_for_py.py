@@ -15,6 +15,7 @@ from time import sleep
 import os, sys, shutil, platform, re, socket, uuid, logging
 import requests
 import subprocess as sp
+import json
 ################################## IMPORTS #############################################
 
 def executa_garbage_collector(generation :int=False) -> int:
@@ -731,6 +732,31 @@ def remove_espacos_pontos_virgulas_de_um_int(numero: int, remove_2_ultimos_chars
     if remove_2_ultimos_chars:
         numero = numero[:-2]
     return int(numero)
+
+
+def read_json(file_json: str, enconding: str='utf-8') -> dict:
+    """Lê e retorna um dict de um arquivo json
+
+    Args:
+        file_json (str): File Json
+        enconding (str, optional): Encoding. Defaults to 'utf-8'.
+
+    Returns:
+        dict: Dados do arquivo Json
+    """
+    return json.load(open(file_json, "r", encoding=enconding))
+
+
+def save_json(old_json: dict, file_json: str, enconding: str="utf-8") -> None:
+    """Salva o arquivo json com o dict enviado no parâmetro
+
+    Args:
+        old_json (dict): dict antigo com os dados alterados
+        file_json (str): arquivo que será alterado
+        enconding (str, optional): enconding. Defaults to "utf-8".
+    """
+    with open(file_json, 'w', encoding=enconding) as f:
+        json.dump(old_json, f)
 
 
 def fecha() -> None:

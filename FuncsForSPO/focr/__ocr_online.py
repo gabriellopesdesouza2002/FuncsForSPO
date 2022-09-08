@@ -159,6 +159,8 @@ class GetTextPDF:
             print('Ocorreu um erro!')
             print(str(e))
             
+
+            
     def recupera_texto(self) -> str:
         if self.get_text_into_code:
             file_txts = arquivos_com_caminho_absoluto_do_arquivo(self.__DOWNLOAD_DIR)
