@@ -1,7 +1,5 @@
 # FuncsForSPO - Funcoes para Selenium; Python; Openpyxl; SQLite3
 
-# FuncsForSPO - Funcoes para Selenium; Python; Openpyxl; SQLite3
-
 ## pip install FuncsForSPO | NECESSÁRIO PYTHON 3.10
 
 Aqui voce achara funcoes produzidas para ter maior agilidade nos desenvolvimentos nas tecnologias abaixo:
