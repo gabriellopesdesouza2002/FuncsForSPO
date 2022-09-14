@@ -1,7 +1,5 @@
 # FuncsForSPO - Funcoes para Selenium; Python; Openpyxl; SQLite3
 
-# FuncsForSPO - Funcoes para Selenium; Python; Openpyxl; SQLite3
-
 ## pip install FuncsForSPO | NECESSÁRIO PYTHON 3.10
 
 Aqui voce achara funcoes produzidas para ter maior agilidade nos desenvolvimentos nas tecnologias abaixo:
@@ -19,7 +17,13 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-# Current Version -> 0.0.4.5
+# Current Version -> 0.0.4.8
+
+version==0.0.4.8 -> funcao que faz download de arquivo compartilhado no sharepoint, com selenium
+
+version==0.0.4.7 -> funcoes que mostram todos os dados de um arquivo, conversao de bytes, K, M, G, T, P; funcoes que mostram notificacoes usando winotify
+
+version==0.0.4.6 -> funcoes para tempo, retorna o valor da function time() e outra funcao que retorna o valor do (fim - inicio) / 60  para saber o tempo de execucao
 
 version==0.0.4.5 -> funcao que le um arquivo json e retorna um dict, e outra que recebe um dict e envia para o arquivo json
 

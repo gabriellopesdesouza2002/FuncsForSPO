@@ -5,7 +5,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
 
 setup(
     name='FuncsForSPO',
-    version='0.0.4.5',
+    version='0.0.4.8',
     url='https://github.com/githubpaycon/FuncsForSPO',
     license='MIT License',
     author='Gabriel Lopes de Souza',
@@ -24,6 +24,8 @@ setup(
         'FuncsForSPO\\focr',
         'FuncsForSPO\\fregex',
         'FuncsForSPO\\fselenium',
+        'FuncsForSPO\\fselenium',
+        'FuncsForSPO\\fwinotify',
         'FuncsForSPO\\fsqlite'
         ],
     install_requires=[
@@ -38,6 +40,7 @@ setup(
         'PyInstaller',
         'pywin32-ctypes',
         'macholib',
-        'wget'
+        'wget',
+        'winotify'
         ],
     )

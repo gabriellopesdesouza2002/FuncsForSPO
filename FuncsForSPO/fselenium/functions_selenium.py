@@ -1,4 +1,5 @@
 from base64 import b64decode
+import json
 import os
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
@@ -153,6 +154,139 @@ def espera_e_retorna_lista_de_elementos(driver, wdw, locator: tuple) -> list:
     wdw.until(EC.element_to_be_clickable(locator))
     return driver.find_elements(*locator)
 
+def download_de_arquivo_em_sharepoint(headless, pasta_de_download_e_print, url_file, email, passwd):
+    """de uma forma bem grotesca fazendo um download de um arquivo compartilhado
+    pode ser utilizado para arquivos que tem que ter o navegador aberto para fazer o download
+
+    Args:
+        headless (bool): executar como headless
+        pasta_de_download_e_print (str): local de download
+        pasta_de_download_e_print (url): url para dar get
+        pasta_de_download_e_print (int|float): tempo para esperar na Thread atual
+    """
+    from selenium.webdriver import Chrome
+    from selenium.webdriver.chrome.options import Options as ChromeOptions
+    from selenium.webdriver.chrome.service import Service
+    from selenium.webdriver.support.wait import WebDriverWait
+    from webdriver_manager.chrome import ChromeDriverManager
+    import json
+    import shutil
+    
+    # pasta de download como relativa, pois cria no dir de trabalho atual
+    # --- CHROME OPTIONS --- #
+    options = ChromeOptions()
+
+    # --- PATH BASE DIR --- #
+    if os.path.exists(pasta_de_download_e_print):
+        shutil.rmtree(pasta_de_download_e_print)
+        sleep(1)
+        DOWNLOAD_DIR = cria_dir_no_dir_de_trabalho_atual(dir=pasta_de_download_e_print, print_value=False, criar_diretorio=True)
+    else:        
+        DOWNLOAD_DIR = cria_dir_no_dir_de_trabalho_atual(dir=pasta_de_download_e_print, print_value=False, criar_diretorio=True)
+
+    SETTINGS_SAVE_AS_PDF = {
+        "recentDestinations": [
+            {
+                "id": "Save as PDF",
+                "origin": "local",
+                "account": ""
+            }
+        ],
+        "selectedDestinationId": "Save as PDF",
+        "version": 2,
+    }
+
+    PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(SETTINGS_SAVE_AS_PDF),
+                "savefile.default_directory":  f"{DOWNLOAD_DIR}",
+                "download.default_directory":  f"{DOWNLOAD_DIR}",
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": True}
+
+    options.add_experimental_option('prefs', PROFILE)
+
+    options.add_experimental_option(
+        "excludeSwitches", ["enable-logging"])
+    if headless:
+        options.add_argument('--headless')
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-webgl")
+        options.add_argument('--disable-gpu')
+    options.add_argument('--kiosk-printing')
+    options.add_argument("--start-maximized")
+
+    service = Service(executable_path=ChromeDriverManager().install())
+
+    DRIVER = Chrome(service=service, options=options)
+    DRIVER.maximize_window()
+    WDW = WebDriverWait(DRIVER, 5)
+    try:
+        DRIVER.get(url_file)
+        
+        faz_log(f'Enviando Usuário...')
+        try:
+            espera_elemento_e_envia_send_keys(DRIVER, WDW, email, (By.CSS_SELECTOR, '#i0116'))
+        except TimeoutException:
+            try:
+                espera_elemento_e_envia_send_keys(DRIVER, WDW, email, (By.CSS_SELECTOR, 'input[data-report-event*="Signin_Email"]'))
+            except TimeoutException:
+                espera_elemento_e_envia_send_keys(DRIVER, WDW, email, (By.CSS_SELECTOR, 'input[name*="loginfmt"]'))
+
+        # clica em Avançar
+        try:
+            espera_elemento_disponivel_e_clica(WDW, (By.CSS_SELECTOR, '#idSIButton9'))
+        except TimeoutException:
+            espera_elemento_disponivel_e_clica(WDW, (By.CSS_SELECTOR, 'input[data-report-event*="Submit"]'))
+
+        # Envia _SENHA
+        faz_log(f'Enviando Senha Elaw...')
+        try:
+            espera_elemento_disponivel_e_clica(WDW, (By.CSS_SELECTOR, 'div[role="button"]'))
+        except TimeoutException:
+            ...
+        try:
+            espera_elemento_e_envia_send_keys(DRIVER, WDW, passwd, (By.CSS_SELECTOR, '#i0118'))
+        except TimeoutException:
+            try:
+                espera_elemento_e_envia_send_keys(DRIVER, WDW, passwd, (By.CSS_SELECTOR, 'input[type="password"]'))
+            except TimeoutException:
+                espera_elemento_e_envia_send_keys(DRIVER, WDW, passwd, (By.CSS_SELECTOR, 'input[data-bind*="password"]'))
+        except StaleElementReferenceException:
+            espera_elemento_e_envia_send_keys(DRIVER, WDW, passwd, (By.CSS_SELECTOR, '#i0118'))
+
+        # clica em Entrar
+        faz_log(f'Clicando em "Entrar"...')
+        try:
+            espera_elemento_disponivel_e_clica(WDW, (By.CSS_SELECTOR, '#idSIButton9'))
+        except TimeoutException:
+            espera_elemento_disponivel_e_clica(WDW, (By.CSS_SELECTOR, 'input[data-report-event*="Submit"]'))
+
+        # clica em Sim
+        faz_log(f'Clicando em "Sim"...')
+        try:
+            espera_elemento_disponivel_e_clica(WebDriverWait(DRIVER, 10), (By.CSS_SELECTOR, '#idSIButton9'))
+        except TimeoutException:
+            espera_elemento_disponivel_e_clica(WebDriverWait(DRIVER, 10), (By.CSS_SELECTOR, 'input[data-report-event*="Submit"]'))
+            
+        baixou = False
+        while baixou == False:
+            list_dir = os.listdir(pasta_de_download_e_print)
+            if len(list_dir) >= 1:
+                list_dir = os.listdir(pasta_de_download_e_print)
+                for i in list_dir:
+                    if '.crdownload' in i:
+                        list_dir = os.listdir(pasta_de_download_e_print)
+                        baixou = False
+                    else:
+                        list_dir = os.listdir(pasta_de_download_e_print)
+                        baixou = True
+            else:
+                list_dir = os.listdir(pasta_de_download_e_print)
+                baixou = False
+    except TimeoutException:
+        DRIVER.quit()
+        download_de_arquivo_em_sharepoint(headless, pasta_de_download_e_print, url_file, email, passwd)
+            
 
 def download_de_arquivo_com_link_sem_ext_pdf(link: str, driver, back_to_page: bool=False):
     """Faz download do pdf com o link do href, ele entrará no pdf e dará print_page
@@ -163,7 +297,7 @@ def download_de_arquivo_com_link_sem_ext_pdf(link: str, driver, back_to_page: bo
         back_to_page (bool): Se deseja voltar para a page anterior. Optional, default is False
 
     Use:
-        >>> link = espera_e_retorna_conteudo_do_atributo_do_elemento_text(self.DRIVER, self.WDW3, 'href', (By.CSS_SELECTOR, 'div>a'))
+        >>> link = espera_e_retorna_conteudo_do_atributo_do_elemento_text(DRIVER, WDW3, 'href', (By.CSS_SELECTOR, 'div>a'))
         >>> download_de_arquivo_com_link_sem_ext_pdf(link, mywebdriver, False)
     
     """
@@ -520,7 +654,7 @@ def volta_paginas(driver, qtd_pages_para_voltar : int=1, espera_ao_mudar=0) -> N
         espera_ao_mudar (int or float, optional): Se você quer esperar um tempo para voltar uma página. O padrão é 0.
         
     Uso:
-        volta_paginas(driver=self.chrome, qtd_pages_para_voltar=3, espera_ao_mudar=1)
+        volta_paginas(driver=chrome, qtd_pages_para_voltar=3, espera_ao_mudar=1)
     """
     if espera_ao_mudar == 0:
         for back in range(qtd_pages_para_voltar):
@@ -542,7 +676,7 @@ def volta_paginas(driver, qtd_pages_para_voltar : int=1, espera_ao_mudar=0) -> N
 
 
 # def muda_p_alerta_e_clica_em_dismiss(self):
-    # alerta = self.chrome.switch_to.alert
+    # alerta = chrome.switch_to.alert
     # alerta.dismiss()
 
     
@@ -893,12 +1027,12 @@ import os
 class Bot:    
     def __init__(self, headless) -> None:
         # --- CHROME OPTIONS --- #
-        self._options = webdriver.ChromeOptions()
+        options = webdriver.ChromeOptions()
         
         
         # --- PATH BASE DIR --- #
-        self.__DOWNLOAD_DIR = pega_caminho_atual_e_concatena_novo_dir(dir='base', print_value=False, criar_diretorio=True)
-        self._SETTINGS_SAVE_AS_PDF = {
+        DOWNLOAD_DIR = pega_caminho_atual_e_concatena_novo_dir(dir='base', print_value=False, criar_diretorio=True)
+        SETTINGS_SAVE_AS_PDF = {
                     "recentDestinations": [
                         {
                             "id": "Save as PDF",
@@ -911,49 +1045,49 @@ class Bot:
                 }
 
     
-        self._PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(self._SETTINGS_SAVE_AS_PDF),
-                "savefile.default_directory":  f"{self.__DOWNLOAD_DIR}",
-                "download.default_directory":  f"{self.__DOWNLOAD_DIR}",
+        PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(SETTINGS_SAVE_AS_PDF),
+                "savefile.default_directory":  f"{DOWNLOAD_DIR}",
+                "download.default_directory":  f"{DOWNLOAD_DIR}",
                 "download.prompt_for_download": False,
                 "download.directory_upgrade": True,
                 "safebrowsing.enabled": True}
             
-        self._options.add_experimental_option('prefs', self._PROFILE)
+        options.add_experimental_option('prefs', PROFILE)
         
-        self._options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        options.add_experimental_option("excludeSwitches", ["enable-logging"])
         if headless == 'True':
-            self._options.add_argument('--headless')
-        self._options.add_argument("--disable-print-preview")
-        self._options.add_argument("--disable-web-security")
-        self._options.add_argument("--allow-running-insecure-content")
-        self._options.add_argument("--disable-extensions")
-        self._options.add_argument("--start-maximized")
-        self._options.add_argument("--no-sandbox")
-        self._options.add_argument("--disable-setuid-sandbox")
-        self._options.add_argument("--disable-infobars")
-        self._options.add_argument("--disable-webgl")
-        self._options.add_argument("--disable-popup-blocking")
-        self._options.add_argument('--disable-gpu')
-        self._options.add_argument('--disable-software-rasterizer')
-        self._options.add_argument('--no-proxy-server')
-        self._options.add_argument("--proxy-server='direct://'")
-        self._options.add_argument('--proxy-bypass-list=*')
-        self._options.add_argument('--disable-dev-shm-usage')
-        self._options.add_argument('--block-new-web-contents')
-        self._options.add_argument('--incognito')
-        self._options.add_argument('–disable-notifications')
-        self._options.add_argument('--suppress-message-center-popups')
+            options.add_argument('--headless')
+        options.add_argument("--disable-print-preview")
+        options.add_argument("--disable-web-security")
+        options.add_argument("--allow-running-insecure-content")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--start-maximized")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-setuid-sandbox")
+        options.add_argument("--disable-infobars")
+        options.add_argument("--disable-webgl")
+        options.add_argument("--disable-popup-blocking")
+        options.add_argument('--disable-gpu')
+        options.add_argument('--disable-software-rasterizer')
+        options.add_argument('--no-proxy-server')
+        options.add_argument("--proxy-server='direct://'")
+        options.add_argument('--proxy-bypass-list=*')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument('--block-new-web-contents')
+        options.add_argument('--incognito')
+        options.add_argument('–disable-notifications')
+        options.add_argument('--suppress-message-center-popups')
         
-        self.__service = Service(ChromeDriverManager().install())
+        service = Service(ChromeDriverManager().install())
         
     def instance_chrome(self):
-        self.DRIVER = Chrome(service=self.__service, options=self._options)
-        self.WDW3 = WebDriverWait(self.DRIVER, timeout=3)
-        self.DRIVER.maximize_window()
-        return self.DRIVER
+        DRIVER = Chrome(service=service, options=options)
+        WDW3 = WebDriverWait(DRIVER, timeout=3)
+        DRIVER.maximize_window()
+        return DRIVER
 
     def quit_web(self):
-        self.DRIVER.quit()
+        DRIVER.quit()
 """
 
 ###########################################################
@@ -992,19 +1126,19 @@ from src.tools.exceptions.exceptions import *
 class Bot:    
     def __init__(self, configs):
         # --- PATH BASE DIR --- #
-        # self.__PATH_BASE_DIR = os.path.abspath(r".\base")
+        # PATH_BASE_DIR = os.path.abspath(r".\base")
 
         # --- CONFIG.INI SETTINGS --- #
-        self.config = configs
-        self._URL = self.config['SECTION']['site']
-        self._TIMEOUT = self.config['SECTION']['tempo_para_achar_elementos']
-        self._HEADLESS = self.config['SECTION']['headless']
-        self._USUARIO = self.config['SECTION']['usuario']
-        self._SENHA = self.config['SECTION']['senha']
+        config = configs
+        URL = config['SECTION']['site']
+        TIMEOUT = config['SECTION']['tempo_para_achar_elementos']
+        HEADLESS = config['SECTION']['headless']
+        USUARIO = config['SECTION']['usuario']
+        SENHA = config['SECTION']['senha']
         
         # --- CHROME OPTIONS --- #
-        self._options = webdriver.ChromeOptions()
-        self._SETTINGS_SAVE_AS_PDF = {
+        options = webdriver.ChromeOptions()
+        SETTINGS_SAVE_AS_PDF = {
                         "recentDestinations": [
                             {
                                 "id": "Save as PDF",
@@ -1016,42 +1150,42 @@ class Bot:
                         "version": 2,
                     }
 
-        self._PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(self._SETTINGS_SAVE_AS_PDF),
-                "savefile.default_directory":  f"{self.__DOWNLOAD_DIR}",
-                "download.default_directory":  f"{self.__DOWNLOAD_DIR}",
+        PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(SETTINGS_SAVE_AS_PDF),
+                "savefile.default_directory":  f"{DOWNLOAD_DIR}",
+                "download.default_directory":  f"{DOWNLOAD_DIR}",
                 "download.prompt_for_download": False,
                 "download.directory_upgrade": True,
                 "safebrowsing.enabled": True}
                 
-        self._options.add_experimental_option('prefs', self._PROFILE)
-        self._options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        if self._HEADLESS == 'True':
-            self._options.add_argument('--headless')
-        self._options.add_argument("--disable-print-preview")
-        self._options.add_argument("--disable-web-security")
-        self._options.add_argument("--allow-running-insecure-content")
-        self._options.add_argument("--disable-extensions")
-        self._options.add_argument("--start-maximized")
-        self._options.add_argument("--no-sandbox")
-        self._options.add_argument("--disable-setuid-sandbox")
-        self._options.add_argument("--disable-infobars")
-        self._options.add_argument("--disable-webgl")
-        self._options.add_argument("--disable-popup-blocking")
-        self._options.add_argument('--disable-gpu')
-        self._options.add_argument('--disable-software-rasterizer')
-        self._options.add_argument('--no-proxy-server')
-        self._options.add_argument("--proxy-server='direct://'")
-        self._options.add_argument('--proxy-bypass-list=*')
-        self._options.add_argument('--disable-dev-shm-usage')
+        options.add_experimental_option('prefs', PROFILE)
+        options.add_experimental_option("excludeSwitches", ["enable-logging"])
+        if HEADLESS == 'True':
+            options.add_argument('--headless')
+        options.add_argument("--disable-print-preview")
+        options.add_argument("--disable-web-security")
+        options.add_argument("--allow-running-insecure-content")
+        options.add_argument("--disable-extensions")
+        options.add_argument("--start-maximized")
+        options.add_argument("--no-sandbox")
+        options.add_argument("--disable-setuid-sandbox")
+        options.add_argument("--disable-infobars")
+        options.add_argument("--disable-webgl")
+        options.add_argument("--disable-popup-blocking")
+        options.add_argument('--disable-gpu')
+        options.add_argument('--disable-software-rasterizer')
+        options.add_argument('--no-proxy-server')
+        options.add_argument("--proxy-server='direct://'")
+        options.add_argument('--proxy-bypass-list=*')
+        options.add_argument('--disable-dev-shm-usage')
         
-        self.__service = Service(ChromeDriverManager().install())
-        self.CHROME = Chrome(service=self.__service, options=self._options)
-        self.WDW = WebDriverWait(self.CHROME, timeout=int(self._TIMEOUT))
-        self.WDW3 = WebDriverWait(self.CHROME, timeout=3)
-        self.CHROME.maximize_window()
+        service = Service(ChromeDriverManager().install())
+        CHROME = Chrome(service=service, options=options)
+        WDW = WebDriverWait(CHROME, timeout=int(TIMEOUT))
+        WDW3 = WebDriverWait(CHROME, timeout=3)
+        CHROME.maximize_window()
         
         # --- READ BASE --- #
-        self._DADOS_BASE = self.le_base()
+        DADOS_BASE = le_base()
 """
 
 #######################################################################################################

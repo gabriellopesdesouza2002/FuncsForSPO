@@ -13,8 +13,10 @@ from datetime import datetime, date
 import gc
 from time import sleep
 import os, sys, shutil, platform, re, socket, uuid, logging
+import time
 import requests
 import subprocess as sp
+from time import time
 import json
 ################################## IMPORTS #############################################
 
@@ -747,6 +749,107 @@ def read_json(file_json: str, enconding: str='utf-8') -> dict:
     return json.load(open(file_json, "r", encoding=enconding))
 
 
+def convert_bytes(tamanho: int|float):
+    """Converte os bytes para
+    >>> B = Byte
+
+    >>> K = Kilo
+
+    >>> M = Mega
+
+    >>> G = Giga
+
+    >>> T = Tera
+
+    >>> P = Peta
+
+    
+    ### Utiliza-se a base 1024 ao invés de 1000
+
+    Use:
+        >>> tamanho_do_arquivo_em_bytes = os.path.getsize(C:\\MeuArquivo.txt)
+        >>> print(tamanho_do_arquivo_em_bytes)
+        >>>> 3923 
+        >>> print(convert_bytes(tamanho_do_arquivo))
+        >>>> '3.83 K'
+
+    Args:
+        tamanho (int|float): Tamanho do arquivo em bytes, pode ser utilizado o os.path.getsize(file)
+
+    Returns:
+        str: Valor do tamanho em B; K; M; G; T; P -> 
+    """
+    base = 1024
+    kilo = base # K
+    mega = base ** 2 # M
+    giga = base ** 3 # G
+    tera = base ** 4 # T
+    peta = base ** 5 # P
+    
+    # se o tamanho é menor que kilo (K) é Byte
+    # se o tamanho é menor que mega (M) é Kb
+    # se o tamanho é menor que giga (G) é MB e assim por diante
+    
+    if isinstance(tamanho, (int, float)):
+        pass
+    else:
+        print('Tentando converter o valor do parâmetro tamanho...')
+        try:
+            tamanho = float(tamanho)
+        except ValueError as e:
+            if 'could not convert string to float' in str(e):
+                print(f'Não foi possível converter o tamanho ++ {tamanho} ++ para float!')
+                return 'ValueError'
+    if tamanho < kilo:
+        tamanho = tamanho
+        texto = 'B'
+    elif tamanho < mega:
+        tamanho /= kilo
+        texto = 'K'
+    elif tamanho < giga:
+        tamanho /= mega
+        texto = 'M'
+    elif tamanho < tera:
+        tamanho /= giga
+        texto = 'G'
+    elif tamanho < peta:
+        tamanho /= tera
+        texto = 'T'
+    else:
+        tamanho /= peta
+        texto = 'P'
+        
+    tamanho = round(tamanho, 2)
+    
+    return f'{tamanho} {texto}'.replace('.', ',')
+
+
+def time_now() -> float:
+    """time() -> floating point number
+
+    Returns:
+        float: Return the current time in seconds since the Epoch. Fractions of a second may be present if the system clock provides them.
+    """
+    return time()
+
+def retorna_o_tempo_decorrido(init: float|int, end: float|int, format: bool=True):
+    """Retorna a expressão de (end - init) / 60
+
+    Args:
+        init (float | int): tempo de inicio da funcao, classe ou bloco
+        end (float | int): tempo de finalizacao da funcao, classe ou bloco
+        format (bool, optional): se deseja formatar por exemplo para 0.10 ou não. Defaults to True.
+
+    Returns:
+        float|int: Valor do tempo total de execução
+    """
+    result = (end - init) / 60
+    if format:
+        return f'{result:.2f}'
+    else:
+        return result
+        
+
 def save_json(old_json: dict, file_json: str, enconding: str="utf-8") -> None:
     """Salva o arquivo json com o dict enviado no parâmetro
 
@@ -1067,3 +1170,56 @@ def retorna_data_a_frente_(dias_a_frente: int, sep: str='/') -> str:
     hj = date.today()
     futuro = date.fromordinal(hj.toordinal() + dias_a_frente)  # hoje + 3# dias
     return futuro.strftime(f'%d{sep}%m{sep}%Y')
+
+
+def procura_por_arquivos_e_retorna_sobre(dir: str, termo_de_procura: str, mostrar: str='all_path_file'):
+    """Retorna um arquivo e retorna vários dados do arquivo
+    #### Escolha as opções disponíveis:
+    >>> mostrar='all_path_file' # mostra o caminho completo do arquivo
+    >>> mostrar='file_name' # mostra o nome do arquivo (sem ext)
+    >>> mostrar='file_name_with_ext' # mostra o nome do arquivo (com ext)
+    >>> mostrar='ext_file' # mostra a extensão do arquivo (sem o nome)
+    >>> mostrar='size_bytes' # mostra o tamanho do arquivo em bytes (os.path.getsize())
+    >>> mostrar='size' # mostra o tamanho do arquivo convertido em B; K; M; G; T; P
+    
+
+    Args:
+        dir (str): _description_
+        termo_de_procura (str): _description_
+        mostrar (str, optional): _description_. Defaults to 'all_path_file'.
+
+    Returns:
+        _type_: _description_
+    """
+    encontrou = 0
+    for raiz, diretorios, arquivos in os.walk(dir):
+        for arquivo in arquivos:
+            if termo_de_procura in arquivo:
+                try:
+                    caminho_completo_do_arquivo = os.path.join(raiz, arquivo) # une a raiz com o nome do arq
+                    nome_do_arquivo, extensao_do_arquivo = os.path.splitext(arquivo)
+                    tamanho_do_arquivo_em_bytes = os.path.getsize(caminho_completo_do_arquivo)
+                    encontrou += 1
+                    if mostrar == 'all_path_file':
+                        return caminho_completo_do_arquivo
+                    elif mostrar == 'file_name':
+                        return nome_do_arquivo
+                    elif mostrar == 'file_name_with_ext':
+                        return arquivo
+                    elif mostrar == 'ext_file':
+                        return extensao_do_arquivo
+                    elif mostrar == 'size_bytes':
+                        return tamanho_do_arquivo_em_bytes
+                    elif mostrar == 'size':
+                        return convert_bytes(tamanho_do_arquivo_em_bytes)
+                except PermissionError as e:
+                    print(f'Sem permissões... {e}')
+                except FileNotFoundError as e:
+                    print(f'Não encontrado... {e}')
+                except Exception as e:
+                    print(f'Erro desconhecido... {e}')
+    else:
+        if encontrou >= 1:
+            ...
+        else:
+            print('Nenhum arquivo encontrado!')
