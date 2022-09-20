@@ -862,13 +862,25 @@ def save_json(old_json: dict, file_json: str, enconding: str="utf-8") -> None:
         json.dump(old_json, f)
 
 
-def fecha() -> None:
-    """Fecha o programa
+def fecha():
+    """Fecha programa Python
     """
     try:
-        quit()
-    except NameError:
-        pass
+        sys.exit()
+    except Exception:
+        try:
+            quit()
+        except NameError:
+            pass
+
+
+def retorna_home_user() -> str:
+    """Expand ~ and ~user constructions. If user or $HOME is unknown, do nothing.
+    
+    Returns:
+        str: $HOME -> C:\Users\myuser
+    """
+    return os.path.expanduser("~")
 
     
 def fecha_em_x_segundos(qtd_de_segundos_p_fechar : int) -> None:
@@ -883,6 +895,28 @@ def fecha_em_x_segundos(qtd_de_segundos_p_fechar : int) -> None:
         qtd_de_segundos_p_fechar -= 1
         sleep(1)
     fecha()
+    
+    
+def zip_dirs(folders, zip_filename):
+    import os
+    import zipfile
+    """Faz zip de vários diretórios, recursivamente
+    
+
+    Args:
+        folders (list|tuple): folders
+        zip_filename (str): name_file_zip with ``nome do arquivo.zip``
+    """
+    zip_file = zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED)
+
+    for folder in folders:
+        for dirpath, dirnames, filenames in os.walk(folder):
+            for filename in filenames:
+                zip_file.write(
+                    os.path.join(dirpath, filename),
+                    os.path.relpath(os.path.join(dirpath, filename), os.path.join(folders[0], '../..')))
+
+    zip_file.close()
     
     
 def resource_path(relative_path) -> str:
@@ -1172,6 +1206,7 @@ def retorna_data_a_frente_(dias_a_frente: int, sep: str='/') -> str:
     return futuro.strftime(f'%d{sep}%m{sep}%Y')
 
 
+
 def procura_por_arquivos_e_retorna_sobre(dir: str, termo_de_procura: str, mostrar: str='all_path_file'):
     """Retorna um arquivo e retorna vários dados do arquivo
     #### Escolha as opções disponíveis:
@@ -1223,3 +1258,21 @@ def procura_por_arquivos_e_retorna_sobre(dir: str, termo_de_procura: str, mostra
             ...
         else:
             print('Nenhum arquivo encontrado!')
+            
+            
+def splitlines_text(text: str) -> list[str]:
+    """Separa uma string com \\n
+    
+    Use:
+        >>> string = "this is \\nstring example....\\nwow!!!"
+        >>> print(string.splitlines())
+        >>>> ['this is ', 'string example....', 'wow!!!']
+
+
+    Args:
+        text (str): string com \\n
+
+    Returns:
+        list[str]: lista com as strings separadas pelo \\n
+    """
+    return text.splitlines()

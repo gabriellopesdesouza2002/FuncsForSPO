@@ -17,7 +17,9 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-# Current Version -> 0.0.4.8
+# Current Version -> 0.0.4.9
+
+version==0.0.4.9 -> Adicionada funcoes no modulo functions_for_py.py
 
 version==0.0.4.8 -> funcao que faz download de arquivo compartilhado no sharepoint, com selenium
 
