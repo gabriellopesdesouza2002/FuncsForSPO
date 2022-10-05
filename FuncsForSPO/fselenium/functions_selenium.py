@@ -54,6 +54,31 @@ def espera_e_clica_em_varios_elementos(driver, wdw, locator: tuple) -> None:
         elements[i].click()
         
         
+def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave):
+    _LOCAL_DE_DOWNLOAD = os.path.abspath(diretorio_de_download)
+    baixou = False
+    while not baixou:
+        lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+        if len(lista_arquivos) == 0:
+            sleep(2)
+            baixou = False
+            lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+        else:
+            for i in lista_arquivos:
+                if '.crdownload' in i:
+                    sleep(2)
+                    lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+                    baixou = False
+                    continue
+                if palavra_chave in i:
+                    baixou = True
+                    faz_log('Download concluido!')
+                    return True
+                else:
+                    sleep(2)
+                    lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+                    baixou = False
+        
 def espera_elemento_disponivel_e_clica(wdw, locator: tuple) -> None:
     """Espera o elemento ficar disponível para clicar e clica
 
@@ -723,7 +748,7 @@ def espera_input_limpa_e_envia_send_keys_preessiona_esc(driver, wdw, keys : str,
         driver.find_element(*locator).send_keys(keys)
 
     
-def espera_input_limpa_e_envia_send_keys(driver, wdw, keys : str, locator : tuple) -> None:
+def espera_input_limpa_e_envia_send_keys(driver, wdw, keys : str, locator : tuple, click: bool=True) -> None:
     from selenium.common.exceptions import StaleElementReferenceException
     """
     ### Função espera pelo input ou textarea indicado pelo locator, limpa ele e envia os dados
@@ -733,15 +758,18 @@ def espera_input_limpa_e_envia_send_keys(driver, wdw, keys : str, locator : tupl
         wdw (WebDriverWait): WebDriverWait criado em seu código
         keys (str): Sua string para enviar no input ou textarea
         locator (tuple): Tupla que contém a forma e o caminho do elemento (By.CSS_SELECTOR, '#myelementid')
+        click (bool): Clica ou não no elemento
     """
     try:
         wdw.until(EC.element_to_be_clickable(locator))
-        driver.find_element(*locator).click()
+        if click:
+            driver.find_element(*locator).click()
         driver.find_element(*locator).clear()
         driver.find_element(*locator).send_keys(keys)
     except StaleElementReferenceException:
         wdw.until(EC.element_to_be_clickable(locator))
-        driver.find_element(*locator).click()
+        if click:
+            driver.find_element(*locator).click()
         driver.find_element(*locator).clear()
         driver.find_element(*locator).send_keys(keys)
     

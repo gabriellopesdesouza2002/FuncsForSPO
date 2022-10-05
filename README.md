@@ -17,7 +17,15 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-# Current Version -> 0.0.4.9
+# Current Version -> 0.0.4.9.4
+
+version==0.0.4.9.4 -> Funcao que remove acentos usando unidecode, outra que retorna o valor do arquivo, espera um arquivo terminar o download, threading
+
+version==0.0.4.9.3 -> Funcao que faz backup do banco de dados e funcao que retorna o cursor e a connection SQLite3
+
+version==0.0.4.9.2 -> correcao
+
+version==0.0.4.9.1 -> correcao
 
 version==0.0.4.9 -> Adicionada funcoes no modulo functions_for_py.py
 

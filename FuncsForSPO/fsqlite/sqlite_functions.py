@@ -1,3 +1,8 @@
+from sqlite3 import Cursor, Connection
+import sqlite3
+import os
+import shutil
+
 def deletar_tabela_sqlite(cur, table_name) -> None:
     """Deleta uma tabela específica pelo nome dela
 
@@ -17,38 +22,36 @@ def select_all_from_table(cur, table):
     
     cur.execute('SELECT * FROM ?', (table))
     
-def cria_tabela_3_cols(cursor, table_name, cols: dict, primary_key=True, if_not_exists=True) -> None:
-    """Cria uma tabela de 3 colnas
+def faz_backup_do_banco(path_database: str, dir_backup: str) -> None:
+    """Faz backup do banco de dados
+    ## Enviar caminho relativo do db
 
     Args:
-        cursor (_type_): Cursor SQLite3
-        table_name (str): Nome da tabela a ser criada
-        cols (dict): colunas a ser criadas
-        primary_key (bool, optional): Deseja que a tabela seja uma Primary Key. Defaults to True.
-        if_not_exists (bool, optional): Cria a tabela somente se não existir. Defaults to True.
-
-    Raises:
-        KeyError: _description_
+        path_database (str): caminho do banco de dados
+        dir_backup (str): diretorio do banco de dados
     """
-    # Cria uma tabela de 3 colunas (passar somente 3 keys)
-    # nao precisa mandar a coluna id por padrao ela é id INTEGER PRIMARY KEY
-    #  { "COLUNA" : "TIPO DECLARATION AND NOT EXIST..." }
     
-    keys = [key for key in cols]  # desempacota dodos as keys do dict
-    values = [*cols.values()]  # Desempacota todos os valores do dict
+    PATH_DATABASE = os.path.abspath(path_database)
+    DIR_BACKUP = os.path.abspath(dir_backup)
+    PATH_DATABASE_BACKUP = DIR_BACKUP +'\\'+ path_database
     
-    if len(values) == 3 and len(keys) == 3:        
-        if primary_key and if_not_exists:
-            cursor.execute(f'''CREATE TABLE IF NOT EXISTS {table_name} (id INTEGER PRIMARY KEY, {keys[0]} {values[0]}, {keys[1]} {values[1]}, {keys[2]} {values[2]})''')
-            print('Tabela com coluna id do tipo primary key criada')
-        elif if_not_exists:
-            cursor.execute(f'''CREATE TABLE IF NOT EXISTS {table_name} ({keys[0]} {values[0]}, {keys[1]} {values[1]}, {keys[2]} {values[2]})''')
-            print('Tabela criada')
-        elif not if_not_exists:
-            cursor.execute(f'''CREATE TABLE {table_name} (id INTEGER PRIMARY KEY, {keys[0]} {values[0]}, {keys[1]} {values[1]}, {keys[2]} {values[2]})''')
-            print('Tabela criada')
-        elif not primary_key and not if_not_exists:
-            cursor.execute(f'''CREATE TABLE {table_name} ({keys[0]} {values[0]}, {keys[1]} {values[1]}, {keys[2]} {values[2]})''')
-            print('Tabela criada')
-    else:
-        raise KeyError(f'Verifique se as chavers estão iguais, pois só há {len(keys)} chaves')
+    if os.path.exists(PATH_DATABASE):
+        if os.path.exists(DIR_BACKUP):
+            shutil.copy2(PATH_DATABASE, PATH_DATABASE_BACKUP)
+        else:
+            os.makedirs(DIR_BACKUP)
+            shutil.copy2(PATH_DATABASE, PATH_DATABASE_BACKUP)
+            
+
+def connect_db(db_file: str) -> Cursor | Connection:
+    """Retorna o cursor e a conexão do banco
+
+    Args:
+        db_file (str): caminho do banco de dados
+
+    Returns:
+        Cursor | Connection: Cursor and Connection SQLite3
+    """
+    con = sqlite3.connect(os.path.abspath(db_file))
+    cur = con.cursor()
+    return cur, con

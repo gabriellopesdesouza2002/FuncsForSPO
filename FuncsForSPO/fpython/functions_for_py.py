@@ -2,23 +2,38 @@
 ## Várias funções para ajudar no desenvolvimento de qualquer aplicação em Python
 
 ### Nesse módulo você achará desde funções simples, até funções complexas que levariam um bom tempo para desenvolve-las.
-
-Para usar esse módulo, será necessário instalar o psutil, pois existe uma função que coleta informações do sistema
-
 """
 
 ################################## IMPORTS #############################################
 from configparser import RawConfigParser
 from datetime import datetime, date
-import gc
 from time import sleep
-import os, sys, shutil, platform, re, socket, uuid, logging
-import time
-import requests
+import os, sys, shutil, platform, re, logging, unicodedata, gc, requests, time, json, threading
 import subprocess as sp
-from time import time
-import json
+from numpy import unicode_
 ################################## IMPORTS #############################################
+
+def remover_acentos(text:str, encoding:str='utf-8'):
+	try:
+		text = unicode_(text, encoding=encoding)
+	except NameError:
+		pass
+	text = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode("utf-8")
+	return str(text)
+
+def getsizefile(path_file:str, return_convet_bytes: bool=False):
+    """
+    Função retorna o valor da função os.path.getsize()
+    
+    Args:
+        path_file (str): O caminho do arquivo relativo
+        return_convet_bytes (str): Converte o valor de bits para  B = Byte K = Kilo M = Mega G = Giga T = Tera P = Peta
+        
+    """
+    FILE_PATH_ABSOLUTE = os.path.getsize(os.path.abspath(path_file))
+    if return_convet_bytes:
+        return convert_bytes(FILE_PATH_ABSOLUTE)
+    return FILE_PATH_ABSOLUTE
 
 def executa_garbage_collector(generation :int=False) -> int:
     """
@@ -53,7 +68,7 @@ def verifica_se_esta_conectado_na_vpn(ping_host :str):
     faz_log('Verificando se VPN está ativa pelo IP enviado no config.ini')
     
     output = sp.getoutput(f'ping {PING_HOST} -n 1')  # -n 1 limita a saída
-    if 'Esgotado o tempo' in output or 'time out' in output:
+    if ('Esgotado o tempo' in output) or ('time out' in output):
         faz_log('VPN NÃO CONECTADA!', 'w')
     else:
         faz_log("VPN conectada com sucesso!")
@@ -151,57 +166,6 @@ def cria_dir_no_dir_de_trabalho_atual(dir: str, print_value: bool=False, criar_d
             os.makedirs(path_new_dir, exist_ok=True) 
         return (path_new_dir)
 
-
-def verifica_se_baixou_um_arquivo(path_pasta:str, qtd_arquivos_esperados : int=1) -> bool:
-    """Retorna True quando achar ao menos um arquivo na pasta com a extensão proposta
-    
-    ## ATENÇÃO: ESTA FUNÇÃO AINDA ESTÁ EM DESENVOLVIMENTO
-    
-    Args:
-        path_pasta (str): caminho da pasta para pesquisar se exite arquivos
-        extensao (str): extenção do arquivo
-        
-    Returns:
-        bool: True caso exista o arquivo; False caso não exista o arquivo
-    """
-    
-    # pega todos os arquivos e pastas do diretório
-    arquivos = os.listdir(os.path.abspath(path_pasta))
-    # pega a qtd de arquivos
-    qtd_arquivos = len(arquivos)
-    tentativas = 5
-    tentativas_count = 1
-    # enquanto a qtd de arquivos for != da quantidade de arquivos esperados
-    while qtd_arquivos != qtd_arquivos_esperados:
-        if tentativas == 0:
-            return False
-        faz_log('O arquivo ainda não foi baixado.')
-        faz_log(f'Existem {qtd_arquivos} atualmente na pasta.')
-        faz_log(f'Tentativa {tentativas_count}')
-
-
-        for arquivo in arquivos:
-            if '.crdownload' in arquivo:
-                os.system('cls')
-                faz_log('Existe um arquivo que está sendo baixado...')
-                sleep(5)
-                arquivos = os.listdir(os.path.abspath(path_pasta))
-                qtd_arquivos = len(arquivos)
-                tentativas -= 1
-                tentativas_count += 1
-                return False
-        else:
-            sleep(3)
-            arquivos = os.listdir(os.path.abspath(path_pasta))
-            qtd_arquivos = len(arquivos)
-            tentativas -= 1
-            tentativas_count += 1
-            return False
-    else:
-        faz_log('O arquivo foi baixado...')
-        return True
-
-
 def deleta_diretorio(path_dir: str, use_rmtree: bool=True) -> None:
     """Remove um diretório com ou sem arquivos internos
 
@@ -224,31 +188,31 @@ def deleta_arquivos_duplicados(path_dir :str, qtd_copyes :int) -> None:
     """Deleta arquivos que contenham (1), (2) até a quantidade desejada
     
     Use:
-        deleta_arquivos_duplicados('dir', 2)
-            dir--|
-
-                    |---File.txt
-                    
-                    |---File (1).txt -> This is deleted!
-                    
-                    |---File (2).txt -> This is deleted!
-                    
-                    |---File (3).txt -> This is not deleted!
+        >>> deleta_arquivos_duplicados('dir', 2)
+         dir--|
+         
+                 |---File.txt -> This is not deleted!
+                 
+                 |---File (1).txt -> This is deleted!
+                 
+                 |---File (2).txt -> This is deleted!
+                 
+                 |---File (3).txt -> This is not deleted!
                 
     
 
     Args:
-        path_dir (str): _description_
+        path_dir (str): Caminho do diretório, relativo
         qtd_copyes (int): quantidade de possíveis arquivos repetidos
     """
     path_downloads = os.path.abspath(path_dir)
     arquivos = os.listdir(path_downloads)
-    if len(arquivos) > 1 or len(arquivos) > 2:
+    if (len(arquivos) > 1):
         copyes = [f'({i})' for i in range(qtd_copyes)]
         print(copyes)
         for copye in copyes:
             for arquivo in arquivos:
-                if copye in arquivo:
+                if (copye in arquivo):
                     print(f'deletando {path_downloads}\\{arquivo}')
                     os.remove(path_downloads+'\\'+arquivo)  
 
@@ -369,42 +333,12 @@ def times() -> str:
     """
     import datetime
     hora_atual = datetime.datetime.now()
-    if hora_atual.hour < 12:
+    if (hora_atual.hour < 12):
         return 'Bom dia!'
-    elif 12 <= hora_atual.hour < 18:
+    elif (12 <= hora_atual.hour < 18):
         return 'Boa tarde!'
     else:
         return 'Boa noite!'
-
-
-# def psutil_verifica(nome_do_exe : str) -> bool:
-#     # pip install psutil
-#     """Função verifica se executavel está ativo ou não
-
-#     Args:
-#         nome_do_exe (str): Nome do executável -> notepad.exe, chrome.exe
-#     """
-#     exe_ativo = nome_do_exe in (i.name() for i in psutil.process_iter())
-
-#     while exe_ativo:
-#         exe_ativo = nome_do_exe in (i.name() for i in psutil.process_iter())
-#         return exe_ativo
-#     else:
-#         return exe_ativo
-
-
-# def lista_todos_os_processos_atuais() -> object:
-#     """Esse é um gerador que mostra todos os processos e executáveis atívos no momento.
-    
-#     para utilizar (ver os processos em execução):
-#         for i in lista_todos_os_processos_atuais():
-#             print(i)
-
-#     Returns:
-#         object: generator
-#     """
-#     return (i.name() for i in psutil.process_iter())
-
 
 def verifica_se_caminho_existe(path_file_or_dir: str) -> bool:
     if os.path.exists(path_file_or_dir):
@@ -412,8 +346,21 @@ def verifica_se_caminho_existe(path_file_or_dir: str) -> bool:
     else:
         return False
 
+def deixa_arquivos_ocultos_ou_nao(path_file_or_dir : str, oculto : bool) -> None:
+    """Deixa arquivos ou diretórios ocultos ou não.
 
-def deixa_arquivos_ocultos_ou_n(path_file_or_dir : str, oculto : bool) -> None:
+    
+    Use:
+        >>> deixa_arquivos_ocultos_ou_nao(r'dir\file.txt', False)
+        file.txt -> visible
+        >>> deixa_arquivos_ocultos_ou_nao(r'dir\file.txt', True)
+        file.txt -> not visible
+
+    Args:
+        path_file_or_dir (str): Arquivo ou diretório que deseja ocultar ou deixar visível
+        oculto (str): Deixa o arquivo ou diretório oculto
+    """
+
     import ctypes
     from stat import FILE_ATTRIBUTE_ARCHIVE
     FILE_ATTRIBUTE_HIDDEN = 0x02
@@ -430,6 +377,7 @@ def deixa_arquivos_ocultos_ou_n(path_file_or_dir : str, oculto : bool) -> None:
 
 
 def fazer_requirements_txt() -> None:
+    """"""
     os.system("pip freeze > requirements.txt")
 
 
@@ -878,7 +826,7 @@ def retorna_home_user() -> str:
     """Expand ~ and ~user constructions. If user or $HOME is unknown, do nothing.
     
     Returns:
-        str: $HOME -> C:\Users\myuser
+        str: $HOME -> C:\\Users\\myuser
     """
     return os.path.expanduser("~")
 
@@ -1174,6 +1122,24 @@ def recupera_arquivos_xlsx_de_uma_pasta(dir: str) -> list[str]:
             FILES_XLSX.append(DIR_PATH + "\\" + fil)
     else:
         return tuple(FILES_XLSX)
+    
+def recupera_arquivos_com_extensao_especifica_em_uma_pasta(dir: str, extensao:str='.xlsx') -> list[str]:
+    """Retorna uma lista somente com os arquivos que contenham .xlsx
+
+    Args:
+        dir (str): Caminho relativo do diretório que tem o(s) arquivo(s) .xlsx
+
+    Returns:
+        list[str]: Lista com todos os arquivos .xlsx (com o caminho absoluto)
+    """
+    DIR_PATH = os.path.abspath(dir)
+    FILES = os.listdir(DIR_PATH)
+    FILES_XLSX = []
+    for fil in FILES:
+        if extensao in fil:
+            FILES_XLSX.append(DIR_PATH + "\\" + fil)
+    else:
+        return tuple(FILES_XLSX)
 
 
 def cria_o_ultimo_diretorio_do_arquivo(path: str,  print_exit :bool=False):
@@ -1276,3 +1242,38 @@ def splitlines_text(text: str) -> list[str]:
         list[str]: lista com as strings separadas pelo \\n
     """
     return text.splitlines()
+
+
+def executa_threading(function_for_execute, args:tuple|bool=False):
+    """
+    Função recebe uma outra função e os seus argumentos em uma tupla, ou não caso não tenha argumentos.
+    
+    ### Teste a sua função antes de colocar aqui! =)
+    
+    Essa é um pequeno resumo do que a classe Thread faz
+    
+    Args:
+        function_for_execute (CALLABLE): Função que será executada em uma Threading
+        args (tuple|False): Tupla com os argumentos, ou False se não tiver nenhum argumento.
+
+    Use:
+        >>> def cria_diretorio(dir_name="diretório"):
+        >>>     try:
+        >>>         os.mkdir(dir_name)
+        >>>         print('diretorio_criado')
+        >>>     except FileExistsError:
+        >>>         pass
+        >>> 
+        >>> print('Não executou a Thread')
+        >>> executa_threading(cria_diretorio, ('meu_diretório',))
+        >>> print('Executou a Thread')
+
+        >>>> Não executou a Thread
+        >>>> diretorio_criado
+        >>>> Executou a Thread
+    """
+    if args == False:
+        x = threading.Thread(target=function_for_execute)
+    else:
+        x = threading.Thread(target=function_for_execute, args=args)
+    x.start()
