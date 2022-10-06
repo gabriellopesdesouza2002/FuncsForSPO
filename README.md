@@ -17,7 +17,9 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-# Current Version -> 0.0.4.9.4
+# Current Version -> 0.0.4.9.5
+
+version==0.0.4.9.5 -> + Funções, vide commits
 
 version==0.0.4.9.4 -> Funcao que remove acentos usando unidecode, outra que retorna o valor do arquivo, espera um arquivo terminar o download, threading
 

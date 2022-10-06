@@ -387,6 +387,20 @@ def limpa_terminal_e_cmd() -> None:
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
+def limpa_diretorio(dir:str):
+    """Limpa diretório(s)
+    
+    Args:
+        dir (str): Caminho do diretório para limpar.
+    """
+    DIR = os.path.abspath(dir)
+    if os.path.exists(DIR):
+        shutil.rmtree(DIR)
+        os.makedirs(DIR)
+    else:
+        os.makedirs(DIR)
+
+
 def print_bonito(string : str, efeito='=', quebra_ultima_linha : bool=True) -> str:
     """Faz um print com separadores
     
