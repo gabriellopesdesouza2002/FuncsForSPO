@@ -792,7 +792,7 @@ def time_now() -> float:
     Returns:
         float: Return the current time in seconds since the Epoch. Fractions of a second may be present if the system clock provides them.
     """
-    return time()
+    return time.time()
 
 def retorna_o_tempo_decorrido(init: float|int, end: float|int, format: bool=True):
     """Retorna a expressão de (end - init) / 60

@@ -19,6 +19,8 @@ Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabri
 
 # Current Version -> 0.0.4.9.5
 
+version==0.0.4.9.6 -> + Funções, para envio de e-mails, Outlook (melhorada) e Gmail. agora e possivel chamar as funcoes via from FuncsForSPO.femails.femails import * por exemplo
+
 version==0.0.4.9.5 -> + Funções, vide commits
 
 version==0.0.4.9.4 -> Funcao que remove acentos usando unidecode, outra que retorna o valor do arquivo, espera um arquivo terminar o download, threading
