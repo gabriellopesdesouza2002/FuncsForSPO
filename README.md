@@ -17,7 +17,11 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-# Current Version -> 0.0.4.9.5
+# Current Version -> 0.0.4.9.8
+
+version==0.0.4.9.8 -> Adicao de varias funcoes
+
+version==0.0.4.9.7 -> melhorias nas funcoes de popup
 
 version==0.0.4.9.6 -> + Funções, para envio de e-mails, Outlook (melhorada) e Gmail. agora e possivel chamar as funcoes via from FuncsForSPO.femails.femails import * por exemplo
 

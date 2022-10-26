@@ -6,6 +6,8 @@ Funções de front-end para PySimpleGUI
 import os
 import sys
 import PySimpleGUI as sg
+import winsound
+
 
 ########## For PySimpleGUI ########
 def resource_path(relative_path):
@@ -19,6 +21,7 @@ def resource_path(relative_path):
 
 
 def popup_finalizado(text: str, title: str='Finalizado!', theme: str='Material1', autoclose: int=False, back_color: str='#E0E3E4', icon: str=False):
+    winsound.MessageBeep()
     sg.theme(theme)
     if isinstance(icon, str): 
         sg.popup_ok(text,
@@ -36,6 +39,8 @@ def popup_finalizado(text: str, title: str='Finalizado!', theme: str='Material1'
         
 
 def popup_erro(text: str, title: str='Erro', theme: str='Material1', autoclose: int=False, back_color: str='#E0E3E4', icon: str=False):
+    winsound.MessageBeep()
+
     sg.theme(theme)
     if isinstance(icon, str): 
         sg.popup_error(text,
@@ -52,6 +57,8 @@ def popup_erro(text: str, title: str='Erro', theme: str='Material1', autoclose: 
                     )
         
 def popup_pergunta(title: str, text: str, theme: str='Material1', autoclose: int=False, back_color: str='#E0E3E4', icon: str=False):
+    winsound.MessageBeep()
+
     sg.theme(theme)
     if isinstance(icon, str): 
         return sg.popup_ok_cancel(text,

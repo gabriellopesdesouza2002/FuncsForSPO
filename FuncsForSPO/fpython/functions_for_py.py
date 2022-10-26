@@ -794,6 +794,41 @@ def time_now() -> float:
     """
     return time.time()
 
+
+def ultimo_dia_do_mes_atual(format: str='%d/%m/%Y'):
+    """Retorna a data com o último dia do mês
+
+    Args:
+        format (str, optional): formato da data. Defaults to '%d/%m/%Y'.
+
+    Use:
+        >>> ultimo_dia_do_mes_atual(format='%d/%m/%Y')
+        >>>> '31/10/2022'
+
+    Returns:
+        str: data no formato
+    """
+    from calendar import mdays
+    from datetime import datetime
+    
+    mes_atual = int(datetime.now().strftime('%m'))
+    
+    ultimo_dia = mdays[mes_atual]
+    mes_atual = datetime.now().month
+    ano_atual = datetime.now().year
+    
+    format_ = datetime.strptime(f'{ultimo_dia}/{mes_atual}/{ano_atual}', '%d/%m/%Y')
+
+    return format_.strftime(format)
+
+def apagar_todos_os_pacotes_pip():
+    """Deleta todos os pacotes do pip instalados no ambiente em que for executado"""
+    os.system("""pip list --format=freeze | %{$_.split('==')[0]} | %{If(($_ -eq "pip") -or ($_ -eq "setuptools") -or ($_ -eq "wheel")) {} Else {$_}} | %{pip uninstall $_ -y}""")
+
+def atualizar_todos_os_pacotes_pip():
+    """Atualiza todos os pacotes pip no ambiente atual (PODE DEMORAR MUITO)"""
+    os.system("""pip freeze | %{$_.split('==')[0]} | %{pip install --upgrade $_}""")
+
 def retorna_o_tempo_decorrido(init: float|int, end: float|int, format: bool=True):
     """Retorna a expressão de (end - init) / 60
 

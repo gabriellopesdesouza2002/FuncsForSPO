@@ -6,7 +6,7 @@ Se necessário, colaborem =)
 
 ########### imports ##############
 import re
-from FuncsForSPO.fpython.functions_for_py import faz_log
+from FuncsForSPO.fpython.functions_for_py import faz_log, pega_somente_numeros
 ########### imports ##############
 
 def extrair_datas_re_input(text: str, pattern: str) -> str:
@@ -289,4 +289,28 @@ def extrair_nome_do_arquivo_num_path(path_abs: str|list|tuple):
         pattern = re.findall(r'\\[a-z]*\.\w{2,3}', path_abs)
         return pattern[-1].replace('\\', '')
     
-    
+def formata_cpf_e_cnpj(nums_cpf_cnpj:str) -> str:
+    """Formata um cpf e um cnpj
+    Exemplo:
+        cpf -> 00000000000 input
+        cpf -> 000.000.000-00 output
+        
+        cnpj -> 00000000000100 input
+        cnpj -> 00.000.000/0001-00 output
+
+    Args:
+        nums_cpf_cnpj (str): cnpj ou cpf
+
+    Raises:
+        IndexError: Quando nao for possível formatar
+
+    Returns:
+        str: cpf ou cnpj formatado
+    """
+    nums_cpf_cnpj = pega_somente_numeros(nums_cpf_cnpj)
+    if len(nums_cpf_cnpj) == 11:
+        return f'{nums_cpf_cnpj[0:3]}.{nums_cpf_cnpj[3:6]}.{nums_cpf_cnpj[6:9]}-{nums_cpf_cnpj[9:]}'
+    elif len(nums_cpf_cnpj) == 14:
+        return f'{nums_cpf_cnpj[0:2]}.{nums_cpf_cnpj[2:5]}.{nums_cpf_cnpj[5:8]}/{nums_cpf_cnpj[8:12]}-{nums_cpf_cnpj[12:]}'
+    else:
+        raise IndexError('len nums_cpf_cnpj != 11 or 14')
