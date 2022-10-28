@@ -16,12 +16,12 @@ from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fselenium.functions_selenium import *
-import tempfile
 import json
 import os
+from platform import platform
 
 class GetTextPDF:    
-    def __init__(self, file_pdf: str, dir_exit: str='output', get_text_into_code: bool=True, headless: bool=True, prints: bool=False) -> str:
+    def __init__(self, file_pdf: str, dir_exit: str='output', get_text_into_code: bool=True, headless: bool=True, prints: bool=False, create_driver: bool=True) -> str:
         """Init
 
         Args:
@@ -29,6 +29,7 @@ class GetTextPDF:
             dir_exit (str, optional): Local de saída do arquivo TXT. Defaults to 'output'.
             headless (bool, optional): executa como headless. Defaults to True.
             get_text_into_code (bool, optional): Retorna o texto do pdf no código. Defaults to True.
+            create_driver (bool, optional): Cria um driver. Defaults to True.
         """
         if isinstance(headless, (bool, int)):
             self.HEADLESS = headless
@@ -100,9 +101,11 @@ class GetTextPDF:
         self._options.add_argument('–disable-notifications')
         self._options.add_argument('--suppress-message-center-popups')
         
-        self.__service = Service(executable_path=ChromeDriverManager().install())
-        
-        self.DRIVER = Chrome(service=self.__service, options=self._options)
+        if create_driver:
+            self.__service = Service(executable_path=ChromeDriverManager().install())
+            self.DRIVER = Chrome(service=self.__service, options=self._options)
+        else:
+            self.DRIVER = Chrome(options=self._options)
 
         # - WebDriverWaits - #
         self.WDW3 = WebDriverWait(self.DRIVER, timeout=3)

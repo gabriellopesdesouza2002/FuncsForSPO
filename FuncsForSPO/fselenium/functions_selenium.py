@@ -972,6 +972,28 @@ def espera_input_limpa_e_envia_send_keys_preessiona_esc_tmb_no_final(driver, wdw
         driver.find_element(*locator).send_keys(keys)
         driver.find_element(*locator).send_keys(Keys.ESCAPE)
 
+
+def recupera_text_de_todo_um_site(url:str, tag_name:str='body', no_escape_sequence:bool=True) -> str:
+    """Recupera o texto de um site, a partir da tag_name enviada
+    
+    Args:
+        url (str): url
+        tag_name (str, optional): tag_name. Defaults to 'body'.
+        no_escape_sequence (bool, optional): remove ou não \\n da página. Defaults to True.
+
+    Returns:
+        str: texto do site ou do elemento
+    """
+    from bs4 import BeautifulSoup
+    import requests
+    r = requests.get(url)
+    soup = BeautifulSoup(r.content, 'html5lib')
+    if no_escape_sequence:
+        return soup.find(tag_name).text.replace('\n', '').replace(u'\xa0', u' ')
+    else:
+        return soup.find(tag_name).text.replace(u'\xa0', u' ')
+
+
 ###########################################################
 ######### Padrão de classe __init__ para projetos #########
 ###########################################################
