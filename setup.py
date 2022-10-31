@@ -6,7 +6,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
     
     setup(
         name='FuncsForSPO',
-        version='0.0.4.9.9.6',
+        version='0.0.4.11',
         url='https://github.com/githubpaycon/FuncsForSPO',
         license='MIT License',
         author='Gabriel Lopes de Souza',

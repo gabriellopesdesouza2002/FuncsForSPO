@@ -16,7 +16,7 @@ from numpy import unicode_
 def remover_acentos(text:str, encoding:str='utf-8'):
 	try:
 		text = unicode_(text, encoding=encoding)
-	except NameError:
+	except Exception:
 		pass
 	text = unicodedata.normalize('NFD', text).encode('ascii', 'ignore').decode("utf-8")
 	return str(text)
@@ -1326,3 +1326,15 @@ def executa_threading(function_for_execute, args:tuple|bool=False):
     else:
         x = threading.Thread(target=function_for_execute, args=args)
     x.start()
+    
+def suporte_para_paths_grandes(dos_path, encoding=None):
+    """
+    Função retorna um path que suporta até 32.760 caracteres
+    
+    https://stackoverflow.com/questions/36219317/pathname-too-long-to-open"""
+    if (not isinstance(dos_path, str) and encoding is not None): 
+        dos_path = dos_path.decode(encoding)
+    path = os.path.abspath(dos_path)
+    if path.startswith(u"\\\\"):
+        return u"\\\\?\\UNC\\" + path[2:]
+    return u"\\\\?\\" + path
