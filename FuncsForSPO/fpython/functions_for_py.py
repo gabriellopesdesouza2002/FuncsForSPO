@@ -926,88 +926,7 @@ def resource_path(relative_path) -> str:
         sys,
         '_MEIPASS',
         os.path.dirname(os.path.abspath(__file__)))
-    return os.path.join(base_path, relative_path)
-
-
-# def pega_infos_da_maquina():
-#     """
-#     ### Pega os dados da máquina
-#     Necessário ter a função faz_log
-#     https://stackoverflow.com/questions/3103178/how-to-get-the-system-info-with-python
-#     """
-#     def get_size(bytes, suffix="B"):
-#         """
-#         Scale bytes to its proper format
-#         e.g:
-#             1253656 => '1.20MB'
-#             1253656678 => '1.17GB'
-#         """
-#         factor = 1024
-#         for unit in ["", "K", "M", "G", "T", "P"]:
-#             if bytes < factor:
-#                 return f"{bytes:.2f}{unit}{suffix}"
-#             bytes /= factor
-         
-            
-#     faz_log("==== INFORMAÇÃO DO SISTEMA ====", 'i*')
-#     uname = platform.uname()
-#     faz_log(f"SISTEMA: {uname.system}", 'i*')
-
-#     faz_log(f"NOME DO PC: {uname.node}", 'i*')
-
-#     faz_log(f"VERSÃO DO SISTEMA: {uname.release}", 'i*')
-
-#     faz_log(f"VERSÃO DO SISTEMA (COMPLETO): {uname.version}", 'i*')
-#     faz_log(f"ARQUITETURA: {uname.machine}", 'i*')
-#     faz_log(f"PROCESSADOR: {uname.processor}", 'i*')
-#     faz_log(f"ENDEREÇO IP: {socket.gethostbyname(socket.gethostname())}", 'i*')
-#     faz_log(f"ENDEREÇO MAC: {':'.join(re.findall('..', '%012x' % uuid.getnode()))}", 'i*')
-
-#     # print CPU information
-#     faz_log("==== INFOS DA CPU ====", 'i*')
-#     # number of cores
-#     faz_log(f"NÚCLEOS FÍSICOS: {psutil.cpu_count(logical=False)}", 'i*')
-#     faz_log(f"TOTAL DE NÚCLEOS: {psutil.cpu_count(logical=True)}", 'i*')
-#     # CPU frequencies
-#     cpufreq = psutil.cpu_freq()
-#     faz_log(f"FREQUÊNCIA MÁXIMA: {cpufreq.max:.2f}Mhz", 'i*')
-#     faz_log(f"FREQUÊNCIA MÍNIMA: {cpufreq.min:.2f}Mhz", 'i*')
-#     faz_log(f"FREQUÊNCIA ATUAL: {cpufreq.current:.2f}Mhz", 'i*')
-#     # CPU usage
-#     faz_log("USO DA CPU POR NÚCLEO:", 'i*')
-#     for i, percentage in enumerate(psutil.cpu_percent(percpu=True, interval=1)):
-#         faz_log(f"NÚCLEO {i}: {percentage}%", 'i*')
-#     faz_log(f"USO TOTAL DA CPU: {psutil.cpu_percent()}%", 'i*')
-
-#     # Memory Information
-#     faz_log("==== INFOS DA MEMÓRIA RAM ====", 'i*')
-#     # get the memory details
-#     svmem = psutil.virtual_memory()
-#     faz_log(f"MEMÓRIA RAM TOTAL: {get_size(svmem.total)}", 'i*')
-#     faz_log(f"MEMÓRIA RAM DISPONÍVEL: {get_size(svmem.available)}", 'i*')
-#     faz_log(f"MEMÓRIA RAM EM USO: {get_size(svmem.used)}", 'i*')
-#     faz_log(f"PORCENTAGEM DE USO DA MEMÓRIA RAM: {svmem.percent}%", 'i*')
-
-#     ## Network information
-#     faz_log("==== INFORMAÇÕES DA INTERNET ====", 'i*')
-#     ## get all network interfaces (virtual and physical)
-#     if_addrs = psutil.net_if_addrs()
-#     for interface_name, interface_addresses in if_addrs.items():
-#         for address in interface_addresses:
-#             faz_log(f"=== Interface: {interface_name} ===", 'i*')
-#             if str(address.family) == 'AddressFamily.AF_INET':
-#                 faz_log(f"  ENDEREÇO IP: {address.address}", 'i*')
-#                 faz_log(f"  MASCARÁ DE REDE: {address.netmask}", 'i*')
-#                 faz_log(f"  IP DE TRANSMISSÃO: {address.broadcast}", 'i*')
-#             elif str(address.family) == 'AddressFamily.AF_PACKET':
-#                 faz_log(f"  ENDEREÇO MAC: {address.address}", 'i*')
-#                 faz_log(f"  MASCARÁ DE REDE: {address.netmask}", 'i*')
-#                 faz_log(f"  MAC DE TRANSMISSÃO: {address.broadcast}", 'i*')
-#     ##get IO statistics since boot
-#     net_io = psutil.net_io_counters()
-#     faz_log(f"TOTAL DE Bytes ENVIADOS: {get_size(net_io.bytes_sent)}", 'i*')
-#     faz_log(f"TOTAL DE Bytes RECEBIDOS: {get_size(net_io.bytes_recv)}", 'i*')
-    
+    return os.path.join(base_path, relative_path)    
     
 def limpa_logs():
     path_logs_dir = os.path.abspath(r'.\logs')
@@ -1338,3 +1257,43 @@ def suporte_para_paths_grandes(dos_path, encoding=None):
     if path.startswith(u"\\\\"):
         return u"\\\\?\\UNC\\" + path[2:]
     return u"\\\\?\\" + path
+
+def formata_para_real(valor:str|float, sigl:bool=False):
+    """
+    Função retorna o número float como real (BRL)
+    
+    É necessário enviar um valor que tenha , na última casa
+    -> 13076,9 ou enviar um valor float
+
+    Use:
+        not sigl
+        >>> formata_para_real(192213.12)
+        >>>> 192.213,12
+        
+        sigl
+        >>> formata_para_real(192213.12, True)
+        >>>> R$ 192.213,12
+
+    Args:
+        valor (str|float): valor que quer converter como real
+        sigl (bool): Coloca a sigla do real na frente
+        
+    Returns:
+        str: valor formatado como real
+    """
+    if valor == '':
+        return
+    if isinstance(valor, float):
+        pass
+    else:
+        try:
+            valor = float(str(valor).replace(',', '.')) # converte valor para float
+        except ValueError:
+            if sigl:
+                return 'R$ '+valor
+            return valor
+    valor = f'{valor:_.2f}'
+    valor = valor.replace('.', ',').replace('_', '.')
+    if sigl:
+        return 'R$ '+valor
+    return valor

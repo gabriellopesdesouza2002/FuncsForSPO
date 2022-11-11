@@ -994,89 +994,107 @@ def recupera_text_de_todo_um_site(url:str, tag_name:str='body', no_escape_sequen
         return soup.find(tag_name).text.replace(u'\xa0', u' ')
 
 
-###########################################################
-######### Padrão de classe __init__ para projetos #########
-###########################################################
+# def foca_no_elemento(driver, locator:tuple):
+    # driver.find_element(locator).send_keys(Keys.)
+
+#################################################################
+######### Padrão de classe base WebDriver para projetos #########
+#################################################################
 
 """
 from selenium.webdriver import Chrome
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import *
 from webdriver_manager.chrome import ChromeDriverManager
 from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fselenium.functions_selenium import *
-from FuncsForSPO.fexceptions.exceptions import *
+from FuncsForSPO.fwinotify.fwinotify import *
+from FuncsForSPO.fregex.functions_re import *
+from src.exceptions.exceptions import *
+import pandas as pd
 import json
 import os
 
+URL_SUPORTE = f'https://api.whatsapp.com/send?phone=5511985640273'
+PATH_CONFIGS = os.path.join(os.path.abspath('.bin'), 'config.json')
+JSON_CONFIG: dict = read_json(PATH_CONFIGS)
 
 class Bot:    
-    def __init__(self, headless) -> None:
+    def __init__(self, headless:bool, download_files:bool|str) -> None:
         # --- CHROME OPTIONS --- #
-        options = webdriver.ChromeOptions()
+        self._options = ChromeOptions()
         
         
         # --- PATH BASE DIR --- #
-        DOWNLOAD_DIR = pega_caminho_atual_e_concatena_novo_dir(dir='base', print_value=False, criar_diretorio=True)
-        SETTINGS_SAVE_AS_PDF = {
-                    "recentDestinations": [
-                        {
-                            "id": "Save as PDF",
-                            "origin": "local",
-                            "account": ""
-                        }
-                    ],
-                    "selectedDestinationId": "Save as PDF",
-                    "version": 2,
-                }
+        if download_files:
+            self.__DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir='downloads', print_value=False, criar_diretorio=True)
+            self._SETTINGS_SAVE_AS_PDF = {
+                        "recentDestinations": [
+                            {
+                                "id": "Save as PDF",
+                                "origin": "local",
+                                "account": ""
+                            }
+                        ],
+                        "selectedDestinationId": "Save as PDF",
+                        "version": 2,
+                    }
 
-    
-        PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(SETTINGS_SAVE_AS_PDF),
-                "savefile.default_directory":  f"{DOWNLOAD_DIR}",
-                "download.default_directory":  f"{DOWNLOAD_DIR}",
-                "download.prompt_for_download": False,
-                "download.directory_upgrade": True,
-                "safebrowsing.enabled": True}
-            
-        options.add_experimental_option('prefs', PROFILE)
-        
-        options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        if headless == 'True':
-            options.add_argument('--headless')
-        options.add_argument("--disable-print-preview")
-        options.add_argument("--disable-web-security")
-        options.add_argument("--allow-running-insecure-content")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--start-maximized")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-setuid-sandbox")
-        options.add_argument("--disable-infobars")
-        options.add_argument("--disable-webgl")
-        options.add_argument("--disable-popup-blocking")
-        options.add_argument('--disable-gpu')
-        options.add_argument('--disable-software-rasterizer')
-        options.add_argument('--no-proxy-server')
-        options.add_argument("--proxy-server='direct://'")
-        options.add_argument('--proxy-bypass-list=*')
-        options.add_argument('--disable-dev-shm-usage')
-        options.add_argument('--block-new-web-contents')
-        options.add_argument('--incognito')
-        options.add_argument('–disable-notifications')
-        options.add_argument('--suppress-message-center-popups')
-        
-        service = Service(ChromeDriverManager().install())
-        
-    def instance_chrome(self):
-        DRIVER = Chrome(service=service, options=options)
-        WDW3 = WebDriverWait(DRIVER, timeout=3)
-        DRIVER.maximize_window()
-        return DRIVER
 
-    def quit_web(self):
-        DRIVER.quit()
+            self._PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(self._SETTINGS_SAVE_AS_PDF),
+                    "savefile.default_directory":  f"{self.__DOWNLOAD_DIR}",
+                    "download.default_directory":  f"{self.__DOWNLOAD_DIR}",
+                    "download.prompt_for_download": False,
+                    "download.directory_upgrade": True,
+                    "profile.managed_default_content_settings.images": 2,
+                    "safebrowsing.enabled": True}
+                
+            self._options.add_experimental_option('prefs', self._PROFILE)
+        
+        self._options.add_experimental_option("excludeSwitches", ["enable-logging", "enable-automation"])
+        if headless == True:
+            self._options.add_argument('--headless')
+        self._options.add_argument("--disable-print-preview")
+        self._options.add_argument(f"--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
+        self._options.add_argument("--disable-web-security")
+        self._options.add_argument("--allow-running-insecure-content")
+        self._options.add_argument("--disable-extensions")
+        self._options.add_argument("--start-maximized")
+        self._options.add_argument("--no-sandbox")
+        self._options.add_argument("--disable-setuid-sandbox")
+        self._options.add_argument("--disable-infobars")
+        self._options.add_argument("--disable-webgl")
+        self._options.add_argument("--disable-popup-blocking")
+        self._options.add_argument('--disable-gpu')
+        self._options.add_argument('--disable-software-rasterizer')
+        self._options.add_argument('--no-proxy-server')
+        self._options.add_argument("--proxy-server='direct://'")
+        self._options.add_argument('--proxy-bypass-list=*')
+        self._options.add_argument('--disable-dev-shm-usage')
+        self._options.add_argument('--block-new-web-contents')
+        self._options.add_argument('--incognito')
+        self._options.add_argument('–disable-notifications')
+        self._options.add_experimental_option('useAutomationExtension', False)
+        self._options.add_argument("--window-size=1920,1080")
+        
+        self.__service = Service(ChromeDriverManager().install())
+        
+        # create DRIVER
+        self.DRIVER = Chrome(service=self.__service, options=self._options)
+        self.WDW3 = WebDriverWait(self.DRIVER, timeout=3)
+        self.WDW5 = WebDriverWait(self.DRIVER, timeout=5)
+        self.WDW7 = WebDriverWait(self.DRIVER, timeout=7)
+        self.WDW10 = WebDriverWait(self.DRIVER, timeout=10)
+        self.WDW30 = WebDriverWait(self.DRIVER, timeout=30)
+        self.WDW = self.WDW7
+
+        self.DRIVER.maximize_window()
+
 """
 
 ###########################################################

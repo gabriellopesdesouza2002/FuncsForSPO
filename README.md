@@ -17,7 +17,9 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-# Current Version -> 0.0.4.9.9
+# Current Version -> 0.0.4.12
+
+version==0.0.4.12 -> funcao que converte para real (BRL)
 
 version==0.0.4.9.9 -> Adicao de função que pode recuperar o texto de todo o site, usando bs4 e requests
 
