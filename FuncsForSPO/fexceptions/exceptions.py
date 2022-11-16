@@ -29,3 +29,6 @@ class ErroNaURLUrllib(URLError):
     pass
 
 
+# --- Exceptions API OCR ---- #
+class FalhaAoRecuperarOcr(Exception):
+    pass

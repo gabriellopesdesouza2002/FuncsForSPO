@@ -17,7 +17,9 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-# Current Version -> 0.0.4.12
+# Current Version -> 0.0.4.13
+
+version==0.0.4.13 -> Melhoria na API de OCR, criada uma exception para a API
 
 version==0.0.4.12 -> funcao que converte para real (BRL)
 

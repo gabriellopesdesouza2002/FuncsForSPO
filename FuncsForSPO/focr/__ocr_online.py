@@ -16,6 +16,7 @@ from selenium.webdriver.support.wait import WebDriverWait
 from webdriver_manager.chrome import ChromeDriverManager
 from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fselenium.functions_selenium import *
+from FuncsForSPO.fexceptions.exceptions import FalhaAoRecuperarOcr
 import json
 import os
 from platform import platform
@@ -166,11 +167,13 @@ class GetTextPDF:
             
     def recupera_texto(self) -> str:
         if self.get_text_into_code:
-            file_txts = arquivos_com_caminho_absoluto_do_arquivo(self.__DOWNLOAD_DIR)
-            file_txt = file_txts[-1]
-            text = None
-            with open(file_txt, mode='r', encoding='utf-16-le') as f:
-                text = f.read()
-                
-            shutil.rmtree(self.__DOWNLOAD_DIR)
-            return text
+            try:
+                file_txts = arquivos_com_caminho_absoluto_do_arquivo(self.__DOWNLOAD_DIR)
+                file_txt = file_txts[-1]
+                text = None
+                with open(file_txt, mode='r', encoding='utf-16-le') as f:
+                    text = f.read()
+                shutil.rmtree(self.__DOWNLOAD_DIR)
+                return text
+            except IndexError:
+                raise FalhaAoRecuperarOcr('Ocorreu um erro na recuperação que causou um IndexError, provavelmente não baixou o arquivo.')
