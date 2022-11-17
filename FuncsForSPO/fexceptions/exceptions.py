@@ -29,6 +29,8 @@ class ErroNaURLUrllib(URLError):
     pass
 
 
-# --- Exceptions API OCR ---- #
+# --- Exceptions APIS PDF ---- #
 class FalhaAoRecuperarOcr(Exception):
+    pass
+class NivelDeCompressaoNaoPreenchido(Exception):
     pass

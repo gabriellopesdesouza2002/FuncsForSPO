@@ -17,7 +17,9 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-# Current Version -> 0.0.4.13
+# Current Version -> 0.0.4.14
+
+version==0.0.4.14 -> Criada API para comprimir PDF, organizacao dos pacotes
 
 version==0.0.4.13 -> Melhoria na API de OCR, criada uma exception para a API
 
