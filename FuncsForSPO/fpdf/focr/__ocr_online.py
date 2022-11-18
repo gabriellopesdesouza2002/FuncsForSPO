@@ -19,7 +19,6 @@ from FuncsForSPO.fselenium.functions_selenium import *
 from FuncsForSPO.fexceptions.exceptions import FalhaAoRecuperarOcr
 import json
 import os
-from platform import platform
 
 class GetTextPDF:    
     def __init__(self, file_pdf: str, dir_exit: str='output', get_text_into_code: bool=True, headless: bool=True, prints: bool=False, create_driver: bool=True) -> str:

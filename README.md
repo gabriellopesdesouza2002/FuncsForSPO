@@ -17,7 +17,11 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-# Current Version -> 0.0.4.14
+# Current Version -> 0.0.4.16
+
+version==0.0.4.16 -> Funcoes para criar ambiente de desenvolvimento em um novo projeto python, basta criar seu arquivo main.py, dar pip install FuncsForSPO no ambiente global e executar essa função (cria_diretorios_para_novo_projeto_python)
+
+version==0.0.4.15 -> Correcoes
 
 version==0.0.4.14 -> Criada API para comprimir PDF, organizacao dos pacotes
 

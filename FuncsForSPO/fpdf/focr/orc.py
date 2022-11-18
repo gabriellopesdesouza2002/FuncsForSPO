@@ -19,7 +19,7 @@
         
     """
 
-from FuncsForSPO.focr.__ocr_online import GetTextPDF
+from FuncsForSPO.fpdf.focr.__ocr_online import GetTextPDF
 
 def faz_ocr_em_pdf(file_pdf: str, dir_exit: str='output', get_text_into_code: bool=True, headless: bool=True, prints=False) -> str:
     """
