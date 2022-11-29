@@ -10,6 +10,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver import Chrome 
 from selenium.webdriver.chrome.webdriver import WebDriver
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from webdriver_manager.chrome import ChromeDriverManager 
 from fake_useragent import UserAgent
@@ -41,9 +42,8 @@ def atualiza_page_atual(driver) -> None:
     """
     driver.refresh()
         
-        
-def espera_e_clica_em_varios_elementos(driver, wdw, locator: tuple) -> None:
-    
+def espera_e_clica_em_varios_elementos(wdw, locator: tuple) -> None:
+    driver = wdw._driver
     wdw.until(EC.presence_of_all_elements_located(locator))
     elements = driver.find_elements(*locator)
     len_elements = len(elements)
@@ -134,7 +134,7 @@ def download_wget(url: str, out: str | None=None):
     return download(url, out)
 
 
-def espera_elemento_e_envia_send_keys(driver, wdw, string, locator: tuple) -> None:
+def espera_elemento_e_envia_send_keys(wdw, string, locator: tuple) -> None:
     """
     ### Função que espera pelo elemento enviado do locator e envia o send_keys no input ou textarea assim que possível
 
@@ -144,6 +144,7 @@ def espera_elemento_e_envia_send_keys(driver, wdw, string, locator: tuple) -> No
         locator (tuple): A localização do elemento no DOM (By.CSS_SELECTOR, '#IdButton')
         
     """
+    driver = wdw._driver
     wdw.until(EC.element_to_be_clickable(locator))
     try:
         driver.find_element(*locator).send_keys(string)
@@ -162,7 +163,7 @@ def set_zoom_page(driver, zoom: int):
     driver.execute_script(f"document.body.style.zoom='{zoom}%'")
     
     
-def espera_e_retorna_lista_de_elementos(driver, wdw, locator: tuple) -> list:
+def espera_e_retorna_lista_de_elementos(wdw, locator: tuple) -> list:
     """
     ### Função espera e retorna uma lista de elementos indicados no locator
 
@@ -174,6 +175,7 @@ def espera_e_retorna_lista_de_elementos(driver, wdw, locator: tuple) -> list:
     Returns:
         list: Lista com os elementos com o formato de Objetos (lista de Objetos)
     """
+    driver = wdw._driver
     wdw.until(EC.element_to_be_clickable(locator))
     return driver.find_elements(*locator)
 
@@ -333,7 +335,7 @@ def download_de_arquivo_com_link_sem_ext_pdf(link: str, driver, back_to_page: bo
 
 
 
-def espera_e_retorna_lista_de_elementos_text_from_id(driver, wdw, locator: tuple) -> list:
+def espera_e_retorna_lista_de_elementos_text_from_id(wdw, locator: tuple) -> list:
     """
     ### Função espera e retorna uma lista de elementos com id
     
@@ -346,6 +348,7 @@ def espera_e_retorna_lista_de_elementos_text_from_id(driver, wdw, locator: tuple
     Returns:
         list: Lista de textos dos elementos com id -> [adv 1, adv 2, adv 3, adv 4, adv 5]
     """
+    driver = wdw._driver
     wdw.until(EC.element_to_be_clickable(locator))
     webelements = driver.find_elements(*locator)
     id = 1
@@ -389,7 +392,7 @@ def espera_e_retorna_lista_de_elementos_text_from_id(driver, wdw, locator: tuple
 #         return elementos_com_id
 
 
-def espera_e_retorna_lista_de_elementos_text(driver, wdw, locator: tuple, upper_mode :bool=False, strip_mode :bool=False) -> list:
+def espera_e_retorna_lista_de_elementos_text(wdw, locator: tuple, upper_mode :bool=False, strip_mode :bool=False) -> list:
     """
     ### Função espera e retorna uma lista com os textos dos elementos
 
@@ -401,6 +404,7 @@ def espera_e_retorna_lista_de_elementos_text(driver, wdw, locator: tuple, upper_
     Returns:
         list: Lista dos textos dos elementos
     """
+    driver = wdw._driver
     wdw.until(EC.element_to_be_clickable(locator))
     elements = driver.find_elements(*locator)
     if upper_mode:
@@ -412,7 +416,7 @@ def espera_e_retorna_lista_de_elementos_text(driver, wdw, locator: tuple, upper_
     return [element.text for element in driver.find_elements(*locator)]
 
 
-def espera_elemento_ficar_visivel(driver, wdw, locator: tuple) -> WebElement|None:
+def espera_elemento_ficar_visivel(wdw, locator: tuple) -> WebElement|None:
     """Espera elemento ficar visivel na tela
 
     Args:
@@ -423,6 +427,7 @@ def espera_elemento_ficar_visivel(driver, wdw, locator: tuple) -> WebElement|Non
     Returns:
         WebElement|None: WebElement or None
     """
+    driver = wdw._driver
     element = driver.find_element(*locator)
     return wdw.until(EC.visibility_of(element))
 
@@ -486,7 +491,7 @@ def verifica_se_esta_conectado_na_vpn(ping_host :str):
 
 
 
-def espera_elemento_ficar_visivel_ativo_e_clicavel(driver, wdw, locator: tuple) -> WebElement|None:
+def espera_elemento_ficar_visivel_ativo_e_clicavel(wdw, locator: tuple) -> WebElement|None:
     """Espera Elemento ficar visivel, ativo e clicavel
 
     Args:
@@ -497,12 +502,13 @@ def espera_elemento_ficar_visivel_ativo_e_clicavel(driver, wdw, locator: tuple) 
     Returns:
         WebElement|None: _description_
     """
+    driver = wdw._driver
     element = driver.find_element(*locator)
     wdw.until(EC.element_to_be_clickable(locator))
     return wdw.until(EC.visibility_of(element))
 
 
-def espera_e_retorna_conteudo_do_atributo_do_elemento_text(driver, wdw, atributo, locator: tuple) -> str:
+def espera_e_retorna_conteudo_do_atributo_do_elemento_text(wdw, atributo, locator: tuple) -> str:
     """
     ### Função que espera pelo elemento e retorna o texto do atributo do elemento escolhido
 
@@ -515,11 +521,12 @@ def espera_e_retorna_conteudo_do_atributo_do_elemento_text(driver, wdw, atributo
     Returns:
         str: retorna uma string com o valor do atributo do elemento
     """
+    driver = wdw._driver
     wdw.until(EC.element_to_be_clickable(locator))
     return driver.find_element(*locator).get_attribute(atributo)
 
 
-def espera_e_retorna_conteudo_dos_atributos_dos_elementos_text(driver, wdw, atributo, locator: tuple) -> list:
+def espera_e_retorna_conteudo_dos_atributos_dos_elementos_text(wdw, atributo, locator: tuple) -> list:
     """
     ### Função espera e retorna o valor dos atributos de vários elementos
 
@@ -532,6 +539,7 @@ def espera_e_retorna_conteudo_dos_atributos_dos_elementos_text(driver, wdw, atri
     Returns:
         list: Lista com os atributos de todos os elementos (é necessário que o atibuto enviado exista em todos os elementos como um href)
     """
+    driver = wdw._driver
     wdw.until(EC.element_to_be_clickable(locator))
     atributos = driver.find_elements(*locator)
     elementos_atributos = [atributo_selen.get_attribute(atributo) for atributo_selen in atributos]
@@ -563,7 +571,7 @@ def vai_para_a_primeira_janela(driver) -> None:
     driver.switch_to.window(window_ids[0])
     
     
-def espera_abrir_n_de_janelas_e_muda_para_a_ultima_janela(driver, wdw, num_de_janelas: int=2) -> None:
+def espera_abrir_n_de_janelas_e_muda_para_a_ultima_janela(wdw, num_de_janelas: int=2) -> None:
     """Função espera abrir o numero de janelas enviada por ti, e quando percebe que abriu, muda para a última janela aberta
 
     Args:
@@ -571,6 +579,7 @@ def espera_abrir_n_de_janelas_e_muda_para_a_ultima_janela(driver, wdw, num_de_ja
         wdw (WebDriverWait): WebDriver
         num_de_janelas (int): Quantidade de janelas esperadas para abrie. O padrão é 2.
     """
+    driver = wdw._driver
     print(f'Você está na janela -> {driver.current_window_handle}')
     wdw.until(EC.number_of_windows_to_be(num_de_janelas))
     print(f'Agora, você tem {len(driver.window_handles)} janelas abertas')
@@ -619,7 +628,7 @@ def fecha_ultima_janela(driver) -> None:
         driver.switch_to.window(driver.window_handles[0])
 
 
-def espera_enquanto_nao_tem_resposta_do_site(driver, wdw, locator : tuple) -> None:
+def espera_enquanto_nao_tem_resposta_do_site(wdw, locator : tuple) -> None:
     """
     ### Função que espera enquanto o site não tem resposta
     
@@ -630,6 +639,7 @@ def espera_enquanto_nao_tem_resposta_do_site(driver, wdw, locator : tuple) -> No
         wdw (WebDriverWait): WebDriverWait
         locator (tuple): Localização do elemento no DOM. ("By.CSS_SELECTOR", "#ElementQueSempreEstaPresente")
     """
+    driver = wdw._driver
     try:
         element = wdw.until(EC.element_to_be_clickable(locator))
         if element:
@@ -719,7 +729,7 @@ def cria_user_agent() -> str:
     return user_agent
 
 
-def espera_input_limpa_e_envia_send_keys_preessiona_esc(driver, wdw, keys : str, locator : tuple) -> None:
+def espera_input_limpa_e_envia_send_keys_preessiona_esc(wdw, keys : str, locator : tuple) -> None:
     from selenium.common.exceptions import StaleElementReferenceException
     from selenium.webdriver.common.keys import Keys
 
@@ -732,6 +742,7 @@ def espera_input_limpa_e_envia_send_keys_preessiona_esc(driver, wdw, keys : str,
         keys (str): Sua string para enviar no input ou textarea
         locator (tuple): Tupla que contém a forma e o caminho do elemento (By.CSS_SELECTOR, '#myelementid')
     """
+    driver = wdw._driver
     try:
         wdw.until(EC.element_to_be_clickable(locator))
         driver.find_element(*locator).click()
@@ -746,7 +757,7 @@ def espera_input_limpa_e_envia_send_keys_preessiona_esc(driver, wdw, keys : str,
         driver.find_element(*locator).send_keys(keys)
 
     
-def espera_input_limpa_e_envia_send_keys(driver, wdw, keys : str, locator : tuple, click: bool=True) -> None:
+def espera_input_limpa_e_envia_send_keys(wdw, keys : str, locator : tuple, click: bool=True) -> None:
     from selenium.common.exceptions import StaleElementReferenceException
     """
     ### Função espera pelo input ou textarea indicado pelo locator, limpa ele e envia os dados
@@ -758,6 +769,7 @@ def espera_input_limpa_e_envia_send_keys(driver, wdw, keys : str, locator : tupl
         locator (tuple): Tupla que contém a forma e o caminho do elemento (By.CSS_SELECTOR, '#myelementid')
         click (bool): Clica ou não no elemento
     """
+    driver = wdw._driver
     try:
         wdw.until(EC.element_to_be_clickable(locator))
         if click:
@@ -788,8 +800,8 @@ def pega_somente_numeros_de_uma_str(string) -> list:
     return numbers
     
     
-def espera_elemento_ficar_ativo_e_clica(driver, wdw, locator : tuple) -> None:
-
+def espera_elemento_ficar_ativo_e_clica(wdw, locator : tuple) -> None:
+    driver = wdw._driver
     wdw.until_not(EC.element_to_be_selected(driver.find_element(*locator)))
             # qualquer h1 que aparecer vai falar (apareceu)
 
@@ -802,7 +814,8 @@ def espera_elemento_nao_estar_mais_visivel(wdw, locator) -> WebElement:
     return wdw.until_not(EC.visibility_of(*locator))
     
     
-def espera_elemento_estar_visivel(driver, wdw, locator, with_visibility_of: bool=True):
+def espera_elemento_estar_visivel(wdw, locator, with_visibility_of: bool=True):
+    driver = wdw._driver
     if with_visibility_of:
         element = driver.find_element(*locator)
         return wdw.until(EC.visibility_of(element))
@@ -899,7 +912,7 @@ def find_window_to_url_contain(driver, contain_url_switch: str) -> None: # quero
 #     else:
 #         print('NAO ACHOU JANELAS')
         
-def pega_codigo_fonte_de_elemento(driver, wdw, locator: tuple) -> str:
+def pega_codigo_fonte_de_elemento(wdw, locator: tuple) -> str:
     """Retorna todo o código fonte do locator
 
     Args:
@@ -910,7 +923,7 @@ def pega_codigo_fonte_de_elemento(driver, wdw, locator: tuple) -> str:
     Returns:
         str: Código fonte do WebElement
     """
-    
+    driver = wdw._driver
     wdw.until(EC.element_to_be_clickable(locator))
     element = driver.find_element(*locator)
     return element.get_attribute("outerHTML")
@@ -947,7 +960,7 @@ def find_window_to_url_contain_and_close_window(driver, contain_url_to_switch: s
             driver.close()
             break
         
-def espera_input_limpa_e_envia_send_keys_preessiona_esc_tmb_no_final(driver, wdw, keys : str, locator : tuple):
+def espera_input_limpa_e_envia_send_keys_preessiona_esc_tmb_no_final(wdw, keys : str, locator : tuple):
     """
     ### Função espera pelo input ou textarea indicado pelo locator, limpa ele e envia os dados
 
@@ -957,6 +970,7 @@ def espera_input_limpa_e_envia_send_keys_preessiona_esc_tmb_no_final(driver, wdw
         keys (str): Sua string para enviar no input ou textarea
         locator (tuple): Tupla que contém a forma e o caminho do elemento (By.CSS_SELECTOR, '#myelementid')
     """
+    driver = wdw._driver
     try:
         wdw.until(EC.element_to_be_clickable(locator))
         driver.find_element(*locator).click()

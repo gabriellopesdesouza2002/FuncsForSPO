@@ -6,7 +6,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
     
     setup(
         name='FuncsForSPO',
-        version='0.0.4.16',
+        version='4.18.1',
         url='https://github.com/githubpaycon/FuncsForSPO',
         license='MIT License',
         author='Gabriel Lopes de Souza',
@@ -23,6 +23,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
             os.path.join('FuncsForSPO', 'fpdf'),
             os.path.join('FuncsForSPO', 'fpdf', 'focr'),
             os.path.join('FuncsForSPO', 'fpdf', 'fcompress'),
+            os.path.join('FuncsForSPO', 'fpdf', 'fimgpdf'),
             os.path.join('FuncsForSPO', 'fopenpyxl'),
             os.path.join('FuncsForSPO', 'fpysimplegui'),
             os.path.join('FuncsForSPO', 'fpython'),

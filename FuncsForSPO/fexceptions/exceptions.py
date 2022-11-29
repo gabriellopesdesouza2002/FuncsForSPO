@@ -34,3 +34,7 @@ class FalhaAoRecuperarOcr(Exception):
     pass
 class NivelDeCompressaoNaoPreenchido(Exception):
     pass
+class ErroNoConversorException(Exception):
+    pass
+class ErroNoConversorImagesException(Exception):
+    pass
