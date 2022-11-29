@@ -1323,20 +1323,20 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
-from selenium.common.exceptions import *
 from webdriver_manager.chrome import ChromeDriverManager
 from FuncsForSPO.fpython.functions_for_py import *
-from FuncsForSPO.fselenium.functions_selenium import *
-from FuncsForSPO.fwinotify.fwinotify import *
-from FuncsForSPO.fregex.functions_re import *
 from src.exceptions.exceptions import *
+from FuncsForSPO.fselenium.functions_selenium import *
+from FuncsForSPO.fpysimplegui.functions_for_sg import *
+from FuncsForSPO.fregex.functions_re import *
+from src.database.database import insere_tabela_relatorio
 import pandas as pd
 import json
 import os
 
 # -- GLOBAL -- #
 URL_SUPORTE = f'https://api.whatsapp.com/send?phone=5511985640273'
-CONFIG_PATH = os.path.abspath('configs\\config.json')
+CONFIG_PATH = os.path.join(os.path.abspath('bin'), config.json')
 BASE = os.path.abspath('base')
 JSON_CONFIG_DATA = read_json(CONFIG_PATH)
 # -- GLOBAL -- #
@@ -1347,9 +1347,9 @@ class Bot:
         # --- CHROME OPTIONS --- #
         self._options = ChromeOptions()
         
-        if download_files:
+        if isinstance(download_files, str):
             # --- PATH BASE DIR --- #
-            self.__DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir='downloads', print_value=False, criar_diretorio=True)
+            self.__DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir=download_files, criar_diretorio=True)
             limpa_diretorio(self.__DOWNLOAD_DIR)
             self._SETTINGS_SAVE_AS_PDF = {
                         "recentDestinations": [
@@ -1460,3 +1460,34 @@ from FuncsForSPO.fselenium.functions_selenium import *
         print('Criando Ambiente Virtual')
         os.system('python -m venv venv')
     print('Criado')
+    
+    
+def retorna_a_menor_ou_maior_data(datas:list[str|datetime], maior:bool=True, format:str='%d/%m/%Y %H:%M', format_return:str='%d/%m/%Y %H:%M'):
+    """
+    ## Recebe e retorna a MAIOR ou a menor data de uma lista de datas
+    
+    ### caso a lista de datas seja datetime, ele não haverá conversão
+
+    ### É necessário que todas as datas estejam no padrão do formato enviado no parâmetro format
+
+    Args:
+        datas (list[str | datetime]): Lista de datas
+        maior (bool, optional): Se estiver como True, irá retornar a maior data, ou seja a data mais atual. Se estiver setada como False, retornará a manor data. Defaults to True.
+        format (str, optional): Formato que as datas devem vir para alterar. Defaults to '%d/%m/%Y %H:%M'.
+        format_return (str, optional): O formato que a data maior ou menor será retornada. Defaults to '%d/%m/%Y %H:%M'.
+
+    Returns:
+        _type_: _description_
+    """
+    datas_datetime = []
+    
+    for data in datas:
+        if isinstance(data, datetime):
+            datas_datetime.append(data)
+        else:
+            datas_datetime.append(datetime.strptime(data, format))
+        
+    if maior:
+        return max(datas_datetime).strftime(format_return)
+    else:
+        return min(datas_datetime).strftime(format_return)
