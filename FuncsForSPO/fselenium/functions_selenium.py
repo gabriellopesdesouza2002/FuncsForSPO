@@ -362,36 +362,6 @@ def espera_e_retorna_lista_de_elementos_text_from_id(wdw, locator: tuple) -> lis
     else:
         return elementos_com_id
 
-    
-# utilizado para o STJ   
-# def espera_e_retorna_lista_de_elementos_text_from_id_esse_tribunal(driver, wdw, locator: tuple=("BY_SELECTOR", "WEBELEMENT")):
-#     """Função espera e retorna 
-
-#     Args:
-#         driver (WebDriver): _description_
-#         wdw (WebDriverWait): _description_
-#         locator (tuple, optional): _description_. Defaults to ("BY_SELECTOR", "WEBELEMENT").
-
-#     Returns:
-#         list: lista_de_elementos_text_from_id_esse_tribunal
-#     """
-#     if locator == ("BY_SELECTOR", "WEBELEMENT"):
-#         print('Adicione um locator!!!!')
-#         return
-#     wdw.until(EC.element_to_be_clickable(locator))
-#     webelements = driver.find_elements(*locator)
-#     id = 1
-#     elementos_com_id = []
-#     for element in webelements:
-#         if element.text == ' ':
-#             elementos_com_id.append(f'VOLUME(S) col{id}')
-#         else:
-#             elementos_com_id.append(f'{element.text} col{id}')
-#         id += 1
-#     else:
-#         return elementos_com_id
-
-
 def espera_e_retorna_lista_de_elementos_text(wdw, locator: tuple, upper_mode :bool=False, strip_mode :bool=False) -> list:
     """
     ### Função espera e retorna uma lista com os textos dos elementos
@@ -546,7 +516,7 @@ def espera_e_retorna_conteudo_dos_atributos_dos_elementos_text(wdw, atributo, lo
     return elementos_atributos
         
         
-def espera_e_retorna_elemento_text(driver,  wdw, locator: tuple) -> str:
+def espera_e_retorna_elemento_text(wdw, locator: tuple) -> str:
     """Função espera o elemento e retorna o seu texto
 
     Args:
@@ -557,6 +527,7 @@ def espera_e_retorna_elemento_text(driver,  wdw, locator: tuple) -> str:
     Returns:
         str: Retorna a string de um elemento
     """
+    driver = wdw._driver
     wdw.until(EC.element_to_be_clickable(locator))
     return driver.find_element(*locator).text
     
@@ -698,22 +669,6 @@ def volta_paginas(driver, qtd_pages_para_voltar : int=1, espera_ao_mudar=0) -> N
             sleep(espera_ao_mudar)
             driver.back()
             driver.refresh()
-    
-    
-# Em desenvolvimento
-    
-# def muda_p_alerta_e_clica_em_accept(driver, wdw, sleeping):
-    # sleep(sleeping)
-    # alerta = driver.switch_to.alert
-    # alerta.accept()
-
-
-# def muda_p_alerta_e_clica_em_dismiss(self):
-    # alerta = chrome.switch_to.alert
-    # alerta.dismiss()
-
-    
-# Em desenvolvimento
 
 def cria_user_agent() -> str:
     """Cria um user-agent automaticamente com a biblio fake_useragent
