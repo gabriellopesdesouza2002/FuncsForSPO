@@ -362,22 +362,7 @@ def espera_e_retorna_lista_de_elementos_text_from_id(wdw, locator: tuple) -> lis
     else:
         return elementos_com_id
 
-def retorna_conteudo_do_atributo_do_elemento_text(driver, atributo, locator: tuple) -> str:
-    """
-    ### Função e retorna o texto do atributo do elemento escolhido
-    ## Sem espera!
-
-    Args:
-        driver (Webdriver): Seu Webdriver (Chrome, Firefox)
-        wdw (WebDriverWait): Seu WebDriverWait
-        atributo (str): O atributo que deseja recuperar, como um href, id, class, entre outros
-        locator (tuple): A localização do elemento no DOM ("By.CSS_SELECTOR", "body > div > a").
-
-    Returns:
-        str: retorna uma string com o valor do atributo do elemento
-    """
-    return driver.find_element(*locator).get_attribute(atributo)
-
+    
 # utilizado para o STJ   
 # def espera_e_retorna_lista_de_elementos_text_from_id_esse_tribunal(driver, wdw, locator: tuple=("BY_SELECTOR", "WEBELEMENT")):
 #     """Função espera e retorna 

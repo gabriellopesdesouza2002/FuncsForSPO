@@ -96,7 +96,6 @@ class GetTextPDF:
         self._options.add_argument('--proxy-bypass-list=*')
         self._options.add_argument('--disable-dev-shm-usage')
         self._options.add_argument('--block-new-web-contents')
-        self._options.add_argument(f'--user-agent={cria_user_agent()}')
         self._options.add_argument('--incognito')
         self._options.add_argument('–disable-notifications')
         self._options.add_argument('--suppress-message-center-popups')

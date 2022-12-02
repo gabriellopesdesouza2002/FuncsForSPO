@@ -1323,20 +1323,20 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import *
 from webdriver_manager.chrome import ChromeDriverManager
 from FuncsForSPO.fpython.functions_for_py import *
-from src.exceptions.exceptions import *
 from FuncsForSPO.fselenium.functions_selenium import *
-from FuncsForSPO.fpysimplegui.functions_for_sg import *
+from FuncsForSPO.fwinotify.fwinotify import *
 from FuncsForSPO.fregex.functions_re import *
-from src.database.database import insere_tabela_relatorio
+from src.exceptions.exceptions import *
 import pandas as pd
 import json
 import os
 
 # -- GLOBAL -- #
 URL_SUPORTE = f'https://api.whatsapp.com/send?phone=5511985640273'
-CONFIG_PATH = os.path.join(os.path.abspath('bin'), config.json')
+CONFIG_PATH = os.path.abspath('configs\\config.json')
 BASE = os.path.abspath('base')
 JSON_CONFIG_DATA = read_json(CONFIG_PATH)
 # -- GLOBAL -- #
@@ -1347,9 +1347,9 @@ class Bot:
         # --- CHROME OPTIONS --- #
         self._options = ChromeOptions()
         
-        if isinstance(download_files, str):
+        if download_files:
             # --- PATH BASE DIR --- #
-            self.__DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir=download_files, criar_diretorio=True)
+            self.__DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir='downloads', print_value=False, criar_diretorio=True)
             limpa_diretorio(self.__DOWNLOAD_DIR)
             self._SETTINGS_SAVE_AS_PDF = {
                         "recentDestinations": [
@@ -1461,7 +1461,6 @@ from FuncsForSPO.fselenium.functions_selenium import *
         os.system('python -m venv venv')
     print('Criado')
     
-    
 def retorna_a_menor_ou_maior_data(datas:list[str|datetime], maior:bool=True, format:str='%d/%m/%Y %H:%M', format_return:str='%d/%m/%Y %H:%M'):
     """
     ## Recebe e retorna a MAIOR ou a menor data de uma lista de datas
@@ -1491,3 +1490,28 @@ def retorna_a_menor_ou_maior_data(datas:list[str|datetime], maior:bool=True, for
         return max(datas_datetime).strftime(format_return)
     else:
         return min(datas_datetime).strftime(format_return)
+    
+def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave):
+    _LOCAL_DE_DOWNLOAD = os.path.abspath(diretorio_de_download)
+    baixou = False
+    while not baixou:
+        lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+        if len(lista_arquivos) == 0:
+            sleep(2)
+            baixou = False
+            lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+        else:
+            for i in lista_arquivos:
+                if '.crdownload' in i:
+                    sleep(2)
+                    lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+                    baixou = False
+                    continue
+                if palavra_chave in i:
+                    baixou = True
+                    faz_log('Download concluido!')
+                    return True
+                else:
+                    sleep(2)
+                    lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+                    baixou = False
