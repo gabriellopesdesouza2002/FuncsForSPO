@@ -6,7 +6,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
     
     setup(
         name='FuncsForSPO',
-        version='4.21.6',
+        version='4.22.7',
         url='https://github.com/githubpaycon/FuncsForSPO',
         license='MIT License',
         author='Gabriel Lopes de Souza',
@@ -52,6 +52,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
             'pywin32-ctypes',
             'macholib',
             'wget',
-            'winotify'
+            'winotify',
+            'rich'
         ],
         )

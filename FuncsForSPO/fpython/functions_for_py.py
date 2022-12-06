@@ -10,6 +10,8 @@ from datetime import datetime, date
 from time import sleep
 import os, sys, shutil, platform, re, logging, unicodedata, gc, requests, time, json, threading
 import subprocess as sp
+import zipfile
+from rich import print
 from numpy import unicode_
 ################################## IMPORTS #############################################
 
@@ -511,7 +513,7 @@ def print_colorido(string : str, color='default', bolder : bool=False) -> str:
     
     win_version = platform.system()+' '+platform.release()
     
-    if 'Windows 10' in win_version:
+    if ('Windows 10' in win_version) or 'Windows 11' in win_version:
         if bolder == False:
             if color == 'default':  # white
                 print(string)
@@ -551,7 +553,7 @@ def print_colorido(string : str, color='default', bolder : bool=False) -> str:
         print(string)
 
 
-def input_color(color : str='default', bolder : bool=False, input_ini: str='>>>') -> None:
+def input_color(color : str='default', bolder: bool=False, input_ini: str='>>>') -> None:
     """A cor do input da cor que você desejar
 
     Args:
@@ -679,25 +681,6 @@ def ver_tamanho_de_objeto(objeto : object) -> int:
     print(sys.getsizeof(objeto))
 
 
-def remove_espacos_pontos_virgulas_de_um_int(numero: int, remove_2_ultimos_chars: bool=False) -> int:
-    """Remove espaços, pontos, virgulas e se quiser os 2 últimos caracteres
-
-    Args:
-        numero (int): número com todos os elementos que serão removidos
-        remove_2_ultimos_chars (bool, optional): remove os 2 últimos caracteres, por exemplo, 0,00 fica 0. Defaults to False.
-
-    Returns:
-        int: _description_
-    """
-    numero = str(numero)
-    numero = numero.replace(',', '')
-    numero = numero.replace('.', '')
-    numero = numero.strip()
-    if remove_2_ultimos_chars:
-        numero = numero[:-2]
-    return int(numero)
-
-
 def read_json(file_json: str, enconding: str='utf-8') -> dict:
     """Lê e retorna um dict de um arquivo json
 
@@ -822,11 +805,17 @@ def ultimo_dia_do_mes_atual(format: str='%d/%m/%Y'):
     return format_.strftime(format)
 
 def apagar_todos_os_pacotes_pip():
-    """Deleta todos os pacotes do pip instalados no ambiente em que for executado"""
+    """Deleta todos os pacotes do pip instalados no ambiente em que for executado
+
+    Caso não funcione, execute isso no terminal: `pip list --format=freeze | %{$_.split('==')[0]} | %{If(($_ -eq "pip") -or ($_ -eq "setuptools") -or ($_ -eq "wheel")) {} Else {$_}} | %{pip uninstall $_ -y}`
+    """
     os.system("""pip list --format=freeze | %{$_.split('==')[0]} | %{If(($_ -eq "pip") -or ($_ -eq "setuptools") -or ($_ -eq "wheel")) {} Else {$_}} | %{pip uninstall $_ -y}""")
 
 def atualizar_todos_os_pacotes_pip():
-    """Atualiza todos os pacotes pip no ambiente atual (PODE DEMORAR MUITO)"""
+    """Atualiza todos os pacotes pip no ambiente atual (PODE DEMORAR MUITO)
+
+    Caso não funcione, execute isso no terminal: `pip freeze | %{$_.split('==')[0]} | %{pip install --upgrade $_}`
+    """
     os.system("""pip freeze | %{$_.split('==')[0]} | %{pip install --upgrade $_}""")
 
 def retorna_o_tempo_decorrido(init: float|int, end: float|int, format: bool=True):
@@ -836,6 +825,15 @@ def retorna_o_tempo_decorrido(init: float|int, end: float|int, format: bool=True
         init (float | int): tempo de inicio da funcao, classe ou bloco
         end (float | int): tempo de finalizacao da funcao, classe ou bloco
         format (bool, optional): se deseja formatar por exemplo para 0.10 ou não. Defaults to True.
+
+    Use:
+    >>> from time import time
+    >>> 
+    >>> init = time()
+    >>> ... your code ...
+    >>> end = time()
+    >>> result = retorna_o_tempo_decorrido(init, end)
+    >>> print(result) >>> 0.17
 
     Returns:
         float|int: Valor do tempo total de execução
@@ -848,7 +846,7 @@ def retorna_o_tempo_decorrido(init: float|int, end: float|int, format: bool=True
         
 
 def save_json(old_json: dict, file_json: str, enconding: str="utf-8") -> None:
-    """Salva o arquivo json com o dict enviado no parâmetro
+    """Salva o arquivo JSON com o dict enviado no parâmetro.
 
     Args:
         old_json (dict): dict antigo com os dados alterados
@@ -874,13 +872,17 @@ def fecha():
 def retorna_home_user() -> str:
     """Expand ~ and ~user constructions. If user or $HOME is unknown, do nothing.
     
+    Use:
+        >>> home = retorna_home_user()
+        >>> print(home) >>> C:\\Users\\myuser
+    
     Returns:
         str: $HOME -> C:\\Users\\myuser
     """
     return os.path.expanduser("~")
 
     
-def fecha_em_x_segundos(qtd_de_segundos_p_fechar : int) -> None:
+def fecha_em_x_segundos(qtd_de_segundos_p_fechar:int) -> None:
     """Espera os segundos enviados para fechar o programa
 
     Args:
@@ -894,15 +896,16 @@ def fecha_em_x_segundos(qtd_de_segundos_p_fechar : int) -> None:
     fecha()
     
     
-def zip_dirs(folders, zip_filename):
-    import os
-    import zipfile
-    """Faz zip de vários diretórios, recursivamente
-    
+def zip_dirs(folders:list|tuple, zip_filename:str) -> None:
+    """Faz zip de vários diretórios, recursivamente.
 
     Args:
         folders (list|tuple): folders
         zip_filename (str): name_file_zip with ``nome do arquivo.zip``
+        
+    Use:
+        >>> folders = ['folder1', 'folder_with_files2', 'folder3',]
+        >>> zip_dirs(folders, 'myzip.zip')
     """
     zip_file = zipfile.ZipFile(zip_filename, 'w', zipfile.ZIP_DEFLATED)
 
@@ -927,49 +930,51 @@ def resource_path(relative_path) -> str:
         '_MEIPASS',
         os.path.dirname(os.path.abspath(__file__)))
     return os.path.join(base_path, relative_path)    
-    
-def limpa_logs():
-    path_logs_dir = os.path.abspath(r'.\logs')
-    path_logs_file = os.path.abspath(r'.\logs\botLog.log')
-    
-    if os.path.exists(path_logs_dir):
-        try:
-            os.remove(path_logs_file)
-        except Exception:
-            ...
-    else:
-        os.mkdir(path_logs_dir)
 
 
-def faz_log(msg: str, level: str = 'i'):
+def faz_log(msg: str, level: str = 'i', color: None|str=None, format: None|str=None) -> None:
     """Faz log na pasta padrão (./logs/botLog.log)
+
+
 
     Args:
         msg (str): "Mensagem de Log"
         level (str): "Niveis de Log"
+        color (None|str): Cores Rich; defaut is None
+        format (None|str) Formatação Rich; defaut is None
+
+    Levels:
+        'i' or not passed = info and print
+
+        'i*' = info log only
+
+        'w' = warning
         
-        Levels:
-            'i' or not passed = info and print
+        'c*' = critical / Exception Error exc_info=True
+        
+        'c' = critical
+        
+        'e' = error
 
-            'i*' = info log only
+    Use:
+    >>> faz_log('@@@@@@@@@@@@@@@@@@@', color='red')
+    >>> faz_log('@@@@@@@@@@@@@@@@@@@', color='red', format='b')
+    >>> faz_log('@ O SISTEMA CAIU! @', color='red on yellow b i s blink')
+    >>> faz_log('@@@@@@@@@@@@@@@@@@@', color='green')
+    >>> faz_log('@@@@@@@@@@@@@@@@@@@', color='green b i')
 
-            'w' = warning
-            
-            'c*' = critical / Exception Error exc_info=True
-            
-            'c' = critical
-            
-            'e' = error
+    Formatação Rich:
+            Colors: https://rich.readthedocs.io/en/latest/appendix/colors.html
     """
-    path_logs_dir = os.path.abspath(r'.\logs')
-    path_logs_file = os.path.abspath(r'.\logs\botLog.log')
+    path_logs_dir = os.path.abspath('logs')
+    path_logs_file = os.path.join(path_logs_dir, 'logs.log')
 
     if not os.path.exists(path_logs_dir):
         os.mkdir(path_logs_dir)
     else:
-        ...
+        pass
 
-    if isinstance(msg, (str)):
+    if isinstance(msg, str):
         pass
     
     if isinstance(msg, (object)):
@@ -989,7 +994,12 @@ def faz_log(msg: str, level: str = 'i'):
                                 format='%(asctime)s - %(levelname)s - %(message)s',
                                 level=logging.INFO
                                 )
-            print(msg)
+            if isinstance(color, str) and isinstance(format, str):
+                print(f'[{format}][{color}]{msg}[/{color}][/{format}]')
+            elif isinstance(color, str):
+                print(f'[{color}]{msg}[/{color}]')
+            else:
+                print(msg)
             if r'\n' in msg:
                 msg = msg.replace(r"\n", "")
             logging.info(msg)
@@ -1013,7 +1023,12 @@ def faz_log(msg: str, level: str = 'i'):
                                 level=logging.WARNING
                                 )
             logging.warning(msg)
-            print('! ' + msg + ' !')
+            if isinstance(color, str) and isinstance(format, str):
+                print(f'[{format}][{color}]{msg}[/{color}][/{format}]')
+            elif isinstance(color, str):
+                print(f'[{color}]{msg}[/{color}]')
+            else:
+                print(msg)
 
         elif level == 'e':
             logging.basicConfig(filename=path_logs_file,
@@ -1023,7 +1038,12 @@ def faz_log(msg: str, level: str = 'i'):
                                 level=logging.ERROR
                                 )
             logging.error(msg)
-            print('!! ' + msg + ' !!')
+            if isinstance(color, str) and isinstance(format, str):
+                print(f'[{format}][{color}]{msg}[/{color}][/{format}]')
+            elif isinstance(color, str):
+                print(f'[{color}]{msg}[/{color}]')
+            else:
+                print(msg)
 
         elif level == 'c':
             logging.basicConfig(filename=path_logs_file,
@@ -1033,7 +1053,12 @@ def faz_log(msg: str, level: str = 'i'):
                                 level=logging.CRITICAL
                                 )
             logging.critical(msg)
-            print('!!! ' + msg + ' !!!')
+            if isinstance(color, str) and isinstance(format, str):
+                print(f'[{format}][{color}]{msg}[/{color}][/{format}]')
+            elif isinstance(color, str):
+                print(f'[{color}]{msg}[/{color}]')
+            else:
+                print(msg)
 
         elif level == 'c*':
             logging.basicConfig(filename=path_logs_file,
@@ -1043,7 +1068,12 @@ def faz_log(msg: str, level: str = 'i'):
                                 level=logging.CRITICAL
                                 )
             logging.critical(msg, exc_info=True)
-            print('!!! ' + msg + ' !!!')
+            if isinstance(color, str) and isinstance(format, str):
+                print(f'[{format}][{color}]{msg}[/{color}][/{format}]')
+            elif isinstance(color, str):
+                print(f'[{color}]{msg}[/{color}]')
+            else:
+                print(msg)
     
 
 def retorna_data_e_hora_a_frente(dias_a_frente: int, sep: str='/') -> str:
@@ -1515,3 +1545,26 @@ def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave):
                     sleep(2)
                     lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
                     baixou = False
+                    
+                    
+# Deprecado #
+# def remove_espacos_pontos_virgulas_de_um_int(numero: int, remove_2_ultimos_chars: bool=False) -> int:
+#     """Remove espaços, pontos, virgulas e se quiser os 2 últimos caracteres
+
+#     Args:
+#         numero (int): número com todos os elementos que serão removidos
+#         remove_2_ultimos_chars (bool, optional): remove os 2 últimos caracteres, por exemplo, 0,00 fica 0. Defaults to False.
+
+#     Returns:
+#         int: _description_
+#     """
+#     numero = str(numero)
+#     numero = numero.replace(',', '')
+#     numero = numero.replace('.', '')
+#     numero = numero.strip()
+#     if remove_2_ultimos_chars:
+#         numero = numero[:-2]
+#     return int(numero)
+
+
+# Deprecado #

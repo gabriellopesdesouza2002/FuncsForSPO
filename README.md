@@ -19,7 +19,9 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-# Current Version -> 4.18.1
+# Current Version -> 4.22.6
+
+version==4.22.6 -> Melhorias na função do faz_log agora com formatacao Rich, melhoria nas amostras de output dos códigos
 
 version==4.18.1 -> Melhorias nas funcoes do selenium
 

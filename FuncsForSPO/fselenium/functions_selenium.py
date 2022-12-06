@@ -163,7 +163,7 @@ def set_zoom_page(driver, zoom: int):
     driver.execute_script(f"document.body.style.zoom='{zoom}%'")
     
     
-def espera_e_retorna_lista_de_elementos(wdw, locator: tuple) -> list:
+def espera_e_retorna_lista_de_elementos(wdw, locator: tuple) -> list[WebElement]:
     """
     ### Função espera e retorna uma lista de elementos indicados no locator
 
@@ -335,7 +335,7 @@ def download_de_arquivo_com_link_sem_ext_pdf(link: str, driver, back_to_page: bo
 
 
 
-def espera_e_retorna_lista_de_elementos_text_from_id(wdw, locator: tuple) -> list:
+def espera_e_retorna_lista_de_elementos_text_from_id(wdw, locator: tuple) -> list[str]:
     """
     ### Função espera e retorna uma lista de elementos com id
     
@@ -362,7 +362,7 @@ def espera_e_retorna_lista_de_elementos_text_from_id(wdw, locator: tuple) -> lis
     else:
         return elementos_com_id
 
-def espera_e_retorna_lista_de_elementos_text(wdw, locator: tuple, upper_mode :bool=False, strip_mode :bool=False) -> list:
+def espera_e_retorna_lista_de_elementos_text(wdw, locator: tuple, upper_mode :bool=False, strip_mode :bool=False) -> list[str]:
     """
     ### Função espera e retorna uma lista com os textos dos elementos
 
