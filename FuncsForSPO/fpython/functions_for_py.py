@@ -6,7 +6,7 @@
 
 ################################## IMPORTS #############################################
 from configparser import RawConfigParser
-from datetime import datetime, date
+from datetime import datetime, date, timedelta
 from time import sleep
 import os, sys, shutil, platform, re, logging, unicodedata, gc, requests, time, json, threading
 import subprocess as sp
@@ -1520,7 +1520,8 @@ def retorna_a_menor_ou_maior_data(datas:list[str|datetime], maior:bool=True, for
         return max(datas_datetime).strftime(format_return)
     else:
         return min(datas_datetime).strftime(format_return)
-    
+
+
 def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave):
     _LOCAL_DE_DOWNLOAD = os.path.abspath(diretorio_de_download)
     baixou = False
@@ -1546,7 +1547,46 @@ def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave):
                     lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
                     baixou = False
                     
-                    
+def data_com_dias_mais_ou_menos(data:datetime, dias:int=0, menos:bool=True, format_exit='%d/%m/%Y') -> str|datetime:
+    """Função retorna a data enviada com dias a menos ou a mais dependendo da escolha
+
+    Args:
+        data (datetime): Data no padrão de classe datetime
+        dias (int, optional): Dias a frente ou dias atrás. Defaults to 0.
+        menos (bool, optional): Se quiser que veja dias atrás, deixar como True, como dia a frente, deixar como False. Defaults to True.
+        format_exit (str, optional): Formato da data, caso envie None ou '' ou ainda False, ele retornará um objeto Datetime. Defaults to '%d/%m/%Y'.
+
+    Returns:
+        str|datetime: Data
+
+    Use:
+        >>> # Digamos que a data atual seja: 07/12/2022 ela retornará 05/12/2022 -> com o Format ligado
+        >>> In [1]: retorna_data_com_dias_meses_anos_atras_ou_a_frente(datetime.now(), 2)
+        >>> In [2]: type(retorna_data_com_dias_meses_anos_atras_ou_a_frente(datetime.now(), 2))
+        >>> Out [1]: 05/12/2022
+        >>> Out [2]: <class 'str'>
+
+
+
+        >>> # Digamos que a data atual seja: 07/12/2022 ela retornará 05/12/2022 -> Com o Format não definido
+        >>> In [1]: retorna_data_com_dias_meses_anos_atras_ou_a_frente(datetime.now(), 2, format_exit=None)
+        >>> In [2]: type(retorna_data_com_dias_meses_anos_atras_ou_a_frente(datetime.now(), 2, format_exit=None))
+        >>> Out [1]: 2022-12-05 11:01:37.476540
+        >>> Out [2]: <class 'datetime.datetime'>
+    """
+    if menos:
+        data = data - timedelta(days=dias)
+        if (format_exit == '') or (format_exit is None) or (isinstance(format_exit, bool)):
+            return data
+        data_ = data.strftime(format_exit)
+        return data_
+    else:
+        data = data + timedelta(days=dias)
+        if (format_exit == '') or (format_exit is None) or (isinstance(format_exit, bool)):
+            return data
+        data_ = data.strftime(format_exit)
+        return data_
+
 # Deprecado #
 # def remove_espacos_pontos_virgulas_de_um_int(numero: int, remove_2_ultimos_chars: bool=False) -> int:
 #     """Remove espaços, pontos, virgulas e se quiser os 2 últimos caracteres

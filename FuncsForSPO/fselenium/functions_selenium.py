@@ -52,7 +52,7 @@ def espera_e_clica_em_varios_elementos(wdw, locator: tuple) -> None:
         elements[i].click()
         
         
-def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave):
+def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave) -> bool:
     _LOCAL_DE_DOWNLOAD = os.path.abspath(diretorio_de_download)
     baixou = False
     while not baixou:
@@ -153,7 +153,7 @@ def espera_elemento_e_envia_send_keys(wdw, string, locator: tuple) -> None:
         driver.find_element(*locator).send_keys(string)
     
     
-def set_zoom_page(driver, zoom: int):
+def set_zoom_page(driver, zoom: int) -> None:
     """Seta o zoom da página atual
 
     Args:
