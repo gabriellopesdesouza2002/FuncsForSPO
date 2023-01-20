@@ -120,6 +120,10 @@ def envia_email_gmail(
         assunto (str): Assunto do E-mail
         body_msg (str): Corpo do E-mail
         anexos (tuple | list | bool): Anexos, optional, default = False
+<<<<<<< HEAD
+=======
+        prints (bool): Mostra as eventuais saídas, como por exemplo a recuperação dos anexos e falando que o e-mail foi enviado
+>>>>>>> 598b82b34eaff4330c2ea91429ff65dafe0471d7
     """
 
     msg = MIMEMultipart()

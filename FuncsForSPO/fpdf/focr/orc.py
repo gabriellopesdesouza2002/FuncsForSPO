@@ -20,7 +20,10 @@
     """
 
 from FuncsForSPO.fpdf.focr.__ocr_online import GetTextPDF
+<<<<<<< HEAD
 from FuncsForSPO.fpython.functions_for_py import *
+=======
+>>>>>>> 598b82b34eaff4330c2ea91429ff65dafe0471d7
 
 def faz_ocr_em_pdf(file_pdf: str, dir_exit: str='output', get_text_into_code: bool=True, headless: bool=True, prints=False) -> str:
     """
@@ -47,6 +50,7 @@ def faz_ocr_em_pdf(file_pdf: str, dir_exit: str='output', get_text_into_code: bo
     bot = GetTextPDF(file_pdf=file_pdf, dir_exit=dir_exit, get_text_into_code=get_text_into_code, headless=headless, prints=prints)
     if get_text_into_code:
         return bot.recupera_texto()
+<<<<<<< HEAD
 
 
 def faz_ocr_em_pdf_offline(path_pdf: str, export_from_file_txt: str=False) -> str:
@@ -81,3 +85,5 @@ def faz_ocr_em_pdf_offline(path_pdf: str, export_from_file_txt: str=False) -> st
             with open('extraction_pdf.txt', 'w', encoding='utf-8') as f:
                 f.write(text)
         return text
+=======
+>>>>>>> 598b82b34eaff4330c2ea91429ff65dafe0471d7
