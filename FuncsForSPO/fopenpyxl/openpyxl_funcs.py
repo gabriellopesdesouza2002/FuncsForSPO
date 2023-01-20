@@ -7,7 +7,7 @@ For use, please, install openpyxl with pip install openpyxl
 
 import os
 from time import sleep
-from FuncsForSPO.functions_for_py import remove_extensao_de_str
+from FuncsForSPO.fpython.functions_for_py import remove_extensao_de_str
 
 import openpyxl
 

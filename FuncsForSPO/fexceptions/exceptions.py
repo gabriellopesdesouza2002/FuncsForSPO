@@ -1,17 +1,5 @@
-from selenium.common.exceptions import *
 from urllib.error import URLError
 
-# --- Exceptions Selenium Base ---- #
-class TimeoutException(TimeoutException):
-    pass
-
-
-class WebDriverException(WebDriverException):
-    pass
-
-
-class ElementClickInterceptedException(ElementClickInterceptedException):
-    pass
 # --- Exceptions Selenium Base ---- #
 
 
@@ -29,3 +17,12 @@ class ErroNaURLUrllib(URLError):
     pass
 
 
+# --- Exceptions APIS PDF ---- #
+class FalhaAoRecuperarOcr(Exception):
+    pass
+class NivelDeCompressaoNaoPreenchido(Exception):
+    pass
+class ErroNoConversorException(Exception):
+    pass
+class ErroNoConversorImagesException(Exception):
+    pass
