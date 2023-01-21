@@ -125,20 +125,20 @@ def reverse_iter(iteravel :str | tuple | list) -> str | tuple | list:
     return iteravel[::-1]
 
 
-def pega_caminho_atual(print_value: bool=False) -> str: 
+def pega_caminho_atual() -> str: 
     """Retorna o caminho absoluto do diretório de execução atual do script Python 
     
-    Args: 
-        print_value (bool, optional): Printa e retorna o path. Defaults to False. 
-    
     Returns: 
-        str: retorna o caminho absoluto da execução atual do script Python 
+        str: retorna o caminho absoluto da execução atual do script Python
+        
+    Use:
+        # O script está rodando no diretório mybestscript
+        >>> pega_caminho_atual()
+        >>>> C:/Users/myuser/Documents/myprojects/python/mybestscript/
+        # No final das contas, ele executa os.getcwd()
     """ 
-    if print_value: 
-        print(os.getcwd()) 
-        return os.getcwd() 
-    else: 
-        return os.getcwd()
+    return os.getcwd() 
+
 
 
 def cria_dir_no_dir_de_trabalho_atual(dir: str, print_value: bool=False, criar_diretorio: bool=True) -> str:
@@ -1735,14 +1735,15 @@ def data_amigavel_bonita(time: datetime|int=datetime.now()):
     return str(day_diff // 365) + " ano(s) atrás"
 
 
-def recupera_arquivos_com_a_extensao_indicada(filtro='*.pdf') -> list:
+def recupera_arquivos_com_a_extensao_indicada(diretorio=pega_caminho_atual(), filtro='*.pdf') -> list:
         """Recupera todos os arquivos *.extension que existirem no diretório atual, inclusive em pastas
 
         Args:
+            diretorio (str, optional): Diretório que o script irá procurar. Defaults to 'pega_caminho_atual()'.
             filtro (str, optional): filtro para pesquisa de tipos de arquivos. Defaults to '*.pdf'.
         """
         files_with_extension = []
-        for path, subdirs, files in os.walk(pega_caminho_atual()):
+        for path, subdirs, files in os.walk(diretorio):
             for file in files:
                 file_path = os.path.join(path, file)
                 if fnmatch(file, filtro):

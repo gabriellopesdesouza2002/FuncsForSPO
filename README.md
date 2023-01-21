@@ -19,16 +19,14 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-<<<<<<< HEAD
-# Current Version -> 4.33.1
+
+# Current Version -> 4.35.0
+
+version==4.33.1 -> Melhoria e criação de diversas funções desde a versão 4.24
 
 version==4.24.0 -> Melhoria nas documentações das funções, e melhoria na função de esperar elemento
 
-=======
-# Current Version -> 4.23.6
-
->>>>>>> 598b82b34eaff4330c2ea91429ff65dafe0471d7
-version==4.23.6 -> Melhoria nas documentações das funções, e adicionada uma função para ver dias a frente ou dias a atrás
+ version==4.23.6 -> Melhoria nas documentações das funções, e adicionada uma função para ver dias a frente ou dias a atrás
 
 version==4.22.6 -> Melhorias na função do faz_log agora com formatacao Rich, melhoria nas amostras de output dos códigos
 

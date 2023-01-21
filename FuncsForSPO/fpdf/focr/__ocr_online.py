@@ -13,6 +13,7 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import *
 from webdriver_manager.chrome import ChromeDriverManager
 from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fselenium.functions_selenium import *
@@ -129,7 +130,10 @@ class GetTextPDF:
             self.DRIVER.find_element(By.CSS_SELECTOR, '#input_file0').send_keys(self.FILE_PDF)
                 
             # Clica em OCR Profundo
-            espera_elemento_disponivel_e_clica(self.WDW3, (By.CSS_SELECTOR, '#export_fullocr_box > label'))
+            try:
+                espera_elemento_disponivel_e_clica(self.WDW3, (By.CSS_SELECTOR, '#export_fullocr_box > label'))
+            except (TimeoutException, NoSuchElementException):
+                pass
 
             # Clica em Converter
             espera_elemento_disponivel_e_clica(self.WDW3, (By.CSS_SELECTOR, 'button[class="convert_button"]'))
@@ -156,7 +160,7 @@ class GetTextPDF:
                             sleep(3)
                             if prints:
                                 print('OCR Concluido!')
-            verifica_se_baixou(self.__DOWNLOAD_DIR)            
+            verifica_se_baixou_o_arquivo(self.__DOWNLOAD_DIR, '.txt')            
         except Exception as e:
             print('Ocorreu um erro!')
             print(str(e))
