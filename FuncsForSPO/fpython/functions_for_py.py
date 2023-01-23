@@ -1776,6 +1776,24 @@ def arquivo_com_caminho_absoluto(dir:str|list|tuple, filename:str) -> str:
         return os.path.join(os.path.abspath(dir[0]), *dir[1:], filename)
     else:
         return os.path.join(os.path.abspath(dir), filename)
+    
+
+def deleta_arquivos_com_uma_palavra_chave(dir:str, palavra_chave:str, basename:str=True):
+    """Recupera e deleta arquivos de acordo com a palavra chave enviada
+
+    Args:
+        dir (str): Diretório que deseja apagar os arquivos
+        palavra_chave (str): Palavra-Chave do nome ou do caminho que deseja apagar o arquivo
+        basename (bool, optional): Se deseja buscar no nome do arquivo ou no caminho total. Defaults to True.
+    """
+    files = arquivos_com_caminho_absoluto_do_arquivo(dir)
+    for file in files:
+        if basename:
+            if palavra_chave in os.path.basename(file):
+                os.remove(file)
+        else:
+            if palavra_chave in file:
+                os.remove(file)
 
 # Deprecado #
 # def remove_espacos_pontos_virgulas_de_um_int(numero: int, remove_2_ultimos_chars: bool=False) -> int:

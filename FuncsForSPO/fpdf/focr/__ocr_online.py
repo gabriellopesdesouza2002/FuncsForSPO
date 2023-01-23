@@ -142,7 +142,10 @@ class GetTextPDF:
                 print('Carregando, por favor espere, essa parte deve demorar um pouco...')
             
             # espera o elemento de completo
-            espera_elemento(self.WDW180, (By.CSS_SELECTOR, '#completed_window'))
+            try:
+                espera_elemento(self.WDW180, (By.CSS_SELECTOR, '#completed_window'))
+            except TimeoutException:
+                raise Exception('Não foi possível fazer o OCR... Provavelmenten não encontrou nenhum texto.')
 
             def verifica_se_baixou(path_dir):
                 """Verifica se baixou algum arquivo na pasta
