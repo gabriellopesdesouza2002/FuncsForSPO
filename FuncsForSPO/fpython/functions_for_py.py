@@ -1329,24 +1329,32 @@ def formata_para_real(valor:str|float, sigl:bool=False):
         return 'R$ '+valor
     return valor
 
-def cria_diretorios_para_novo_projeto_python():
-    """# ATENÇÃO, UTILIZAR SOMENTE UMA VEZ NO MOMENTO DA CRIAÇÃO DO NOVO PROJETO!"""
+def cria_diretorios_para_novo_projeto_python(create_base_dir:bool=True, packages:str='FuncsForSPO'):
+    """# ATENÇÃO, UTILIZAR SOMENTE UMA VEZ NO MOMENTO DA CRIAÇÃO DO NOVO PROJETO!
+    
+    create_base_dir: cria o diretorio para o user colocar a base
+    packages: instala pacotes necessários
+    """
     faz_log('Criando pasta e arquivo de logs com esse log...')
     # cria diretório src
     cria_dir_no_dir_de_trabalho_atual('src')
+    APP_PATH = arquivo_com_caminho_absoluto(['src', 'app'], 'app.py')
+    BASE_PATH = arquivo_com_caminho_absoluto(['src', 'base'], 'base.py')
+    DATABASE_PATH = arquivo_com_caminho_absoluto(['src', 'database'], 'database.py')
+    EXCEPTIONS_PATH = arquivo_com_caminho_absoluto(['src', 'exceptions'], 'exceptioins.py')
+    CONFIG_PATH = arquivo_com_caminho_absoluto(['bin'], 'config.json')
+    UTILS_PATH = arquivo_com_caminho_absoluto(['src', 'utils'], 'utils.py')
+    TESTS_PATH = arquivo_com_caminho_absoluto(['src', 'tests'], 'tests.py')
     # cria subdiretorios do src
-    os.makedirs('src\\app', exist_ok=True)
-    
+
     # CRIA ARQUIVO PYTHON EM SRC\\APP
-    with open('src\\app\\app.py', 'w', encoding='utf-8') as f:
+    with open(APP_PATH, 'w', encoding='utf-8') as f:
         f.write("""from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fselenium.functions_selenium import *
 """)
-    
-    os.makedirs('src\\base', exist_ok=True)
-    
+        
     # CRIA ARQUIVO PYTHON EM src\\base
-    with open('src\\base\\base.py', 'w', encoding='utf-8') as f:
+    with open(BASE_PATH, 'w', encoding='utf-8') as f:
         f.write("""from selenium.webdriver import Chrome
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
@@ -1367,11 +1375,11 @@ import os
 
 # -- GLOBAL -- #
 URL_SUPORTE = f'https://api.whatsapp.com/send?phone=5511985640273'
-CONFIG_PATH = os.path.abspath('configs\\config.json')
+CONFIG_PATH = arquivo_com_caminho_absoluto('bin', 'config.json')
 BASE = os.path.abspath('base')
-JSON_CONFIG_DATA = read_json(CONFIG_PATH)
+__DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir='downloads', print_value=False, criar_diretorio=True)
+limpa_diretorio(__DOWNLOAD_DIR)
 # -- GLOBAL -- #
-
 
 class Bot:    
     def __init__(self, headless, download_files) -> None:
@@ -1380,8 +1388,6 @@ class Bot:
         
         if download_files:
             # --- PATH BASE DIR --- #
-            self.__DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir='downloads', print_value=False, criar_diretorio=True)
-            limpa_diretorio(self.__DOWNLOAD_DIR)
             self._SETTINGS_SAVE_AS_PDF = {
                         "recentDestinations": [
                             {
@@ -1396,8 +1402,8 @@ class Bot:
 
 
             self._PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(self._SETTINGS_SAVE_AS_PDF),
-                    "savefile.default_directory":  f"{self.__DOWNLOAD_DIR}",
-                    "download.default_directory":  f"{self.__DOWNLOAD_DIR}",
+                    "savefile.default_directory":  f"{__DOWNLOAD_DIR}",
+                    "download.default_directory":  f"{__DOWNLOAD_DIR}",
                     "download.prompt_for_download": False,
                     "download.directory_upgrade": True,
                     "profile.managed_default_content_settings.images": 2,
@@ -1410,8 +1416,8 @@ class Bot:
             
         self._options.add_experimental_option("excludeSwitches", ["enable-logging", "enable-automation"])
         self._options.add_experimental_option('useAutomationExtension', False)
-            
-        self._options.add_argument(f"--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
+        self.user_agent = cria_user_agent()
+        self._options.add_argument(f"--user-agent=self.user_agent")
         self._options.add_argument("--disable-web-security")
         self._options.add_argument("--allow-running-insecure-content")
         self._options.add_argument("--disable-extensions")
@@ -1445,33 +1451,100 @@ class Bot:
 
         self.DRIVER.maximize_window()
         return self.DRIVER
-
-    def quit_web(self):
-        self.DRIVER.quit()
 """)
     
-    os.makedirs('src\\database', exist_ok=True)
-
     # CRIA ARQUIVO PYTHON EM SRC\\database
-    with open('src\\database\\database.py', 'w', encoding='utf-8') as f:
+    with open(DATABASE_PATH, 'w', encoding='utf-8') as f:
         f.write("""from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fselenium.functions_selenium import *
-""")
 
+# GLOBAL
+DATABASE_PATH = arquivo_com_caminho_absoluto('bin', 'database.db')
+# GLOBAL
+
+# BACKUP
+def faz_backup_do_banco_de_dados():
+    json_config = read_json(arquivo_com_caminho_absoluto('bin', 'config.json'))
+
+    # cria os dirs
+    cria_dir_no_dir_de_trabalho_atual(arquivo_com_caminho_absoluto('bin', 'backup'))
     
-    os.makedirs('src\\exceptions', exist_ok=True)
+    path_database_copy = arquivo_com_caminho_absoluto(['bin', 'backup'], f'database_{datetime.now().strftime("%d-%m-%Y_%H-%M-%S")}.db')
+    shutil.copy2(DATABASE_PATH, path_database_copy)
+    return path_database_copy
+# BACKUP
+
+
+# EXPORT
+def exportar_database():
+    cur, con =  connect_db(PATH_DATABASE)
+    arquivos = pd.read_sql('SELECT * FROM arquivos', con)
+    arquivos_com_ocr = pd.read_sql('SELECT * FROM arquivos_com_ocr', con)
+    # TRATAMENTOS
+    arquivos_com_ocr['data_adicao'] = arquivos_com_ocr['data_adicao'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S.%f'))
+    
+    arquivos_com_ocr.rename(columns={'caminho_arquivo': 'Caminho do Arquivo'}, inplace=True)
+    arquivos_com_ocr.rename(columns={'nome_do_arquivo': 'Nome do Arquivo'}, inplace=True)
+    arquivos_com_ocr.rename(columns={'ocr': 'OCR do Arquivo'}, inplace=True)
+    arquivos_com_ocr.rename(columns={'data_adicao': 'Data de Envio no Database'}, inplace=True)
+
+
+    arquivos.rename(columns={'caminho_arquivo': 'Caminho do Arquivo'}, inplace=True)
+    arquivos.rename(columns={'nome_do_arquivo': 'Nome do Arquivo'}, inplace=True)
+    # TRATAMENTOS
+    
+    try:
+        with pd.ExcelWriter(os.path.join(RESULTADO, 'DATABASE.xlsx')) as writer:
+            arquivos_com_ocr.to_excel(writer, sheet_name="Arquivos Com OCR", index=False)
+            arquivos.to_excel(writer, sheet_name="PDFs Recuperados da Máquina", index=False)
+    except PermissionError:
+        sleep(10)
+        try:
+            with pd.ExcelWriter(os.path.join(RESULTADO, 'DATABASE.xlsx')) as writer:
+                arquivos_com_ocr.to_excel(writer, sheet_name="Arquivos Com OCR", index=False)
+                arquivos.to_excel(writer, sheet_name="PDFs Recuperados da Máquina", index=False)
+        except PermissionError:
+            faz_log('O Arquivo está aberto, não foi possível exportar...')
+    except OSError:
+        popup_erro('Sem espaço em disco para fazer o arquivo...', 'Sem espaço...')
+        pass
+# EXPORT
+
+# DELETE
+def delete(table):
+    # Apaga todos os dados da tabela enviada
+    cur, con =  connect_db(PATH_DATABASE)
+    query = f'DELETE FROM {table};'
+    cur.execute(query)
+    con.commit()
+# DELETE
+
+# SELECT
+def select(col: str='*', table:str, data_from_line: bool=False):
+    cur, con =  connect_db(PATH_DATABASE)
+    cur.execute(f'SELECT {col} FROM {table}')
+    faz_log(f'SELECT {col} FROM {table}', 'i*')
+    data = []
+    if data_from_line:
+        for line in cur.fetchall():
+            for i in line:
+                data.append(i)
+        return tuple(data)
+    else:
+        for line in cur.fetchall():
+            data.append(line)
+        return tuple(data)
+# SELECT
+
+""")
     
     # CRIA ARQUIVO PYTHON EM SRC\\exceptions
-    with open('src\\exceptions\\exceptions.py', 'w', encoding='utf-8') as f:
+    with open(EXCEPTIONS_PATH, 'w', encoding='utf-8') as f:
         f.write("""from FuncsForSPO.fexceptions.exceptions import *
 """)
-
-
-    # cria diretório bin
-    cria_dir_no_dir_de_trabalho_atual('bin')
     
     # cria arquivo json
-    with open('bin\\config.json', 'w', encoding='utf-8') as fjson:
+    with open(CONFIG_PATH, 'w', encoding='utf-8') as fjson:
         fjson.write("""{
     "CONFIG": {
         "STRING": "STRING",
@@ -1479,18 +1552,40 @@ from FuncsForSPO.fselenium.functions_selenium import *
         "BOOL": true
         }
 }""")
+        
+    # cria arquivo utils.py
+    with open(UTILS_PATH, 'w', encoding='utf-8') as fjson:
+        fjson.write("""""")
+
+    # cria arquivo de tests
+    with open(TESTS_PATH, 'w', encoding='utf-8') as fjson:
+        fjson.write("""from FuncsForSPO.fpdf.focr.orc import *
+from FuncsForSPO.fpdf.fcompress.compress import *
+from FuncsForSPO.fpdf.fimgpdf.img_to_pdf import *
+from FuncsForSPO.fpysimplegui.functions_for_sg import *
+from FuncsForSPO.fpython.functions_for_py import *
+from FuncsForSPO.fregex.functions_re import *
+from FuncsForSPO.fselenium.functions_selenium import *
+
+# SEMPRE COLOQUE O QUE A FUNÇÃO TEM QUE FAZER EXPLICITAMENTE
+""")
 
     # cria diretório base
-    cria_dir_no_dir_de_trabalho_atual('base')
+    if create_base_dir:
+        cria_dir_no_dir_de_trabalho_atual('base')
 
     # cria ambiente virtual
     if os.path.exists('venv'):
         print('Ambiente Virtual "venv" já criado')
+        print('Baixando pacotes')
+        os.system(f'.\\venv\\Scripts\\pip.exe install {packages}')
         pass
     else:
         print('Criando Ambiente Virtual')
         os.system('python -m venv venv')
-    print('Criado')
+        print('Criado!')
+        print('Baixando pacotes')
+        os.system(f'.\\venv\Scripts\\pip.exe install {packages}')
     
 def retorna_a_menor_ou_maior_data(datas:list[str|datetime], maior:bool=True, format:str='%d/%m/%Y %H:%M', format_return:str='%d/%m/%Y %H:%M'):
     """
@@ -1754,13 +1849,14 @@ def recupera_arquivos_com_a_extensao_indicada(diretorio=pega_caminho_atual(), fi
             return files_with_extension
 
 
-def arquivo_com_caminho_absoluto(dir:str|list|tuple, filename:str) -> str:
+def arquivo_com_caminho_absoluto(dir:str|list|tuple, filename:str, create_dirs:bool=True) -> str:
     """Usa join para unir os caminhos enviados por ti para que funcionem em qualquer sistema operacional
     ele recupera o caminho absoluto do(s) diretorio(s) enviado e concatena com o arquivo enviado
 
     Args:
-        dir (str|list|tuple, optional): Diretório ou diretórios que deseja unir.
-        filename (str, optional): Arquivo que deseja usar.
+        dir (str|list|tuple): Diretório ou diretórios que deseja unir.
+        filename (str): Arquivo que deseja usar.
+        create_dirs (bool, optional): Cria os diretórios para os arquivos, Defaults is True
 
     Returns:
         str: caminho com o caminho absoluto
@@ -1773,8 +1869,12 @@ def arquivo_com_caminho_absoluto(dir:str|list|tuple, filename:str) -> str:
         >>> file_db = arquivo_com_caminho_absoluto('bin', 'database.db') # -> CAMINHO_ABS/bin/database.db
     """
     if isinstance(dir, (tuple, list)):
+        if create_dirs:
+            os.makedirs(os.path.join(os.path.abspath(dir[0]), *dir[1:]))
         return os.path.join(os.path.abspath(dir[0]), *dir[1:], filename)
     else:
+        if create_dirs:
+            os.makedirs(os.path.abspath(dir))
         return os.path.join(os.path.abspath(dir), filename)
     
 
@@ -1794,6 +1894,10 @@ def deleta_arquivos_com_uma_palavra_chave(dir:str, palavra_chave:str, basename:s
         else:
             if palavra_chave in file:
                 os.remove(file)
+
+def tipo_objeto(objeto):
+    """Apenas printa o tipo de objeto""" 
+    return print(type(objeto))
 
 # Deprecado #
 # def remove_espacos_pontos_virgulas_de_um_int(numero: int, remove_2_ultimos_chars: bool=False) -> int:

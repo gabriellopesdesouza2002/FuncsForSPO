@@ -19,6 +19,7 @@ from time import sleep
 from FuncsForSPO.fpython.functions_for_py import cria_dir_no_dir_de_trabalho_atual, cria_o_ultimo_diretorio_do_arquivo, faz_log, transforma_lista_em_string
 from FuncsForSPO.fregex.functions_re import extrair_email
 from wget import download
+from subprocess import getoutput
 
 def url_atual(driver) -> str:
     """
@@ -42,10 +43,14 @@ def atualiza_page_atual(driver) -> None:
         
     """
     driver.refresh()
+
         
-def espera_e_clica_em_varios_elementos(wdw:WebDriverWait, locator: tuple) -> None:
+def espera_e_clica_em_varios_elementos(wdw:WebDriverWait, locator: tuple, in_dom=False) -> None:
     driver = wdw._driver
-    wdw.until(EC.presence_of_all_elements_located(locator))
+    if in_dom:
+        wdw.until(EC.presence_of_element_located(locator))
+    else:
+        wdw.until(EC.presence_of_all_elements_located(locator))
     elements = driver.find_elements(*locator)
     len_elements = len(elements)
 
@@ -53,19 +58,19 @@ def espera_e_clica_em_varios_elementos(wdw:WebDriverWait, locator: tuple) -> Non
         elements[i].click()
         
         
-def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave) -> bool:
+def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave, sleep_time=2) -> bool:
     _LOCAL_DE_DOWNLOAD = os.path.abspath(diretorio_de_download)
     baixou = False
     while not baixou:
         lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
         if len(lista_arquivos) == 0:
-            sleep(2)
+            sleep(sleep_time)
             baixou = False
             lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
         else:
             for i in lista_arquivos:
                 if '.crdownload' in i:
-                    sleep(2)
+                    sleep(sleep_time)
                     lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
                     baixou = False
                     continue
@@ -74,18 +79,22 @@ def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave) -> bool:
                     faz_log('Download concluido!')
                     return True
                 else:
-                    sleep(2)
+                    sleep(sleep_time)
                     lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
                     baixou = False
-        
-def espera_elemento_disponivel_e_clica(wdw:WebDriverWait, locator: tuple) -> None:
+
+    
+def espera_elemento_disponivel_e_clica(wdw:WebDriverWait, locator: tuple, in_dom:bool=False) -> None:
     """Espera o elemento ficar disponível para clicar e clica
 
     Args:
         wdw (WebDriverWait): WebDriverWait
         locator (tuple): localização do elemento -> (By.CSS_SELECTOR, '.b')
     """
-    wdw.until(EC.element_to_be_clickable(locator)).click()
+    if in_dom:
+        return wdw.until(EC.presence_of_element_located(locator))
+    else:
+        wdw.until(EC.element_to_be_clickable(locator)).click()
 
 
 def espera_elemento(wdw:WebDriverWait, locator: tuple, in_dom:bool=False) -> WebElement:
@@ -139,7 +148,7 @@ def download_wget(url: str, out: str | None=None):
     return download(url, out)
 
 
-def espera_elemento_e_envia_send_keys(wdw:WebDriverWait, string, locator: tuple) -> None:
+def espera_elemento_e_envia_send_keys(wdw:WebDriverWait, string, locator: tuple, in_dom=False) -> None:
     """
     ### Função que espera pelo elemento enviado do locator e envia o send_keys no input ou textarea assim que possível
 
@@ -150,14 +159,14 @@ def espera_elemento_e_envia_send_keys(wdw:WebDriverWait, string, locator: tuple)
         
     """
     driver = wdw._driver
-    wdw.until(EC.element_to_be_clickable(locator))
-    try:
-        driver.find_element(*locator).send_keys(string)
-    except StaleElementReferenceException:
+    if in_dom:
+        wdw.until(EC.presence_of_element_located(locator))
+    else:
         wdw.until(EC.element_to_be_clickable(locator))
-        driver.find_element(*locator).send_keys(string)
-    
-    
+
+    driver.find_element(*locator).send_keys(string)
+
+
 def set_zoom_page(driver, zoom: int) -> None:
     """Seta o zoom da página atual
 
@@ -168,7 +177,7 @@ def set_zoom_page(driver, zoom: int) -> None:
     driver.execute_script(f"document.body.style.zoom='{zoom}%'")
     
     
-def espera_e_retorna_lista_de_elementos(wdw:WebDriverWait, locator: tuple) -> list[WebElement]:
+def espera_e_retorna_lista_de_elementos(wdw:WebDriverWait, locator: tuple, in_dom=False) -> list[WebElement]:
     """
     ### Função espera e retorna uma lista de elementos indicados no locator
 
@@ -181,8 +190,12 @@ def espera_e_retorna_lista_de_elementos(wdw:WebDriverWait, locator: tuple) -> li
         list: Lista com os elementos com o formato de Objetos (lista de Objetos)
     """
     driver = wdw._driver
-    wdw.until(EC.element_to_be_clickable(locator))
+    if in_dom:
+        wdw.until(EC.presence_of_element_located(locator))
+    else:
+        wdw.until(EC.element_to_be_clickable(locator))
     return driver.find_elements(*locator)
+
 
 def download_de_arquivo_em_sharepoint(headless, pasta_de_download_e_print, url_file, email, passwd):
     """de uma forma bem grotesca fazendo um download de um arquivo compartilhado
@@ -339,8 +352,7 @@ def download_de_arquivo_com_link_sem_ext_pdf(link: str, driver, back_to_page: bo
         driver.refresh()
 
 
-
-def espera_e_retorna_lista_de_elementos_text_from_id(wdw:WebDriverWait, locator: tuple) -> list[str]:
+def espera_e_retorna_lista_de_elementos_text_from_id(wdw:WebDriverWait, locator: tuple, in_dom=False) -> list[str]:
     """
     ### Função espera e retorna uma lista de elementos com id
     
@@ -354,7 +366,11 @@ def espera_e_retorna_lista_de_elementos_text_from_id(wdw:WebDriverWait, locator:
         list: Lista de textos dos elementos com id -> [adv 1, adv 2, adv 3, adv 4, adv 5]
     """
     driver = wdw._driver
-    wdw.until(EC.element_to_be_clickable(locator))
+    if in_dom:
+        wdw.until(EC.presence_of_element_located(locator))
+    else:
+        wdw.until(EC.element_to_be_clickable(locator))
+
     webelements = driver.find_elements(*locator)
     id = 1
     elementos_com_id = []
@@ -367,7 +383,8 @@ def espera_e_retorna_lista_de_elementos_text_from_id(wdw:WebDriverWait, locator:
     else:
         return elementos_com_id
 
-def espera_e_retorna_lista_de_elementos_text(wdw:WebDriverWait, locator: tuple, upper_mode :bool=False, strip_mode :bool=False) -> list[str]:
+
+def espera_e_retorna_lista_de_elementos_text(wdw:WebDriverWait, locator: tuple, in_dom=False, upper_mode :bool=False, strip_mode :bool=False) -> list[str]:
     """
     ### Função espera e retorna uma lista com os textos dos elementos
 
@@ -380,7 +397,10 @@ def espera_e_retorna_lista_de_elementos_text(wdw:WebDriverWait, locator: tuple, 
         list: Lista dos textos dos elementos
     """
     driver = wdw._driver
-    wdw.until(EC.element_to_be_clickable(locator))
+    if in_dom:
+        wdw.until(EC.presence_of_element_located(locator))
+    else:
+        wdw.until(EC.element_to_be_clickable(locator))
     elements = driver.find_elements(*locator)
     if upper_mode:
         elements_not_upper = [element.text for element in elements]
@@ -407,7 +427,7 @@ def espera_elemento_ficar_visivel(wdw:WebDriverWait, locator: tuple) -> WebEleme
     return wdw.until(EC.visibility_of(element))
 
 
-def baixa_pdf_via_base64_headless_only(driver: WebDriver, file_pdf_with_extension: str='MyPDF.pdf', locator: tuple=(By.CSS_SELECTOR, 'html')):
+def baixa_pdf_via_base64_headless_only(wdw: WebDriver, file_pdf_with_extension: str='MyPDF.pdf', locator: tuple=(By.CSS_SELECTOR, 'html'), in_dom=False):
     """
     ## Funciona somente com headless!
     é necessário que o driver já esteja aberto, passando somente o locator que deseja converter para pdf
@@ -422,11 +442,15 @@ def baixa_pdf_via_base64_headless_only(driver: WebDriver, file_pdf_with_extensio
         ValueError: _description_
     """
     FILE_PDF = os.path.abspath(file_pdf_with_extension)
-    element = driver.find_element(*locator)
+    driver = wdw._driver
+    if in_dom:
+        element = wdw.until(EC.presence_of_element_located(locator))
+    else:
+        element = driver.find_element(*locator)
+
     ActionChains(driver).click(element).click_and_hold().move_by_offset(0, 0).perform()
 
-    element = driver.execute_cdp_cmd(
-        "Page.printToPDF", {"path": 'html-page.pdf', "format": 'A4'})
+    element = driver.execute_cdp_cmd("Page.printToPDF", {"path": 'html-page.pdf', "format": 'A4'})
     # Importar apenas a função b64decode do módulo base64
 
     # Defina a string Base64 do arquivo PDF
@@ -451,10 +475,9 @@ def baixa_pdf_via_base64_headless_only(driver: WebDriver, file_pdf_with_extensio
             f.write(bytes)
 
 
-def verifica_se_esta_conectado_na_vpn(ping_host :str):
-    from subprocess import getoutput
-    PING_HOST = ping_host
+def verifica_conexao_vpn(ping_host :str):
     """O método verificará por ping se está conectado no ip da VPN"""
+    PING_HOST = ping_host
 
     faz_log('Verificando se VPN está ativa pelo IP enviado no config.ini')
     
@@ -465,8 +488,7 @@ def verifica_se_esta_conectado_na_vpn(ping_host :str):
         faz_log("VPN conectada com sucesso!")
 
 
-
-def espera_elemento_ficar_visivel_ativo_e_clicavel(wdw:WebDriverWait, locator: tuple) -> WebElement|None:
+def espera_elemento_ficar_visivel_ativo_e_clicavel(wdw:WebDriverWait, locator: tuple, in_dom=False) -> WebElement|None:
     """Espera Elemento ficar visivel, ativo e clicavel
 
     Args:
@@ -479,11 +501,14 @@ def espera_elemento_ficar_visivel_ativo_e_clicavel(wdw:WebDriverWait, locator: t
     """
     driver = wdw._driver
     element = driver.find_element(*locator)
-    wdw.until(EC.element_to_be_clickable(locator))
+    if in_dom:
+        wdw.until(EC.presence_of_element_located(locator))
+    else:
+        wdw.until(EC.element_to_be_clickable(locator))
     return wdw.until(EC.visibility_of(element))
 
 
-def espera_e_retorna_conteudo_do_atributo_do_elemento_text(wdw:WebDriverWait, atributo, locator: tuple) -> str:
+def espera_e_retorna_conteudo_do_atributo_do_elemento_text(wdw:WebDriverWait, atributo, locator: tuple, in_dom=False) -> str:
     """
     ### Função que espera pelo elemento e retorna o texto do atributo do elemento escolhido
 
@@ -497,11 +522,15 @@ def espera_e_retorna_conteudo_do_atributo_do_elemento_text(wdw:WebDriverWait, at
         str: retorna uma string com o valor do atributo do elemento
     """
     driver = wdw._driver
-    wdw.until(EC.element_to_be_clickable(locator))
+    if in_dom:
+        wdw.until(EC.presence_of_element_located(locator))
+    else:
+        wdw.until(EC.element_to_be_clickable(locator))
+        
     return driver.find_element(*locator).get_attribute(atributo)
 
 
-def espera_e_retorna_conteudo_dos_atributos_dos_elementos_text(wdw:WebDriverWait, atributo, locator: tuple) -> list:
+def espera_e_retorna_conteudo_dos_atributos_dos_elementos_text(wdw:WebDriverWait, atributo, locator: tuple, in_dom=False) -> list:
     """
     ### Função espera e retorna o valor dos atributos de vários elementos
 
@@ -515,13 +544,17 @@ def espera_e_retorna_conteudo_dos_atributos_dos_elementos_text(wdw:WebDriverWait
         list: Lista com os atributos de todos os elementos (é necessário que o atibuto enviado exista em todos os elementos como um href)
     """
     driver = wdw._driver
-    wdw.until(EC.element_to_be_clickable(locator))
+    if in_dom:
+        wdw.until(EC.presence_of_element_located(locator))
+    else:
+        wdw.until(EC.element_to_be_clickable(locator))
+
     atributos = driver.find_elements(*locator)
     elementos_atributos = [atributo_selen.get_attribute(atributo) for atributo_selen in atributos]
     return elementos_atributos
         
-        
-def espera_e_retorna_elemento_text(wdw:WebDriverWait, locator: tuple) -> str:
+
+def espera_e_retorna_elemento_text(wdw:WebDriverWait, locator: tuple, in_dom=False) -> str:
     """Função espera o elemento e retorna o seu texto
 
     Args:
@@ -533,7 +566,10 @@ def espera_e_retorna_elemento_text(wdw:WebDriverWait, locator: tuple) -> str:
         str: Retorna a string de um elemento
     """
     driver = wdw._driver
-    wdw.until(EC.element_to_be_clickable(locator))
+    if in_dom:
+        wdw.until(EC.presence_of_element_located(locator))
+    else:
+        wdw.until(EC.element_to_be_clickable(locator))
     return driver.find_element(*locator).text
     
     
@@ -651,8 +687,8 @@ def espera_enquanto_nao_tem_resposta_do_site(wdw:WebDriverWait, locator : tuple)
                     print("Olha, não foi possível. A página provavelmente caiu feio :(")
                     print("Infelizmente o programa vai ser finalizado...")
                     driver.quit()
-                   
-                   
+
+
 def volta_paginas(driver, qtd_pages_para_voltar : int=1, espera_ao_mudar=0) -> None:
     """
     ### Essa função volta (back) quantas páginas você desejar
@@ -674,6 +710,7 @@ def volta_paginas(driver, qtd_pages_para_voltar : int=1, espera_ao_mudar=0) -> N
             sleep(espera_ao_mudar)
             driver.back()
             driver.refresh()
+
 
 def cria_user_agent() -> str:
     """Cria um user-agent automaticamente com a biblio fake_useragent
@@ -697,8 +734,7 @@ def cria_user_agent() -> str:
     return user_agent
 
 
-
-def espera_input_limpa_e_envia_send_keys_preessiona_esc(wdw:WebDriverWait, keys : str, locator : tuple) -> None:
+def espera_input_limpa_e_envia_send_keys_preessiona_esc(wdw:WebDriverWait, keys : str, locator : tuple, in_dom=False) -> None:
     from selenium.common.exceptions import StaleElementReferenceException
     from selenium.webdriver.common.keys import Keys
 
@@ -713,20 +749,26 @@ def espera_input_limpa_e_envia_send_keys_preessiona_esc(wdw:WebDriverWait, keys 
     """
     driver = wdw._driver
     try:
-        wdw.until(EC.element_to_be_clickable(locator))
+        if in_dom:
+            wdw.until(EC.presence_of_element_located(locator))
+        else:
+            wdw.until(EC.element_to_be_clickable(locator))
         driver.find_element(*locator).click()
         driver.find_element(*locator).send_keys(Keys.ESCAPE)
         driver.find_element(*locator).clear()
         driver.find_element(*locator).send_keys(keys)
     except StaleElementReferenceException:
-        wdw.until(EC.element_to_be_clickable(locator))
+        if in_dom:
+            wdw.until(EC.presence_of_element_located(locator))
+        else:
+            wdw.until(EC.element_to_be_clickable(locator))
         driver.find_element(*locator).click()
         driver.find_element(*locator).send_keys(Keys.ESCAPE)
         driver.find_element(*locator).clear()
         driver.find_element(*locator).send_keys(keys)
 
     
-def espera_input_limpa_e_envia_send_keys(wdw:WebDriverWait, keys : str, locator : tuple, click: bool=True) -> None:
+def espera_input_limpa_e_envia_send_keys(wdw:WebDriverWait, keys : str, locator : tuple, click: bool=True, in_dom=False) -> None:
     from selenium.common.exceptions import StaleElementReferenceException
     """
     ### Função espera pelo input ou textarea indicado pelo locator, limpa ele e envia os dados
@@ -740,49 +782,43 @@ def espera_input_limpa_e_envia_send_keys(wdw:WebDriverWait, keys : str, locator 
     """
     driver = wdw._driver
     try:
-        wdw.until(EC.element_to_be_clickable(locator))
+        if in_dom:
+            wdw.until(EC.presence_of_element_located(locator))
+        else:
+            wdw.until(EC.element_to_be_clickable(locator))
         if click:
             driver.find_element(*locator).click()
         driver.find_element(*locator).clear()
         driver.find_element(*locator).send_keys(keys)
     except StaleElementReferenceException:
-        wdw.until(EC.element_to_be_clickable(locator))
+        if in_dom:
+            wdw.until(EC.presence_of_element_located(locator))
+        else:
+            wdw.until(EC.element_to_be_clickable(locator))
         if click:
             driver.find_element(*locator).click()
         driver.find_element(*locator).clear()
         driver.find_element(*locator).send_keys(keys)
-    
+
         
 def espera_elemento_sair_do_dom(wdw:WebDriverWait, locator) -> WebElement:
     return wdw.until_not(EC.presence_of_element_located(locator))
-    
 
-def pega_somente_numeros_de_uma_str(string) -> list:
-    """
-    ### Função que retorna uma LISTA somente com os números de uma string
-    #### Removida do site: https://www.delftstack.com/pt/howto/python/python-extract-number-from-string/#:~:text=Utilizar%20a%20Compreens%C3%A3o%20da%20Lista,%C3%A9%20encontrado%20atrav%C3%A9s%20da%20itera%C3%A7%C3%A3o.
-       
-    Args:
-        string (str): String que tem números com letras
-    """
-    numbers = [int(temp) for temp in string.split() if temp.isdigit()]
-    return numbers
-    
-    
-def espera_elemento_ficar_ativo_e_clica(wdw:WebDriverWait, locator : tuple) -> None:
+
+def espera_elemento_ficar_ativo_e_clica(wdw:WebDriverWait, locator : tuple, in_dom=False) -> None:
     driver = wdw._driver
-    wdw.until_not(EC.element_to_be_selected(driver.find_element(*locator)))
-            # qualquer h1 que aparecer vai falar (apareceu)
-
-    print('O Botão está ativo')
+    if in_dom:
+        wdw.until(EC.presence_of_element_located(locator))
+    else:
+        wdw.until_not(EC.element_to_be_selected(driver.find_element(*locator)))
 
     driver.find_element(*locator).click()
         
         
 def espera_elemento_nao_estar_mais_visivel(wdw:WebDriverWait, locator) -> WebElement:
     return wdw.until_not(EC.visibility_of(*locator))
-    
-    
+
+
 def espera_elemento_estar_visivel(wdw:WebDriverWait, locator, with_visibility_of: bool=True):
     driver = wdw._driver
     if with_visibility_of:
@@ -792,7 +828,6 @@ def espera_elemento_estar_visivel(wdw:WebDriverWait, locator, with_visibility_of
         element = driver.find_element(*locator)
         return wdw.until(EC.element_to_be_clickable(locator))
         
-
 
 def find_window_to_title_contain(driver, title_contain_switch: str) -> None: # quero que pelo menos um pedaco do titulo que seja str
     """
@@ -837,7 +872,7 @@ def find_window_to_url(driver, url_switch: str) -> None: # quero uma url que sej
             print(f'Janela não encontrada!\n'
                 f'Verifique o valor enviado "{url_switch}"')
     
-          
+
 def find_window_to_url_contain(driver, contain_url_switch: str) -> None: # quero uma url que seja str
     """
     ### Essa função muda de janela quando a url conter no parametro enviado
@@ -858,30 +893,9 @@ def find_window_to_url_contain(driver, contain_url_switch: str) -> None: # quero
         else:
             print(f'Janela não encontrada!\n'
                 f'Verifique o valor enviado "{contain_url_switch}"')
+
         
-        
-# def avisa_quando_fecha_janela(wdw, num_de_janelas: int=2):
-#     qtd_janelas = wdw.until(EC.number_of_windows_to_be(num_de_janelas))
-    
-#     if qtd_janelas == num_de_janelas:
-#         if wdw.until(EC.new_window_is_opened(2))
-    
-#     tentativas = 10
-    
-#     while tentativas != 0:
-#         sleep(1)
-#         if qtd_janelas == num_de_janelas:
-#             while qtd_janelas == num_de_janelas:
-#                 qtd_janelas = wdw.until(EC.number_of_windows_to_be(num_de_janelas))
-#             else:
-#                 return True
-#         else:
-#             tentativas -= 1
-#             continue
-#     else:
-#         print('NAO ACHOU JANELAS')
-        
-def pega_codigo_fonte_de_elemento(wdw:WebDriverWait, locator: tuple) -> str:
+def pega_codigo_fonte_de_elemento(wdw:WebDriverWait, locator: tuple, in_dom=False) -> str:
     """Retorna todo o código fonte do locator
 
     Args:
@@ -893,7 +907,10 @@ def pega_codigo_fonte_de_elemento(wdw:WebDriverWait, locator: tuple) -> str:
         str: Código fonte do WebElement
     """
     driver = wdw._driver
-    wdw.until(EC.element_to_be_clickable(locator))
+    if in_dom:
+        wdw.until(EC.presence_of_element_located(locator))
+    else:
+        wdw.until(EC.element_to_be_clickable(locator))
     element = driver.find_element(*locator)
     return element.get_attribute("outerHTML")
 
@@ -908,8 +925,8 @@ def verifica_se_diminuiu_qtd_de_janelas(driver, qtd_de_w) -> None:
             driver.close()
     else:
         verifica_se_diminuiu_qtd_de_janelas(driver, qtd_de_w)
-        
-            
+
+
 def find_window_to_url_contain_and_close_window(driver, contain_url_to_switch: str) -> None: # quero uma url que seja str
     """
     ### Essa função muda de janela quando a url conter no parametro enviado
@@ -928,7 +945,8 @@ def find_window_to_url_contain_and_close_window(driver, contain_url_to_switch: s
         if contain_url_to_switch in driver.current_url:
             driver.close()
             break
-        
+
+
 def espera_input_limpa_e_envia_send_keys_preessiona_esc_tmb_no_final(wdw:WebDriverWait, keys : str, locator : tuple):
     """
     ### Função espera pelo input ou textarea indicado pelo locator, limpa ele e envia os dados
@@ -956,7 +974,7 @@ def espera_input_limpa_e_envia_send_keys_preessiona_esc_tmb_no_final(wdw:WebDriv
         driver.find_element(*locator).send_keys(Keys.ESCAPE)
 
 
-def recupera_text_de_todo_um_site(url:str, tag_name:str='body', no_escape_sequence:bool=True) -> str:
+def recupera_text_de_todo_um_site(url:str, tag_name:str='body', no_escape_sequence:bool=True, sleep_request:int=0) -> str:
     """Recupera o texto de um site, a partir da tag_name enviada
     
     Args:
@@ -970,216 +988,10 @@ def recupera_text_de_todo_um_site(url:str, tag_name:str='body', no_escape_sequen
     from bs4 import BeautifulSoup
     import requests
     r = requests.get(url)
+    sleep(sleep_request)
     soup = BeautifulSoup(r.content, 'html5lib')
     if no_escape_sequence:
         return soup.find(tag_name).text.replace('\n', '').replace(u'\xa0', u' ')
     else:
         return soup.find(tag_name).text.replace(u'\xa0', u' ')
 
-
-
-
-# def foca_no_elemento(driver, locator:tuple):
-    # driver.find_element(locator).send_keys(Keys.)
-
-#################################################################
-######### Padrão de classe base WebDriver para projetos #########
-#################################################################
-
-"""
-from selenium.webdriver import Chrome
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.common.exceptions import *
-from webdriver_manager.chrome import ChromeDriverManager
-from FuncsForSPO.fpython.functions_for_py import *
-from FuncsForSPO.fselenium.functions_selenium import *
-from FuncsForSPO.fwinotify.fwinotify import *
-from FuncsForSPO.fregex.functions_re import *
-from src.exceptions.exceptions import *
-import pandas as pd
-import json
-import os
-
-URL_SUPORTE = f'https://api.whatsapp.com/send?phone=5511985640273'
-PATH_CONFIGS = os.path.join(os.path.abspath('.bin'), 'config.json')
-JSON_CONFIG: dict = read_json(PATH_CONFIGS)
-
-class Bot:    
-    def __init__(self, headless:bool, download_files:bool|str) -> None:
-        # --- CHROME OPTIONS --- #
-        self._options = ChromeOptions()
-        
-        
-        # --- PATH BASE DIR --- #
-        if download_files:
-            self.__DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir='downloads', print_value=False, criar_diretorio=True)
-            self._SETTINGS_SAVE_AS_PDF = {
-                        "recentDestinations": [
-                            {
-                                "id": "Save as PDF",
-                                "origin": "local",
-                                "account": ""
-                            }
-                        ],
-                        "selectedDestinationId": "Save as PDF",
-                        "version": 2,
-                    }
-
-
-            self._PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(self._SETTINGS_SAVE_AS_PDF),
-                    "savefile.default_directory":  f"{self.__DOWNLOAD_DIR}",
-                    "download.default_directory":  f"{self.__DOWNLOAD_DIR}",
-                    "download.prompt_for_download": False,
-                    "download.directory_upgrade": True,
-                    "profile.managed_default_content_settings.images": 2,
-                    "safebrowsing.enabled": True}
-                
-            self._options.add_experimental_option('prefs', self._PROFILE)
-        
-        self._options.add_experimental_option("excludeSwitches", ["enable-logging", "enable-automation"])
-        if headless == True:
-            self._options.add_argument('--headless')
-        self._options.add_argument("--disable-print-preview")
-        self._options.add_argument(f"--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36")
-        self._options.add_argument("--disable-web-security")
-        self._options.add_argument("--allow-running-insecure-content")
-        self._options.add_argument("--disable-extensions")
-        self._options.add_argument("--start-maximized")
-        self._options.add_argument("--no-sandbox")
-        self._options.add_argument("--disable-setuid-sandbox")
-        self._options.add_argument("--disable-infobars")
-        self._options.add_argument("--disable-webgl")
-        self._options.add_argument("--disable-popup-blocking")
-        self._options.add_argument('--disable-gpu')
-        self._options.add_argument('--disable-software-rasterizer')
-        self._options.add_argument('--no-proxy-server')
-        self._options.add_argument("--proxy-server='direct://'")
-        self._options.add_argument('--proxy-bypass-list=*')
-        self._options.add_argument('--disable-dev-shm-usage')
-        self._options.add_argument('--block-new-web-contents')
-        self._options.add_argument('--incognito')
-        self._options.add_argument('–disable-notifications')
-        self._options.add_experimental_option('useAutomationExtension', False)
-        self._options.add_argument("--window-size=1920,1080")
-        
-        self.__service = Service(ChromeDriverManager().install())
-        
-        # create DRIVER
-        self.DRIVER = Chrome(service=self.__service, options=self._options)
-        self.WDW3 = WebDriverWait(self.DRIVER, timeout=3)
-        self.WDW5 = WebDriverWait(self.DRIVER, timeout=5)
-        self.WDW7 = WebDriverWait(self.DRIVER, timeout=7)
-        self.WDW10 = WebDriverWait(self.DRIVER, timeout=10)
-        self.WDW30 = WebDriverWait(self.DRIVER, timeout=30)
-        self.WDW = self.WDW7
-
-        self.DRIVER.maximize_window()
-
-"""
-
-###########################################################
-######### Padrão de classe __init__ para projetos #########
-##########################################################
-
-
-
-
-
-
-
-#######################################################################################################
-######### Padrão de classe __init__ para projetos QUE TENHAM IMPRESSÃO E DOWNLOAD DE ARQUIVOS #########
-#######################################################################################################
-"""
-from datetime import datetime
-from selenium.webdriver import Chrome
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from webdriver_manager.chrome import ChromeDriverManager
-from src.tools.functions.functions_for_py import *
-from src.tools.functions.functions_selenium import *
-from src.tools.functions.openpyxl_funcs import *
-from FuncsForSPO.fpython.functions_for_py import faz_log
-import json
-import os
-import pandas
-import openpyxl
-from src.tools.exceptions.exceptions import *
-
-
-class Bot:    
-    def __init__(self, configs):
-        # --- PATH BASE DIR --- #
-        # PATH_BASE_DIR = os.path.abspath(r".\base")
-
-        # --- CONFIG.INI SETTINGS --- #
-        config = configs
-        URL = config['SECTION']['site']
-        TIMEOUT = config['SECTION']['tempo_para_achar_elementos']
-        HEADLESS = config['SECTION']['headless']
-        USUARIO = config['SECTION']['usuario']
-        SENHA = config['SECTION']['senha']
-        
-        # --- CHROME OPTIONS --- #
-        options = webdriver.ChromeOptions()
-        SETTINGS_SAVE_AS_PDF = {
-                        "recentDestinations": [
-                            {
-                                "id": "Save as PDF",
-                                "origin": "local",
-                                "account": ""
-                            }
-                        ],
-                        "selectedDestinationId": "Save as PDF",
-                        "version": 2,
-                    }
-
-        PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(SETTINGS_SAVE_AS_PDF),
-                "savefile.default_directory":  f"{DOWNLOAD_DIR}",
-                "download.default_directory":  f"{DOWNLOAD_DIR}",
-                "download.prompt_for_download": False,
-                "download.directory_upgrade": True,
-                "safebrowsing.enabled": True}
-                
-        options.add_experimental_option('prefs', PROFILE)
-        options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        if HEADLESS == 'True':
-            options.add_argument('--headless')
-        options.add_argument("--disable-print-preview")
-        options.add_argument("--disable-web-security")
-        options.add_argument("--allow-running-insecure-content")
-        options.add_argument("--disable-extensions")
-        options.add_argument("--start-maximized")
-        options.add_argument("--no-sandbox")
-        options.add_argument("--disable-setuid-sandbox")
-        options.add_argument("--disable-infobars")
-        options.add_argument("--disable-webgl")
-        options.add_argument("--disable-popup-blocking")
-        options.add_argument('--disable-gpu')
-        options.add_argument('--disable-software-rasterizer')
-        options.add_argument('--no-proxy-server')
-        options.add_argument("--proxy-server='direct://'")
-        options.add_argument('--proxy-bypass-list=*')
-        options.add_argument('--disable-dev-shm-usage')
-        
-        service = Service(ChromeDriverManager().install())
-        CHROME = Chrome(service=service, options=options)
-        WDW = WebDriverWait(CHROME, timeout=int(TIMEOUT))
-        WDW3 = WebDriverWait(CHROME, timeout=3)
-        CHROME.maximize_window()
-        
-        # --- READ BASE --- #
-        DADOS_BASE = le_base()
-"""
-
-#######################################################################################################
-######### Padrão de classe __init__ para projetos QUE TENHAM IMPRESSÃO E DOWNLOAD DE ARQUIVOS #########
-#######################################################################################################

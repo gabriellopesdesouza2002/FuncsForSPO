@@ -131,40 +131,45 @@ def remove_caracteres_de_string():
     return string
 
 
-def extrair_numeros(str, return_first=True) -> list[str]|str:
-    """Recupera somente números de uma string
+# def extrair_numeros(str, return_first=True) -> list[str]|str:
+#     """Recupera somente números de uma string
+
+#     Args:
+#         str (string): string com os números
+#         return_first (bool, optional): retorna o primeiro conjunto de números. Defaults to True.
+
+#     Returns:
+#         list|str: lista com os números ou ou uma string com os números
+#     """
+#     if return_first:
+#         return re.findall('\d+', str)[0]  # return str
+#     else:
+#         return re.findall('\d+', str) # return list
+
+
+def extrair_num_processo(text: str, get_one=False, drop_duplicates=False) -> tuple|str:
+    """Retorna os números de processos em um texto
 
     Args:
-        str (string): string com os números
-        return_first (bool, optional): retorna o primeiro conjunto de números. Defaults to True.
+        text (str): texto do documento
+        get_one (bool, optional): Recupera a primeira ocorrencia [0]. Defaults to False.
+        drop_duplicates (bool, optional): Remove duplicados. Defaults to False.
 
     Returns:
-        list|str: lista com os números ou ou uma string com os números
+        tuple|str: Dependendo da execução retorna uma lista tupla ou str, caso seja apenas o texto e remove_duplicates, será uma tupla, em outros casos uma string
     """
-    if return_first:
-        return re.findall('\d+', str)[0]  # return str
+    if get_one: # retorna a primeira ocorrencia
+        try:
+            return tuple(set(re.findall("\d{7}-\d{2}.\d{4}.\d{1}.\d{2}.\d{4}", text)))[0]
+        except IndexError:
+            return tuple()
+    if drop_duplicates:
+        return tuple(set(re.findall("\d{7}-\d{2}.\d{4}.\d{1}.\d{2}.\d{4}", text)))
     else:
-        return re.findall('\d+', str) # return list
+        return tuple(re.findall("\d{7}-\d{2}.\d{4}.\d{1}.\d{2}.\d{4}", text))
 
 
-def extrair_num_processo(text: str) -> list:
-    """### Retorna o(s) número(s) de processo(s)
-
-    Args:
-        text (str): texto com o(s) ñ de processo(s)
-
-    Returns:
-        list: número(s) de processo(s)
-    """
-    processo = re.search("\d{7}-\d{2}.\d{4}.\d{1}.\d{2}.\d{4}", text)
-    if processo:
-        processo = processo.group()
-    else:
-        processo = ''
-    return processo
-
-
-def extrair_cnpjs(text: str) -> list:
+def extrair_cnpjs(text: str, get_one=False, drop_duplicates=False) -> tuple|str:
     """### Recupera cnpj(s) da string
 
     Args:
@@ -173,13 +178,18 @@ def extrair_cnpjs(text: str) -> list:
     Returns:
         list: cnpj(s)
     """
-    cnpjs = re.findall("\d{2}.\d{3}.\d{3}/\d{4}-\d{2}", text)    
-    if not cnpjs or len(cnpjs) == 0:
-        cnpjs = []
-    return cnpjs, text
+    if drop_duplicates:
+        return tuple(set(re.findall("\d{2}.\d{3}.\d{3}\/\d{4}-\d{2}", text)))
+    if get_one:
+        try:
+            return tuple(set(re.findall("\d{2}.\d{3}.\d{3}\/\d{4}-\d{2}", text)))[0]
+        except IndexError:
+            return tuple()
+    else:
+        return tuple(re.findall("\d{2}.\d{3}.\d{3}\/\d{4}-\d{2}", text))
 
 
-def extrair_datas(text: str) -> str:
+def extrair_datas(text: str, get_one=False, drop_duplicates=False) -> str:
     """### Retorna datas no padrão \d{2}/\d{2}/\d{4} -> 00/00/0000
 
     Args:
@@ -188,10 +198,15 @@ def extrair_datas(text: str) -> str:
     Returns:
         list: data(s)
     """
-    datas = re.findall("\d{2}/\d{2}/\d{4}", text.lower())    
-    if not datas or len(datas) == 0:
-        datas = []
-    return datas
+    if get_one: 
+        try:
+            return tuple(set(re.findall("\d{2}/\d{2}/\d{4}", text.lower())))[0]
+        except IndexError:
+            return tuple()
+    if drop_duplicates:
+        return tuple(set(re.findall("\d{2}/\d{2}/\d{4}", text.lower())))
+    else:
+        return tuple(re.findall("\d{2}/\d{2}/\d{4}", text.lower()))
 
 
 def pega_id(assunto: str) -> str:
@@ -247,7 +262,6 @@ def pega_id(assunto: str) -> str:
         faz_log(f'Não existe ID para o ASSUNTO: {assunto}', 'w')
         return False
 
-
 def extrair_ids(text: str) -> tuple[list, int]:
     """Extrair IDS do Elaw
 
@@ -261,7 +275,6 @@ def extrair_ids(text: str) -> tuple[list, int]:
     if not ids or len(ids) == 0:
         ids = []
     return ids, len(ids)
-
 
 def extrair_nome_do_arquivo_num_path(path_abs: str|list|tuple):
     """Extrai nome de um arquivo em um caminho absoluto

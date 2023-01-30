@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-version = '4.35.1'
+version = '4.37.0'
 
 with open("README.md", "r", encoding='utf-8') as fh:
     readme = fh.read()
@@ -53,6 +53,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
             'winotify',
             'random-user-agent',
             'pypdf',
+            'pywin32',
             'rich==12.6.0',
             'pyinstaller==5.6.2',
         ],
