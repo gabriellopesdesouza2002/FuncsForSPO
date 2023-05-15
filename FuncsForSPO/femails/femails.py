@@ -13,68 +13,66 @@ from email.mime.text import MIMEText
 from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fregex.functions_re import extrair_email
 import smtplib
+import win32com.client as win32
 
-if my_os.lower().strip() == 'windows':
-    import win32com.client as win32
-    def enviar_email_outlook(to: list|str, assunto: str='Assunto do E-mail', body: str='<p>Olá!</p>', anexos :list|tuple|str|bool=False, enviar_dataframe_no_corpo: list|tuple|bool=False) -> None:
-        """Função que envia e-mails via outlook (nativamente do sistema)
-        ## É de suma importancia ter uma conta no Outlook
-        ### É possível enviar 
-        
-        Args:
-            to (list | str) -> lista ou string do(s) destinatário(s)
-            
-            assunto (str) -> Assunto do e-mail. Default is Assunto do E-mail
-            
-            body (str) -> Corpo do e-mail (preferível HTML) Default is <p>Olá!</p>
-            
-            anexos (list | tuple | str | bool=False) ->  Lista, tupla, ou string contendo o caminho do arquivo que será adicionado no e-mail (caso envie True sem enviar nada, ocorrerá erro!)
-            
-            enviar_dataframe_no_corpo (list | tuple | bool) -> Essa variável caso venha uma lista ou tupla será desempacotada na função build_table() do pretty_html_table. Então é possível enviar qualquer parametro na ordem da função. (caso envie True sem enviar nada, ocorrerá erro!)
-            https://pypi.org/project/pretty-html-table/
-            
-            
-        Returns:
-            None
-        """
-        #--- Converte para string para verificação ---#
-        emails = transforma_lista_em_string(to)
-        emails = extrair_email(emails)
-        
-        if enviar_dataframe_no_corpo:
-            # (df, 'theme_on_pretty_html_table')
-            if isinstance(enviar_dataframe_no_corpo, list) or isinstance(enviar_dataframe_no_corpo, tuple):
-                html_table = build_table(*enviar_dataframe_no_corpo)
-                body = f"""{body}
-                {html_table}"""
-
-        outlook = win32.Dispatch('outlook.application')
-        mail = outlook.CreateItem(0)
-        if isinstance(to, str):
-            mail.To = to
-        if isinstance(to, list) or  isinstance(to, tuple):
-            mail.To = ";".join(emails)
-        mail.Subject = assunto
-        
-        if anexos:
-            if isinstance(anexos, str):
-                mail.Attachments.Add(anexos)
-            if isinstance(anexos, list) or isinstance(anexos, tuple):
-                for anexo in anexos:
-                    mail.Attachments.Add(anexo)
-
-        mail.HTMLBody = (body)
-        try:
-            mail.Send()
-        except Exception as e:
-            exception = str(e)
-            if 'Verifique se você inseriu pelo menos um nome' in exception:
-                print('Precisamos saber para quem enviar isto. Verifique se você inseriu pelo menos um nome.')
-                return
-            
-        print('E-mail enviado com sucesso!')
+def enviar_email_outlook(to: list|str, assunto: str='Assunto do E-mail', body: str='<p>Olá!</p>', anexos :list|tuple|str|bool=False, enviar_dataframe_no_corpo: list|tuple|bool=False) -> None:
+    """Função que envia e-mails via outlook (nativamente do sistema)
+    ## É de suma importancia ter uma conta no Outlook
+    ### É possível enviar 
     
+    Args:
+        to (list | str) -> lista ou string do(s) destinatário(s)
+        
+        assunto (str) -> Assunto do e-mail. Default is Assunto do E-mail
+        
+        body (str) -> Corpo do e-mail (preferível HTML) Default is <p>Olá!</p>
+        
+        anexos (list | tuple | str | bool=False) ->  Lista, tupla, ou string contendo o caminho do arquivo que será adicionado no e-mail (caso envie True sem enviar nada, ocorrerá erro!)
+        
+        enviar_dataframe_no_corpo (list | tuple | bool) -> Essa variável caso venha uma lista ou tupla será desempacotada na função build_table() do pretty_html_table. Então é possível enviar qualquer parametro na ordem da função. (caso envie True sem enviar nada, ocorrerá erro!)
+        https://pypi.org/project/pretty-html-table/
+        
+        
+    Returns:
+        None
+    """
+    #--- Converte para string para verificação ---#
+    emails = transforma_lista_em_string(to)
+    emails = extrair_email(emails)
     
+    if enviar_dataframe_no_corpo:
+        # (df, 'theme_on_pretty_html_table')
+        if isinstance(enviar_dataframe_no_corpo, list) or isinstance(enviar_dataframe_no_corpo, tuple):
+            html_table = build_table(*enviar_dataframe_no_corpo)
+            body = f"""{body}
+            {html_table}"""
+
+    outlook = win32.Dispatch('outlook.application')
+    mail = outlook.CreateItem(0)
+    if isinstance(to, str):
+        mail.To = to
+    if isinstance(to, list) or  isinstance(to, tuple):
+        mail.To = ";".join(emails)
+    mail.Subject = assunto
+    
+    if anexos:
+        if isinstance(anexos, str):
+            mail.Attachments.Add(anexos)
+        if isinstance(anexos, list) or isinstance(anexos, tuple):
+            for anexo in anexos:
+                mail.Attachments.Add(anexo)
+
+    mail.HTMLBody = (body)
+    try:
+        mail.Send()
+    except Exception as e:
+        exception = str(e)
+        if 'Verifique se você inseriu pelo menos um nome' in exception:
+            print('Precisamos saber para quem enviar isto. Verifique se você inseriu pelo menos um nome.')
+            return
+        
+    print('E-mail enviado com sucesso!')
+
 def envia_email_gmail(
     email_app_google: str,
     passwd_app_gmail: str,
@@ -120,10 +118,6 @@ def envia_email_gmail(
         assunto (str): Assunto do E-mail
         body_msg (str): Corpo do E-mail
         anexos (tuple | list | bool): Anexos, optional, default = False
-<<<<<<< HEAD
-=======
-        prints (bool): Mostra as eventuais saídas, como por exemplo a recuperação dos anexos e falando que o e-mail foi enviado
->>>>>>> 598b82b34eaff4330c2ea91429ff65dafe0471d7
     """
 
     msg = MIMEMultipart()

@@ -56,8 +56,8 @@ class HtmlToPdf:
         # --- PATH BASE DIR --- #
         self.CODE_HTML = code_html
         
-        self.__DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir=dir_exit, print_value=False, criar_diretorio=True)
-        limpa_diretorio(self.__DOWNLOAD_DIR)
+        self.DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir=dir_exit, print_value=False, criar_diretorio=True)
+        limpa_diretorio(self.DOWNLOAD_DIR)
             
         self._SETTINGS_SAVE_AS_PDF = {
                     "recentDestinations": [
@@ -73,8 +73,8 @@ class HtmlToPdf:
 
 
         self._PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(self._SETTINGS_SAVE_AS_PDF),
-                "savefile.default_directory":  f"{self.__DOWNLOAD_DIR}",
-                "download.default_directory":  f"{self.__DOWNLOAD_DIR}",
+                "savefile.default_directory":  f"{self.DOWNLOAD_DIR}",
+                "download.default_directory":  f"{self.DOWNLOAD_DIR}",
                 "download.prompt_for_download": False,
                 "download.directory_upgrade": True,
                 "safebrowsing.enabled": True}
@@ -91,6 +91,22 @@ class HtmlToPdf:
             self.DRIVER = Chrome(service=self.__service, options=self._options)
         else:
             self.DRIVER = Chrome(options=self._options)
+            
+        def enable_download_in_headless_chrome(driver, download_dir):
+            """
+            Esse código adiciona suporte ao navegador Chrome sem interface gráfica (headless) no Selenium WebDriver para permitir o download automático de arquivos em um diretório especificado.
+
+            Mais especificamente, o código adiciona um comando ausente "send_command" ao executor de comando do driver e, em seguida, executa um comando "Page.setDownloadBehavior" para permitir o download automático de arquivos no diretório especificado.
+
+            O primeiro passo é necessário porque o suporte para o comando "send_command" não está incluído no Selenium WebDriver por padrão. O segundo passo usa o comando "Page.setDownloadBehavior" do Chrome DevTools Protocol para permitir o download automático de arquivos em um diretório especificado.
+
+            Em resumo, o código adiciona suporte para o download automático de arquivos em um diretório especificado no Chrome sem interface gráfica usando o Selenium WebDriver.
+            """
+            driver.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
+
+            params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
+            command_result = driver.execute("send_command", params)
+        enable_download_in_headless_chrome(self.DRIVER, self.DOWNLOAD_DIR)
 
         # - WebDriverWaits - #
         self.WDW3 = WebDriverWait(self.DRIVER, timeout=3)
@@ -120,9 +136,9 @@ class HtmlToPdf:
             espera_elemento_disponivel_e_clica(self.WDW30, (By.CSS_SELECTOR, 'button[class="html_to_pdf btn btn-primary glow mr-1 "]'))
 
             espera_elemento_disponivel_e_clica(self.WDW60, (By.CSS_SELECTOR, 'a[href*="file"]'))
-            verifica_se_baixou_o_arquivo(self.__DOWNLOAD_DIR, '.pdf')
+            verifica_se_baixou_o_arquivo(self.DOWNLOAD_DIR, '.pdf')
             
-            files = arquivos_com_caminho_absoluto_do_arquivo(self.__DOWNLOAD_DIR)
+            files = arquivos_com_caminho_absoluto_do_arquivo(self.DOWNLOAD_DIR)
             file = files[0]
             os.replace(file, self.FILE_PDF)
             os.remove('file_html.html')

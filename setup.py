@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-version = '4.37.0'
+version = '4.42.0'
 
 with open("README.md", "r", encoding='utf-8') as fh:
     readme = fh.read()
@@ -34,6 +34,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
             os.path.join('FuncsForSPO', 'fselenium'),
             os.path.join('FuncsForSPO', 'fsqlite'),
             os.path.join('FuncsForSPO', 'fwinotify'),
+            os.path.join('FuncsForSPO', 'utils'),
         ],
         
         install_requires= [
@@ -43,7 +44,6 @@ with open("README.md", "r", encoding='utf-8') as fh:
             'html5lib',
             'openpyxl',
             'webdriver-manager',
-            'fake_useragent',
             'requests',
             'pretty_html_table',
             'packaging',
@@ -51,9 +51,9 @@ with open("README.md", "r", encoding='utf-8') as fh:
             'macholib',
             'wget',
             'winotify',
-            'random-user-agent',
             'pypdf',
             'pywin32',
+            'sqlalchemy',
             'rich==12.6.0',
             'pyinstaller==5.6.2',
         ],

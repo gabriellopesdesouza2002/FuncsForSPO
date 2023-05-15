@@ -399,7 +399,10 @@ def limpa_diretorio(dir:str):
     DIR = os.path.abspath(dir)
     if os.path.exists(DIR):
         shutil.rmtree(DIR)
-        os.makedirs(DIR)
+        try:
+            os.makedirs(DIR)
+        except FileExistsError:
+            pass
     else:
         os.makedirs(DIR)
 
@@ -1349,11 +1352,16 @@ def cria_diretorios_para_novo_projeto_python(create_base_dir:bool=True, packages
 
     # CRIA ARQUIVO PYTHON EM SRC\\APP
     with open(APP_PATH, 'w', encoding='utf-8') as f:
-        f.write("""from FuncsForSPO.fpython.functions_for_py import *
-from FuncsForSPO.fselenium.functions_selenium import *
+        f.write("""from src.base.base import *
+class RobotClass(Bot):
+    def __init__(self) -> None:
+        self.configs = read_json(CONFIG_PATH)
+        # self.HEADLESS = self.configs['SCHEMA']['HEADLESS']
+        # self.DOWNLOAD_FILES = self.configs['SCHEMA']['DOWNLOAD_FILES']
+        # super().__init__(self.HEADLESS, self.DOWNLOAD_FILES)
 """)
-        
-    # CRIA ARQUIVO PYTHON EM src\\base
+
+    # CRIA ARQUIVO PYTHON EM base
     with open(BASE_PATH, 'w', encoding='utf-8') as f:
         f.write("""from selenium.webdriver import Chrome
 from selenium import webdriver
@@ -1368,7 +1376,6 @@ from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fselenium.functions_selenium import *
 from FuncsForSPO.fwinotify.fwinotify import *
 from FuncsForSPO.fregex.functions_re import *
-from src.exceptions.exceptions import *
 import pandas as pd
 import json
 import os
@@ -1377,8 +1384,8 @@ import os
 URL_SUPORTE = f'https://api.whatsapp.com/send?phone=5511985640273'
 CONFIG_PATH = arquivo_com_caminho_absoluto('bin', 'config.json')
 BASE = os.path.abspath('base')
-__DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir='downloads', print_value=False, criar_diretorio=True)
-limpa_diretorio(__DOWNLOAD_DIR)
+DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir='downloads', print_value=False, criar_diretorio=True)
+limpa_diretorio(DOWNLOAD_DIR)
 # -- GLOBAL -- #
 
 class Bot:    
@@ -1402,8 +1409,8 @@ class Bot:
 
 
             self._PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(self._SETTINGS_SAVE_AS_PDF),
-                    "savefile.default_directory":  f"{__DOWNLOAD_DIR}",
-                    "download.default_directory":  f"{__DOWNLOAD_DIR}",
+                    "savefile.default_directory":  f"{DOWNLOAD_DIR}",
+                    "download.default_directory":  f"{DOWNLOAD_DIR}",
                     "download.prompt_for_download": False,
                     "download.directory_upgrade": True,
                     "profile.managed_default_content_settings.images": 2,
@@ -1442,6 +1449,24 @@ class Bot:
         
         # create DRIVER
         self.DRIVER = Chrome(service=self.__service, options=self._options)
+        
+        def enable_download_in_headless_chrome(driver, download_dir):
+            '''
+            Esse código adiciona suporte ao navegador Chrome sem interface gráfica (headless) no Selenium WebDriver para permitir o download automático de arquivos em um diretório especificado.
+
+            Mais especificamente, o código adiciona um comando ausente "send_command" ao executor de comando do driver e, em seguida, executa um comando "Page.setDownloadBehavior" para permitir o download automático de arquivos no diretório especificado.
+
+            O primeiro passo é necessário porque o suporte para o comando "send_command" não está incluído no Selenium WebDriver por padrão. O segundo passo usa o comando "Page.setDownloadBehavior" do Chrome DevTools Protocol para permitir o download automático de arquivos em um diretório especificado.
+
+            Em resumo, o código adiciona suporte para o download automático de arquivos em um diretório especificado no Chrome sem interface gráfica usando o Selenium WebDriver.
+            '''
+            driver.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
+
+            params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
+            command_result = driver.execute("send_command", params)
+        enable_download_in_headless_chrome(self.DRIVER, DOWNLOAD_DIR)
+        
+        
         self.WDW3 = WebDriverWait(self.DRIVER, timeout=3)
         self.WDW5 = WebDriverWait(self.DRIVER, timeout=5)
         self.WDW7 = WebDriverWait(self.DRIVER, timeout=7)
@@ -1453,92 +1478,74 @@ class Bot:
         return self.DRIVER
 """)
     
-    # CRIA ARQUIVO PYTHON EM SRC\\database
+    # CRIA ARQUIVO PYTHON EM database
     with open(DATABASE_PATH, 'w', encoding='utf-8') as f:
         f.write("""from FuncsForSPO.fpython.functions_for_py import *
-from FuncsForSPO.fselenium.functions_selenium import *
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, String, Integer
 
-# GLOBAL
-DATABASE_PATH = arquivo_com_caminho_absoluto('bin', 'database.db')
-# GLOBAL
+engine = create_engine('sqlite:///database.db', pool_size=15, max_overflow=20)
+Base = declarative_base()
+Session = sessionmaker(bind=engine)
 
-# BACKUP
-def faz_backup_do_banco_de_dados():
-    json_config = read_json(arquivo_com_caminho_absoluto('bin', 'config.json'))
 
-    # cria os dirs
-    cria_dir_no_dir_de_trabalho_atual(arquivo_com_caminho_absoluto('bin', 'backup'))
+class TABLE(Base):
+    __tablename__ = 'table'
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    status = Column(String)
+    nome = Column(String)
     
-    path_database_copy = arquivo_com_caminho_absoluto(['bin', 'backup'], f'database_{datetime.now().strftime("%d-%m-%Y_%H-%M-%S")}.db')
-    shutil.copy2(DATABASE_PATH, path_database_copy)
-    return path_database_copy
-# BACKUP
+Base.metadata.create_all(engine)  # cria a tabela no banco de dados
 
-
-# EXPORT
-def exportar_database():
-    cur, con =  connect_db(PATH_DATABASE)
-    arquivos = pd.read_sql('SELECT * FROM arquivos', con)
-    arquivos_com_ocr = pd.read_sql('SELECT * FROM arquivos_com_ocr', con)
-    # TRATAMENTOS
-    arquivos_com_ocr['data_adicao'] = arquivos_com_ocr['data_adicao'].apply(lambda x: datetime.strptime(x, '%Y-%m-%d %H:%M:%S.%f'))
     
-    arquivos_com_ocr.rename(columns={'caminho_arquivo': 'Caminho do Arquivo'}, inplace=True)
-    arquivos_com_ocr.rename(columns={'nome_do_arquivo': 'Nome do Arquivo'}, inplace=True)
-    arquivos_com_ocr.rename(columns={'ocr': 'OCR do Arquivo'}, inplace=True)
-    arquivos_com_ocr.rename(columns={'data_adicao': 'Data de Envio no Database'}, inplace=True)
+class DBManager:
+    def __init__(self):
+        # Inicializa uma nova sessão com o banco de dados.
+        
+        self.session = Session()
 
+    def create_item(self, status, name):
+        # Cria um novo registro na tabela.
 
-    arquivos.rename(columns={'caminho_arquivo': 'Caminho do Arquivo'}, inplace=True)
-    arquivos.rename(columns={'nome_do_arquivo': 'Nome do Arquivo'}, inplace=True)
-    # TRATAMENTOS
+        new_item = TABLE(status=status, name=name)
+        self.session.add(new_item)
+        self.session.commit()
+
+    def get_item(self, id):
+        # Retorna o registro com o ID fornecido
+        return self.session.query(TABLE).filter_by(id=id).first()
     
-    try:
-        with pd.ExcelWriter(os.path.join(RESULTADO, 'DATABASE.xlsx')) as writer:
-            arquivos_com_ocr.to_excel(writer, sheet_name="Arquivos Com OCR", index=False)
-            arquivos.to_excel(writer, sheet_name="PDFs Recuperados da Máquina", index=False)
-    except PermissionError:
-        sleep(10)
-        try:
-            with pd.ExcelWriter(os.path.join(RESULTADO, 'DATABASE.xlsx')) as writer:
-                arquivos_com_ocr.to_excel(writer, sheet_name="Arquivos Com OCR", index=False)
-                arquivos.to_excel(writer, sheet_name="PDFs Recuperados da Máquina", index=False)
-        except PermissionError:
-            faz_log('O Arquivo está aberto, não foi possível exportar...')
-    except OSError:
-        popup_erro('Sem espaço em disco para fazer o arquivo...', 'Sem espaço...')
-        pass
-# EXPORT
 
-# DELETE
-def delete(table):
-    # Apaga todos os dados da tabela enviada
-    cur, con =  connect_db(PATH_DATABASE)
-    query = f'DELETE FROM {table};'
-    cur.execute(query)
-    con.commit()
-# DELETE
+    def delete_item(self, id):
+        # Exclui o registro com o ID fornecido da tabela
 
-# SELECT
-def select(col: str='*', table:str, data_from_line: bool=False):
-    cur, con =  connect_db(PATH_DATABASE)
-    cur.execute(f'SELECT {col} FROM {table}')
-    faz_log(f'SELECT {col} FROM {table}', 'i*')
-    data = []
-    if data_from_line:
-        for line in cur.fetchall():
-            for i in line:
-                data.append(i)
-        return tuple(data)
-    else:
-        for line in cur.fetchall():
-            data.append(line)
-        return tuple(data)
-# SELECT
+        delete_item_from_db = self.get_item(id)
+        self.session.delete(delete_item_from_db)
+        self.session.commit()
+        
+    def delete_all(self):
+        # Exclui todos os registros da tabela.
+
+        self.session.query(TABLE).delete()
+        self.session.commit()
+
+    def get_item(self, id):
+        # Retorna o registro com o ID fornecido da tabela. Se nenhum registro for encontrado, retorna None.
+        return self.session.query(TABLE).filter_by(id=id).first()
+    
+
+    def get_column_status(self):
+        # Retorna o registro de status com o ID fornecido da tabela. Se nenhum registro for encontrado, retorna None.
+        return self.session.query(TABLE.status).all()
+    
+    
 
 """)
     
-    # CRIA ARQUIVO PYTHON EM SRC\\exceptions
+    # CRIA ARQUIVO PYTHON EM exceptions
     with open(EXCEPTIONS_PATH, 'w', encoding='utf-8') as f:
         f.write("""from FuncsForSPO.fexceptions.exceptions import *
 """)
@@ -1553,7 +1560,7 @@ def select(col: str='*', table:str, data_from_line: bool=False):
         }
 }""")
         
-    # cria arquivo utils.py
+    # cria arquivo utils
     with open(UTILS_PATH, 'w', encoding='utf-8') as fjson:
         fjson.write("""""")
 
@@ -1575,17 +1582,17 @@ from FuncsForSPO.fselenium.functions_selenium import *
         cria_dir_no_dir_de_trabalho_atual('base')
 
     # cria ambiente virtual
-    if os.path.exists('venv'):
-        print('Ambiente Virtual "venv" já criado')
-        print('Baixando pacotes')
-        os.system(f'.\\venv\\Scripts\\pip.exe install {packages}')
-        pass
-    else:
-        print('Criando Ambiente Virtual')
-        os.system('python -m venv venv')
-        print('Criado!')
-        print('Baixando pacotes')
-        os.system(f'.\\venv\Scripts\\pip.exe install {packages}')
+    # if os.path.exists('venv'):
+    #     print('Ambiente Virtual "venv" já criado')
+    #     print('Baixando pacotes')
+    #     os.system(f'.\\venv\\Scripts\\pip.exe install {packages}')
+    #     pass
+    # else:
+    print('Criando Ambiente Virtual')
+    os.system('python -m venv venv')
+    print('Criado!')
+    print('Baixando pacotes')
+    os.system(f'.\\venv\Scripts\\pip.exe install {packages}')
     
 def retorna_a_menor_ou_maior_data(datas:list[str|datetime], maior:bool=True, format:str='%d/%m/%Y %H:%M', format_return:str='%d/%m/%Y %H:%M'):
     """
@@ -1618,31 +1625,9 @@ def retorna_a_menor_ou_maior_data(datas:list[str|datetime], maior:bool=True, for
         return min(datas_datetime).strftime(format_return)
 
 
-def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave):
-    _LOCAL_DE_DOWNLOAD = os.path.abspath(diretorio_de_download)
-    baixou = False
-    while not baixou:
-        lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
-        if len(lista_arquivos) == 0:
-            sleep(2)
-            baixou = False
-            lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
-        else:
-            for i in lista_arquivos:
-                if '.crdownload' in i:
-                    sleep(2)
-                    lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
-                    baixou = False
-                    continue
-                if palavra_chave in i:
-                    baixou = True
-                    faz_log('Download concluido!')
-                    return True
-                else:
-                    sleep(2)
-                    lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
-                    baixou = False
-                    
+
+
+
 def data_com_dias_mais_ou_menos(data:datetime, dias:int=0, menos:bool=True, format_exit='%d/%m/%Y') -> str|datetime:
     """Função retorna a data enviada com dias a menos ou a mais dependendo da escolha
 
@@ -1682,6 +1667,7 @@ def data_com_dias_mais_ou_menos(data:datetime, dias:int=0, menos:bool=True, form
             return data
         data_ = data.strftime(format_exit)
         return data_
+
 
 def remove_pontos_e_barras(string):
     """Função remove esses elementos da string
@@ -1750,6 +1736,7 @@ def remove_pontos_e_barras(string):
     string = string.replace(']', '')
     string = string.strip()
     return string
+
 
 def remove_duplicados_na_lista(iteravel:list|tuple, convert_str:bool=False):
     """Remove duplicados de uma lista
@@ -1870,13 +1857,19 @@ def arquivo_com_caminho_absoluto(dir:str|list|tuple, filename:str, create_dirs:b
     """
     if isinstance(dir, (tuple, list)):
         if create_dirs:
-            os.makedirs(os.path.join(os.path.abspath(dir[0]), *dir[1:]))
-        return os.path.join(os.path.abspath(dir[0]), *dir[1:], filename)
+            try:
+                os.makedirs(os.path.join(os.path.abspath(dir[0]), *dir[1:]))
+            except FileExistsError:
+                pass        
+            return os.path.join(os.path.abspath(dir[0]), *dir[1:], filename)
     else:
         if create_dirs:
-            os.makedirs(os.path.abspath(dir))
+            try:
+                os.makedirs(os.path.abspath(dir))
+            except FileExistsError:
+                pass 
         return os.path.join(os.path.abspath(dir), filename)
-    
+
 
 def deleta_arquivos_com_uma_palavra_chave(dir:str, palavra_chave:str, basename:str=True):
     """Recupera e deleta arquivos de acordo com a palavra chave enviada
@@ -1895,29 +1888,7 @@ def deleta_arquivos_com_uma_palavra_chave(dir:str, palavra_chave:str, basename:s
             if palavra_chave in file:
                 os.remove(file)
 
+
 def tipo_objeto(objeto):
     """Apenas printa o tipo de objeto""" 
     return print(type(objeto))
-
-# Deprecado #
-# def remove_espacos_pontos_virgulas_de_um_int(numero: int, remove_2_ultimos_chars: bool=False) -> int:
-#     """Remove espaços, pontos, virgulas e se quiser os 2 últimos caracteres
-
-#     Args:
-#         numero (int): número com todos os elementos que serão removidos
-#         remove_2_ultimos_chars (bool, optional): remove os 2 últimos caracteres, por exemplo, 0,00 fica 0. Defaults to False.
-
-#     Returns:
-#         int: _description_
-#     """
-#     numero = str(numero)
-#     numero = numero.replace(',', '')
-#     numero = numero.replace('.', '')
-#     numero = numero.strip()
-#     if remove_2_ultimos_chars:
-#         numero = numero[:-2]
-#     return int(numero)
-
-
-# Deprecado #
-

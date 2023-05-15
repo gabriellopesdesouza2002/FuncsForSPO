@@ -21,6 +21,13 @@
 
 from FuncsForSPO.fpdf.focr.__ocr_online import GetTextPDF
 from FuncsForSPO.fpython.functions_for_py import *
+import requests
+import json
+import os
+import base64
+
+class ErroAPI(Exception):
+    pass
 
 def faz_ocr_em_pdf(file_pdf: str, dir_exit: str='output', get_text_into_code: bool=True, headless: bool=True, prints=False) -> str:
     """
@@ -81,3 +88,54 @@ def faz_ocr_em_pdf_offline(path_pdf: str, export_from_file_txt: str=False) -> st
             with open('extraction_pdf.txt', 'w', encoding='utf-8') as f:
                 f.write(text)
         return text
+
+def ocr_paycon(pdf_path, clear_task, user, password):
+    auth = (user, password)
+    
+    # URL da rota de API
+    url = 'https://gabrielpaycon.pythonanywhere.com/pdf/ocr-pdf-tesseract-send-file'
+
+    # Arquivo PDF para enviar
+    with open(pdf_path, 'rb') as file:
+        print('fazendo base64')
+        base64_pdf = base64.b64encode(file.read()).decode('utf-8')
+
+        # Parâmetros da solicitação POST
+        params = {'file': base64_pdf}
+        data = json.dumps(params)
+
+        # Faz a solicitação POST
+        print('Enviando solicitação POST com o base64')
+        try:
+            response = requests.post(url, data=data, headers={'Content-Type': 'application/json'}, auth=auth)
+        except Exception as e:
+            print(e)
+            ocr_paycon(pdf_path, user, password)
+        print(response.json())
+        # Exibe a resposta da API
+        id_ = response.json().get('id')
+
+        while True:
+            # Define a URL da rota de API
+            url = 'https://gabrielpaycon.pythonanywhere.com/verify-work-ocr'
+
+            # Define o corpo da solicitação com o ID do trabalho de OCR
+            if clear_task:
+                params = {'id': id_, 'delete':'True'}
+            else:
+                params = {'id': id_, 'delete':'False'}
+            data = json.dumps(params)
+            # Envia a solicitação HTTP POST com o corpo JSON
+            response = requests.post(url, data=data, headers={'Content-Type': 'application/json'})
+
+            # Extrai o texto da resposta JSON
+            try:
+                response_json = response.json()
+            except Exception as e:
+                print(e)
+                raise ErroAPI('ErroAPI')
+            if response_json.get('status') == 'finalizado':
+                return response_json.get('result')
+            else:
+                print(response_json.get('status'))
+                sleep(1)

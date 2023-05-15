@@ -13,13 +13,12 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from webdriver_manager.chrome import ChromeDriverManager 
-from random_user_agent.user_agent import UserAgent
-from random_user_agent.params import SoftwareName, OperatingSystem
 from time import sleep
-from FuncsForSPO.fpython.functions_for_py import cria_dir_no_dir_de_trabalho_atual, cria_o_ultimo_diretorio_do_arquivo, faz_log, transforma_lista_em_string
+from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fregex.functions_re import extrair_email
 from wget import download
 from subprocess import getoutput
+from FuncsForSPO.utils.utils import *
 
 def url_atual(driver) -> str:
     """
@@ -56,31 +55,55 @@ def espera_e_clica_em_varios_elementos(wdw:WebDriverWait, locator: tuple, in_dom
 
     for i in range(len_elements):
         elements[i].click()
+        sleep(0.5)
         
         
-def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave, sleep_time=2) -> bool:
+        
+def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave, sleep_time=0, return_file=False, timeout=30) -> bool|str:
+    """
+    Verifica se um arquivo com uma palavra-chave foi baixado para um diretório especificado.
+    :param diretorio_de_download: O caminho para o diretório de download.
+    :param palavra_chave: A palavra-chave a ser procurada nos nomes dos arquivos baixados.
+    :param sleep_time: O tempo a ser aguardado antes de verificar novamente o diretório de download.
+    :param return_file: Se deve ou não retornar o caminho do arquivo baixado.
+    :param timeout: O tempo máximo para esperar o arquivo ser baixado.
+    :return: Retorna True se o arquivo for baixado com sucesso, False caso contrário. Se return_file for True, 
+    ele retorna o caminho absoluto do arquivo baixado.
+    """
+
     _LOCAL_DE_DOWNLOAD = os.path.abspath(diretorio_de_download)
     baixou = False
+    start_time = time.time()
     while not baixou:
+        current_time = time.time()
+        if current_time - start_time > timeout:
+            return False
         lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+        lista_arquivos = [x.lower() for x in lista_arquivos]
         if len(lista_arquivos) == 0:
             sleep(sleep_time)
             baixou = False
             lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+            lista_arquivos = [x.lower() for x in lista_arquivos]
         else:
             for i in lista_arquivos:
                 if '.crdownload' in i:
                     sleep(sleep_time)
                     lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+                    lista_arquivos = [x.lower() for x in lista_arquivos]
                     baixou = False
                     continue
                 if palavra_chave in i:
                     baixou = True
                     faz_log('Download concluido!')
-                    return True
+                    if return_file:
+                        return arquivo_com_caminho_absoluto(_LOCAL_DE_DOWNLOAD, i)
+                    else:
+                        return True
                 else:
                     sleep(sleep_time)
                     lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
+                    lista_arquivos = [x.lower() for x in lista_arquivos]
                     baixou = False
 
     
@@ -715,22 +738,11 @@ def volta_paginas(driver, qtd_pages_para_voltar : int=1, espera_ao_mudar=0) -> N
 def cria_user_agent() -> str:
     """Cria um user-agent automaticamente com a biblio fake_useragent
 
-    Use:
-        https://github.com/Luqman-Ud-Din/random_user_agent
-
     Returns:
         str: user_agent
-    """    
-    software_names = [SoftwareName.CHROME.value]
-    operating_systems = [OperatingSystem.WINDOWS.value, OperatingSystem.LINUX.value]   
-
-    user_agent_rotator = UserAgent(software_names=software_names, operating_systems=operating_systems, limit=100)
-
-    # Get list of user agents.
-    user_agents = user_agent_rotator.get_user_agents()
-
-    # Get Random User Agent String.
-    user_agent = user_agent_rotator.get_random_user_agent()
+    """
+    from random import choice
+    user_agent = choice(USER_AGENTS)
     return user_agent
 
 
