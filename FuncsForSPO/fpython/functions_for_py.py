@@ -1444,6 +1444,8 @@ class Bot:
         self._options.add_argument('--incognito')
         self._options.add_argument('–disable-notifications')
         self._options.add_argument("--window-size=1920,1080")
+        self._options.add_argument('--kiosk-printing')
+
         
         self.__service = Service(ChromeDriverManager().install())
         
