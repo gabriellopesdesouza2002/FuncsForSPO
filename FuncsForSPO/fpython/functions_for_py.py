@@ -1575,6 +1575,11 @@ from FuncsForSPO.fpysimplegui.functions_for_sg import *
 from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fregex.functions_re import *
 from FuncsForSPO.fselenium.functions_selenium import *
+import sys
+import os
+
+root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(root_dir)
 
 # SEMPRE COLOQUE O QUE A FUNÇÃO TEM QUE FAZER EXPLICITAMENTE
 """)
@@ -1672,70 +1677,16 @@ def data_com_dias_mais_ou_menos(data:datetime, dias:int=0, menos:bool=True, form
 
 
 def remove_pontos_e_barras(string):
-    """Função remove esses elementos da string
-    
-    '.'
-    
-    '/'
-    
-    ','
-    
-    '-'
-    
-    '_'
-    
-    '='
-    
-    '|'
-    
-    '#'
-    
-    '`'
-    
-    '~'
-    
-    "'"
-    
-    '"'
-    
-    'string'.strip()
-    #### Função já converte o argumento para str()
+    """Remove caracteres especiais da string.
 
     Args:
-        string (str): str com os caracteres
+        string (str): String com os caracteres especiais.
 
     Returns:
-        str: Retorna string sem nenhum desses caracteres
+        str: String sem os caracteres especiais.
     """
-    string = str(string)
-    string = string.replace('.','')
-    string = string.replace('/', '')
-    string = string.replace(',', '')
-    string = string.replace('-', '')
-    string = string.replace('_', '')
-    string = string.replace('=', '')
-    string = string.replace('|', '')
-    string = string.replace('`', '')
-    string = string.replace('~', '')
-    string = string.replace("'", '')
-    string = string.replace('"', '')
-    string = string.replace('#', '')
-    string = string.replace(';', '')
-    string = string.replace(':', '')
-    string = string.replace('@', '')
-    string = string.replace('!', '')
-    string = string.replace('(', '')
-    string = string.replace(')', '')
-    string = string.replace('$', '')
-    string = string.replace('%', '')
-    string = string.replace('+', '')
-    string = string.replace('&', '')
-    string = string.replace('^', '')
-    string = string.replace('*', '')
-    string = string.replace('{', '')
-    string = string.replace('}', '')
-    string = string.replace('[', '')
-    string = string.replace(']', '')
+    special_chars = r'[./,_=\|`~\'"#;:@!()\$%+&^\*\{\}\[\]\\]'
+    string = re.sub(special_chars, '', str(string))
     string = string.strip()
     return string
 

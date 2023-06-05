@@ -89,7 +89,7 @@ def faz_ocr_em_pdf_offline(path_pdf: str, export_from_file_txt: str=False) -> st
                 f.write(text)
         return text
 
-def ocr_paycon(pdf_path, clear_task, user, password):
+def ocr_paycon(pdf_path, clear_task, user, password, sleep_for_request=5):
     auth = (user, password)
     
     # URL da rota de API
@@ -126,6 +126,7 @@ def ocr_paycon(pdf_path, clear_task, user, password):
                 params = {'id': id_, 'delete':'False'}
             data = json.dumps(params)
             # Envia a solicitação HTTP POST com o corpo JSON
+            sleep(sleep_for_request)
             response = requests.post(url, data=data, headers={'Content-Type': 'application/json'})
 
             # Extrai o texto da resposta JSON
@@ -138,4 +139,3 @@ def ocr_paycon(pdf_path, clear_task, user, password):
                 return response_json.get('result')
             else:
                 print(response_json.get('status'))
-                sleep(1)
