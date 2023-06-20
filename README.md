@@ -19,8 +19,7 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-
-# Current Version -> 4.35.0
+# Current Version -> 6.0.2
 
 version==4.33.1 -> Melhoria e criação de diversas funções desde a versão 4.24
 

@@ -1,7 +1,7 @@
 import os
 from setuptools import setup
 
-version = '5.0.9'
+version = '6.0.2'
 
 with open("README.md", "r", encoding='utf-8') as fh:
     readme = fh.read()
@@ -21,6 +21,8 @@ with open("README.md", "r", encoding='utf-8') as fh:
             os.path.join('FuncsForSPO', 'femails'),
             os.path.join('FuncsForSPO', 'fexceptions'),
             os.path.join('FuncsForSPO', 'fftp'),
+            os.path.join('FuncsForSPO', 'flanguage'),
+            os.path.join('FuncsForSPO', 'flanguage', 'translator'),
             os.path.join('FuncsForSPO', 'fpdf'),
             os.path.join('FuncsForSPO', 'fpdf', 'focr'),
             os.path.join('FuncsForSPO', 'fpdf', 'focr'),
@@ -28,6 +30,7 @@ with open("README.md", "r", encoding='utf-8') as fh:
             os.path.join('FuncsForSPO', 'fpdf', 'fimgpdf'),
             os.path.join('FuncsForSPO', 'fpdf', 'fanalyser'),
             os.path.join('FuncsForSPO', 'fpdf', 'fhtml_to_pdf'),
+            os.path.join('FuncsForSPO', 'fpdf', 'pdfutils'),
             os.path.join('FuncsForSPO', 'fopenpyxl'),
             os.path.join('FuncsForSPO', 'fpysimplegui'),
             os.path.join('FuncsForSPO', 'fpython'),
@@ -52,9 +55,14 @@ with open("README.md", "r", encoding='utf-8') as fh:
             'PySimpleGUI',
             'macholib',
             'wget',
+            'alive-progress',
             'winotify',
             'pypdf',
             'pywin32',
+            'gdown',
+            'pytesseract',
+            'pymupdf',
+            'PyPDF2',
             'sqlalchemy',
             'rich==12.6.0',
             'pyinstaller==5.6.2',

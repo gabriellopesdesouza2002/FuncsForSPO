@@ -1,9 +1,25 @@
-from FuncsForSPO.fselenium.functions_selenium import *
-from FuncsForSPO.fpdf.fanalyser.pdfanalyser import *
-# from FuncsForSPO.fgpt.pdfanalyser.__pdfanalyser import *
-print(analyse_pdf_with_gpt('GatewayPDF.pdf', 'Por favor, verifique se é uma inicial, se for, diga-me os pedidos em tópicos se possível (exemplo: 1. pedido1; 2. pedido2), e se não for, diga-me que documento é detalhadamente.', credentials=('githubpaycon', 'bolarede792'), headless=True))
-# app = GPTPDF(file_pdf='initial_9232.pdf', prompt='analise e me fale em portugues esse pdf', headless=True, credentials=('githubpaycon', 'bolarede792'))
-# # app = GPTPDF('pdf_html.pdf', 'analise e me fale em portugues esse pdf', headless=False, credentials=('githubpaycon', 'bolarede792'))
-# text = app.run()
-# print(text)
-# print(verifica_se_baixou_o_arquivo('base', '.txt', timeout=10, return_file=True))
+from FuncsForSPO.fpdf.fanalyser.pdfanalyser_v3 import *
+from FuncsForSPO.fpdf.focr.orc import ocr_tesseract
+
+def test_analyse_pdf_with_gpt():
+    text = ocr_tesseract('initial_9257_15.pdf', 600)
+    print(analyse_pdf_with_gpt(text, 'Se for de fato uma petição inicial, analise todo o conteúdo da petição, desde a introdução até os pedidos finais; Identifique o tema principal e identifique o assunto e o sub-assunto da petição inicial gostaria também que você colocasse os pedidos em tópicos, separando uma infomração da outra'))
+
+def test_translate_open():
+    import requests
+    import json
+
+    url = "https://libretranslate.com/translate"
+    data = {
+        "q": "Ciao!",
+        "source": "auto",
+        "target": "en"
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    response = requests.post(url, data=json.dumps(data), headers=headers)
+    print(response.json())
+    
+test_translate_open()

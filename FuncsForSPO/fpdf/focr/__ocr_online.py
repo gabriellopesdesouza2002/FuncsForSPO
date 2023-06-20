@@ -22,14 +22,13 @@ import json
 import os
 
 class GetTextPDF:    
-    def __init__(self, file_pdf: str, dir_exit: str='output', get_text_into_code: bool=True, headless: bool=True, prints: bool=False, create_driver: bool=True) -> str:
+    def __init__(self, file_pdf: str, dir_exit: str='output', headless: bool=True, prints: bool=False, create_driver: bool=True) -> str:
         """Init
 
         Args:
             file_pdf (str): Caminho do arquivo
             dir_exit (str, optional): Local de saída do arquivo TXT. Defaults to 'output'.
             headless (bool, optional): executa como headless. Defaults to True.
-            get_text_into_code (bool, optional): Retorna o texto do pdf no código. Defaults to True.
             create_driver (bool, optional): Cria um driver. Defaults to True.
         """
         if isinstance(headless, (bool, int)):
@@ -47,13 +46,9 @@ class GetTextPDF:
         # --- CHROME OPTIONS --- #
         self._options = ChromeOptions()
         
-        # --- PATH BASE DIR --- #
-        self.get_text_into_code = get_text_into_code
-        
-        if get_text_into_code:
-            self.DOWNLOAD_DIR = cria_dir_no_dir_de_trabalho_atual('tempdir')
-        else:
-            self.DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir=dir_exit, print_value=False, criar_diretorio=True)
+        # --- PATH BASE DIR --- #        
+        self.DOWNLOAD_DIR = cria_dir_no_dir_de_trabalho_atual('tempdir')
+        limpa_diretorio('tempdir')
             
         self._SETTINGS_SAVE_AS_PDF = {
                     "recentDestinations": [
@@ -124,13 +119,14 @@ class GetTextPDF:
         enable_download_in_headless_chrome(self.DRIVER, self.DOWNLOAD_DIR)
 
         # - WebDriverWaits - #
+        self.WDW = WebDriverWait(self.DRIVER, timeout=3)
         self.WDW3 = WebDriverWait(self.DRIVER, timeout=3)
         self.WDW30 = WebDriverWait(self.DRIVER, timeout=30)
         self.WDW60 = WebDriverWait(self.DRIVER, timeout=60)
         self.WDW180 = WebDriverWait(self.DRIVER, timeout=180)
         self.DRIVER.maximize_window()
     
-    
+    # ----------------------------------------------------------------- #
         try:
             if prints:
                 print('Acessando o site...')
@@ -144,7 +140,7 @@ class GetTextPDF:
 
             # Envia o arquivo
             self.DRIVER.find_element(By.CSS_SELECTOR, '#input_file0').send_keys(self.FILE_PDF)
-                
+
             # Clica em OCR Profundo
             try:
                 espera_elemento_disponivel_e_clica(self.WDW3, (By.CSS_SELECTOR, '#export_fullocr_box > label'))
@@ -163,23 +159,8 @@ class GetTextPDF:
             except TimeoutException:
                 raise Exception('Não foi possível fazer o OCR... Provavelmenten não encontrou nenhum texto.')
 
-            def verifica_se_baixou(path_dir):
-                """Verifica se baixou algum arquivo na pasta
-                Args:
-                    path_dir (str): path do diretório
-                """
-                wait = True
-                while(wait):
-                    path_dir_abs = os.path.abspath(path_dir)
-                    for fname in os.listdir(path_dir_abs):
-                        if '.crdownload' in fname or len(os.listdir(path_dir_abs)) == 0:
-                            continue
-                        else:
-                            wait=False
-                            sleep(3)
-                            if prints:
-                                print('OCR Concluido!')
             verifica_se_baixou_o_arquivo(self.DOWNLOAD_DIR, '.txt')            
+            self.DRIVER.close()
         except Exception as e:
             print('Ocorreu um erro!')
             print(str(e))
@@ -187,14 +168,13 @@ class GetTextPDF:
 
             
     def recupera_texto(self) -> str:
-        if self.get_text_into_code:
-            try:
-                file_txts = arquivos_com_caminho_absoluto_do_arquivo(self.DOWNLOAD_DIR)
-                file_txt = file_txts[-1]
-                text = None
-                with open(file_txt, mode='r', encoding='utf-16-le') as f:
-                    text = f.read()
-                shutil.rmtree(self.DOWNLOAD_DIR)
-                return text
-            except IndexError:
-                raise FalhaAoRecuperarOcr('Ocorreu um erro na recuperação que causou um IndexError, provavelmente não baixou o arquivo.')
+        try:
+            file_txts = arquivos_com_caminho_absoluto_do_arquivo(self.DOWNLOAD_DIR)
+            file_txt = file_txts[-1]
+            text = None
+            with open(file_txt, mode='r', encoding='utf-16-le') as f:
+                text = f.read()
+            shutil.rmtree(self.DOWNLOAD_DIR)
+            return text
+        except IndexError:
+            raise FalhaAoRecuperarOcr('Ocorreu um erro na recuperação que causou um IndexError, provavelmente não baixou o arquivo.')

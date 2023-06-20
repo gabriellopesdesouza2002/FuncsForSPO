@@ -37,4 +37,5 @@ def comprimir_pdf(file_pdf: str, compress_level: int=1, dir_exit: str='output', 
         >>> comprimir_pdf('meupdf.pdf', 3)
     """
     
-    CompressPDF(file_pdf=file_pdf, compress_level=compress_level, dir_exit=dir_exit, headless=headless, prints=prints, create_driver=create_driver)
+    app = CompressPDF(file_pdf=file_pdf, compress_level=compress_level, dir_exit=dir_exit, headless=headless, prints=prints, create_driver=create_driver)
+    return app.retorna_path_pdf()

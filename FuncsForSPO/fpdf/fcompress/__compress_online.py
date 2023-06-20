@@ -13,15 +13,16 @@ from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.common.exceptions import *
 from webdriver_manager.chrome import ChromeDriverManager
 from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fselenium.functions_selenium import *
-from FuncsForSPO.fexceptions.exceptions import FalhaAoRecuperarOcr, NivelDeCompressaoNaoPreenchido
+from FuncsForSPO.fexceptions.exceptions import *
 import json
 import os
 
 class CompressPDF:    
-    def __init__(self, file_pdf: str, compress_level: int=1, dir_exit: str='output', headless: bool=True, prints: bool=False, create_driver: bool=True) -> None:
+    def __init__(self, file_pdf: str, compress_level: int=1, dir_exit: str='tempdir', headless: bool=True, prints: bool=False, create_driver: bool=True) -> None:
         """Init
 
         Args:
@@ -48,8 +49,7 @@ class CompressPDF:
 
             self.FILE_PDF = os.path.abspath(file_pdf)
             
-            if prints:
-                print(f'O tamanho do arquivo atual é: {convert_bytes(os.path.getsize(self.FILE_PDF))}')
+            print(f'O tamanho do arquivo atual é: {convert_bytes(os.path.getsize(self.FILE_PDF))}')
                 
             self.CONVERTER_VARIOS_ARQUIVOS = False
             self.MESCLAR_EM_UMA_LINHA = False
@@ -177,16 +177,6 @@ class CompressPDF:
                 print('Clicando em Comprimir...')
             espera_elemento_disponivel_e_clica(self.WDW30, (By.CSS_SELECTOR, '#processTask'))
 
-            verifica_se_baixou_o_arquivo(self.DOWNLOAD_DIR, '.pdf')
-            
-            files = arquivos_com_caminho_absoluto_do_arquivo(self.DOWNLOAD_DIR)
-            
-            if prints:
-                print(f'O tamanho do arquivo FINAL é: {convert_bytes(os.path.getsize(files[-1]))}')
-
-            
-            if prints:
-                print('Compressão finalizada!')
 
         except Exception as e:
             print('Ocorreu um erro!')
@@ -194,3 +184,9 @@ class CompressPDF:
             faz_log(self.DRIVER.page_source, 'i*')
             faz_log(self.DRIVER.get_screenshot_as_base64(), 'i*')
             print(str(e))
+            
+    def retorna_path_pdf(self):
+        file_ = verifica_se_baixou_o_arquivo(self.DOWNLOAD_DIR, '.pdf', return_file=True, timeout=300)
+        print(f'O tamanho do arquivo FINAL é: {convert_bytes(os.path.getsize(file_))}')
+        print('Compressão finalizada!')
+        return file_

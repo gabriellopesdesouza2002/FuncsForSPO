@@ -87,7 +87,7 @@ def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave, sleep_tim
             lista_arquivos = [x.lower() for x in lista_arquivos]
         else:
             for i in lista_arquivos:
-                if '.crdownload' in i:
+                if 'crdownload' in i.lower():
                     sleep(sleep_time)
                     lista_arquivos = os.listdir(_LOCAL_DE_DOWNLOAD)
                     lista_arquivos = [x.lower() for x in lista_arquivos]

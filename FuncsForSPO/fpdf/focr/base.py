@@ -48,6 +48,7 @@ class BotMain:
         self.WDW30 = WebDriverWait(self.DRIVER, timeout=30)
         self.WDW130 = WebDriverWait(self.DRIVER, timeout=130)
         self.WDW330 = WebDriverWait(self.DRIVER, timeout=330)
+        self.WDW420 = WebDriverWait(self.DRIVER, timeout=420)
         self.WDW = self.WDW7
 
         self.DRIVER.maximize_window()
