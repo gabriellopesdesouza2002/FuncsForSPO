@@ -1332,275 +1332,7 @@ def formata_para_real(valor:str|float, sigl:bool=False):
         return 'R$ '+valor
     return valor
 
-def cria_diretorios_para_novo_projeto_python(create_base_dir:bool=True, packages:str='FuncsForSPO'):
-    """# ATENÇÃO, UTILIZAR SOMENTE UMA VEZ NO MOMENTO DA CRIAÇÃO DO NOVO PROJETO!
-    
-    create_base_dir: cria o diretorio para o user colocar a base
-    packages: instala pacotes necessários
-    """
-    faz_log('Criando pasta e arquivo de logs com esse log...')
-    # cria diretório src
-    cria_dir_no_dir_de_trabalho_atual('src')
-    APP_PATH = arquivo_com_caminho_absoluto(['src', 'app'], 'app.py')
-    BASE_PATH = arquivo_com_caminho_absoluto(['src', 'base'], 'base.py')
-    DATABASE_PATH = arquivo_com_caminho_absoluto(['src', 'database'], 'database.py')
-    EXCEPTIONS_PATH = arquivo_com_caminho_absoluto(['src', 'exceptions'], 'exceptioins.py')
-    CONFIG_PATH = arquivo_com_caminho_absoluto(['bin'], 'config.json')
-    UTILS_PATH = arquivo_com_caminho_absoluto(['src', 'utils'], 'utils.py')
-    TESTS_PATH = arquivo_com_caminho_absoluto(['src', 'tests'], 'tests.py')
-    # cria subdiretorios do src
 
-    # CRIA ARQUIVO PYTHON EM SRC\\APP
-    with open(APP_PATH, 'w', encoding='utf-8') as f:
-        f.write("""from src.base.base import *
-class RobotClass(Bot):
-    def __init__(self) -> None:
-        self.configs = read_json(CONFIG_PATH)
-        # self.HEADLESS = self.configs['SCHEMA']['HEADLESS']
-        # self.DOWNLOAD_FILES = self.configs['SCHEMA']['DOWNLOAD_FILES']
-        # super().__init__(self.HEADLESS, self.DOWNLOAD_FILES)
-""")
-
-    # CRIA ARQUIVO PYTHON EM base
-    with open(BASE_PATH, 'w', encoding='utf-8') as f:
-        f.write("""from selenium.webdriver import Chrome
-from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options as ChromeOptions
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.common.exceptions import *
-from webdriver_manager.chrome import ChromeDriverManager
-from FuncsForSPO.fpython.functions_for_py import *
-from FuncsForSPO.fselenium.functions_selenium import *
-from FuncsForSPO.fwinotify.fwinotify import *
-from FuncsForSPO.fregex.functions_re import *
-import pandas as pd
-import json
-import os
-
-# -- GLOBAL -- #
-URL_SUPORTE = f'https://api.whatsapp.com/send?phone=5511985640273'
-CONFIG_PATH = arquivo_com_caminho_absoluto('bin', 'config.json')
-BASE = os.path.abspath('base')
-DOWNLOAD_DIR =  cria_dir_no_dir_de_trabalho_atual(dir='downloads', print_value=False, criar_diretorio=True)
-limpa_diretorio(DOWNLOAD_DIR)
-# -- GLOBAL -- #
-
-class Bot:    
-    def __init__(self, headless, download_files) -> None:
-        # --- CHROME OPTIONS --- #
-        self._options = ChromeOptions()
-        
-        if download_files:
-            # --- PATH BASE DIR --- #
-            self._SETTINGS_SAVE_AS_PDF = {
-                        "recentDestinations": [
-                            {
-                                "id": "Save as PDF",
-                                "origin": "local",
-                                "account": ""
-                            }
-                        ],
-                        "selectedDestinationId": "Save as PDF",
-                        "version": 2,
-                    }
-
-
-            self._PROFILE = {'printing.print_preview_sticky_settings.appState': json.dumps(self._SETTINGS_SAVE_AS_PDF),
-                    "savefile.default_directory":  f"{DOWNLOAD_DIR}",
-                    "download.default_directory":  f"{DOWNLOAD_DIR}",
-                    "download.prompt_for_download": False,
-                    "download.directory_upgrade": True,
-                    "profile.managed_default_content_settings.images": 2,
-                    "safebrowsing.enabled": True}
-                
-            self._options.add_experimental_option('prefs', self._PROFILE)
-        
-        if headless == True:
-            self._options.add_argument('--headless')
-            
-        self._options.add_experimental_option("excludeSwitches", ["enable-logging", "enable-automation"])
-        self._options.add_experimental_option('useAutomationExtension', False)
-        self.user_agent = cria_user_agent()
-        self._options.add_argument(f"--user-agent=self.user_agent")
-        self._options.add_argument("--disable-web-security")
-        self._options.add_argument("--allow-running-insecure-content")
-        self._options.add_argument("--disable-extensions")
-        self._options.add_argument("--start-maximized")
-        self._options.add_argument("--no-sandbox")
-        self._options.add_argument("--disable-setuid-sandbox")
-        self._options.add_argument("--disable-infobars")
-        self._options.add_argument("--disable-webgl")
-        self._options.add_argument("--disable-popup-blocking")
-        self._options.add_argument('--disable-gpu')
-        self._options.add_argument('--disable-software-rasterizer')
-        self._options.add_argument('--no-proxy-server')
-        self._options.add_argument("--proxy-server='direct://'")
-        self._options.add_argument('--proxy-bypass-list=*')
-        self._options.add_argument('--disable-dev-shm-usage')
-        self._options.add_argument('--block-new-web-contents')
-        self._options.add_argument('--incognito')
-        self._options.add_argument('–disable-notifications')
-        self._options.add_argument("--window-size=1920,1080")
-        self._options.add_argument('--kiosk-printing')
-
-        
-        self.__service = Service(ChromeDriverManager().install())
-        
-        # create DRIVER
-        self.DRIVER = Chrome(service=self.__service, options=self._options)
-        
-        def enable_download_in_headless_chrome(driver, download_dir):
-            '''
-            Esse código adiciona suporte ao navegador Chrome sem interface gráfica (headless) no Selenium WebDriver para permitir o download automático de arquivos em um diretório especificado.
-
-            Mais especificamente, o código adiciona um comando ausente "send_command" ao executor de comando do driver e, em seguida, executa um comando "Page.setDownloadBehavior" para permitir o download automático de arquivos no diretório especificado.
-
-            O primeiro passo é necessário porque o suporte para o comando "send_command" não está incluído no Selenium WebDriver por padrão. O segundo passo usa o comando "Page.setDownloadBehavior" do Chrome DevTools Protocol para permitir o download automático de arquivos em um diretório especificado.
-
-            Em resumo, o código adiciona suporte para o download automático de arquivos em um diretório especificado no Chrome sem interface gráfica usando o Selenium WebDriver.
-            '''
-            driver.command_executor._commands["send_command"] = ("POST", '/session/$sessionId/chromium/send_command')
-
-            params = {'cmd': 'Page.setDownloadBehavior', 'params': {'behavior': 'allow', 'downloadPath': download_dir}}
-            command_result = driver.execute("send_command", params)
-        enable_download_in_headless_chrome(self.DRIVER, DOWNLOAD_DIR)
-        
-        
-        self.WDW3 = WebDriverWait(self.DRIVER, timeout=3)
-        self.WDW5 = WebDriverWait(self.DRIVER, timeout=5)
-        self.WDW7 = WebDriverWait(self.DRIVER, timeout=7)
-        self.WDW10 = WebDriverWait(self.DRIVER, timeout=10)
-        self.WDW30 = WebDriverWait(self.DRIVER, timeout=30)
-        self.WDW = self.WDW7
-
-        self.DRIVER.maximize_window()
-        return self.DRIVER
-""")
-    
-    # CRIA ARQUIVO PYTHON EM database
-    with open(DATABASE_PATH, 'w', encoding='utf-8') as f:
-        f.write("""from FuncsForSPO.fpython.functions_for_py import *
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, String, Integer
-
-engine = create_engine('sqlite:///database.db', pool_size=15, max_overflow=20)
-Base = declarative_base()
-Session = sessionmaker(bind=engine)
-
-
-class TABLE(Base):
-    __tablename__ = 'table'
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    status = Column(String)
-    nome = Column(String)
-    
-Base.metadata.create_all(engine)  # cria a tabela no banco de dados
-
-    
-class DBManager:
-    def __init__(self):
-        # Inicializa uma nova sessão com o banco de dados.
-        
-        self.session = Session()
-
-    def create_item(self, status, name):
-        # Cria um novo registro na tabela.
-
-        new_item = TABLE(status=status, name=name)
-        self.session.add(new_item)
-        self.session.commit()
-
-    def get_item(self, id):
-        # Retorna o registro com o ID fornecido
-        return self.session.query(TABLE).filter_by(id=id).first()
-    
-
-    def delete_item(self, id):
-        # Exclui o registro com o ID fornecido da tabela
-
-        delete_item_from_db = self.get_item(id)
-        self.session.delete(delete_item_from_db)
-        self.session.commit()
-        
-    def delete_all(self):
-        # Exclui todos os registros da tabela.
-
-        self.session.query(TABLE).delete()
-        self.session.commit()
-
-    def get_item(self, id):
-        # Retorna o registro com o ID fornecido da tabela. Se nenhum registro for encontrado, retorna None.
-        return self.session.query(TABLE).filter_by(id=id).first()
-    
-
-    def get_column_status(self):
-        # Retorna o registro de status com o ID fornecido da tabela. Se nenhum registro for encontrado, retorna None.
-        return self.session.query(TABLE.status).all()
-    
-    
-
-""")
-    
-    # CRIA ARQUIVO PYTHON EM exceptions
-    with open(EXCEPTIONS_PATH, 'w', encoding='utf-8') as f:
-        f.write("""from FuncsForSPO.fexceptions.exceptions import *
-""")
-    
-    # cria arquivo json
-    with open(CONFIG_PATH, 'w', encoding='utf-8') as fjson:
-        fjson.write("""{
-    "CONFIG": {
-        "STRING": "STRING",
-        "INT": 1,
-        "BOOL": true
-        }
-}""")
-        
-    # cria arquivo utils
-    with open(UTILS_PATH, 'w', encoding='utf-8') as fjson:
-        fjson.write("""""")
-
-    # cria arquivo de tests
-    with open(TESTS_PATH, 'w', encoding='utf-8') as fjson:
-        fjson.write("""from FuncsForSPO.fpdf.focr.orc import *
-from FuncsForSPO.fpdf.fcompress.compress import *
-from FuncsForSPO.fpdf.fimgpdf.img_to_pdf import *
-from FuncsForSPO.fpysimplegui.functions_for_sg import *
-from FuncsForSPO.fpython.functions_for_py import *
-from FuncsForSPO.fregex.functions_re import *
-from FuncsForSPO.fselenium.functions_selenium import *
-import sys
-import os
-
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-sys.path.append(root_dir)
-
-# SEMPRE COLOQUE O QUE A FUNÇÃO TEM QUE FAZER EXPLICITAMENTE
-""")
-
-    # cria diretório base
-    if create_base_dir:
-        cria_dir_no_dir_de_trabalho_atual('base')
-
-    # cria ambiente virtual
-    # if os.path.exists('venv'):
-    #     print('Ambiente Virtual "venv" já criado')
-    #     print('Baixando pacotes')
-    #     os.system(f'.\\venv\\Scripts\\pip.exe install {packages}')
-    #     pass
-    # else:
-    print('Criando Ambiente Virtual')
-    os.system('python -m venv venv')
-    print('Criado!')
-    print('Baixando pacotes')
-    os.system(f'.\\venv\Scripts\\pip.exe install {packages}')
-    
 def retorna_a_menor_ou_maior_data(datas:list[str|datetime], maior:bool=True, format:str='%d/%m/%Y %H:%M', format_return:str='%d/%m/%Y %H:%M'):
     """
     ## Recebe e retorna a MAIOR ou a menor data de uma lista de datas
@@ -1845,3 +1577,25 @@ def deleta_arquivos_com_uma_palavra_chave(dir:str, palavra_chave:str, basename:s
 def tipo_objeto(objeto):
     """Apenas printa o tipo de objeto""" 
     return print(type(objeto))
+
+
+def verifica_se_existe_arquivo_repetido_no_diretorio(dir:str):
+    """
+    Verifica se existem arquivos com o mesmo nome no diretório especificado.
+
+    Args:
+        dir (str): O caminho do diretório a ser verificado.
+
+    Returns:
+        bool: Retorna True se existem arquivos com o mesmo nome no diretório, False caso contrário.
+    """
+    path = os.path.abspath(dir)
+    files = arquivos_com_caminho_absoluto_do_arquivo(path)
+    exists = []
+    for file in files:
+        if file in exists:
+            return True
+        else:
+            exists.append(file)
+    else:
+        return False

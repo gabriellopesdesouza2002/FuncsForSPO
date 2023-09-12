@@ -101,13 +101,14 @@ class GPTPDFV1(BotMain):
 class GPTPDFV2(BotMain):    
     def __init__(self, content_txt: str, prompt:str, headless: bool=True) -> str:
         cria_dir_no_dir_de_trabalho_atual('tempdir')
+        self.CONTEXT = content_txt
+        self.PROMPT = prompt
         faz_log('Criando arquivo em uma pasta temporária')
         self.TXT_CONTENT = arquivo_com_caminho_absoluto('tempdir', 'temp.txt')
         with open(self.TXT_CONTENT, 'w', encoding='utf-8') as f:
-            f.write(content_txt)
+            f.write(self.CONTEXT.replace('\n', '').replace('\\n', '').replace('\t', '').replace('\\t', ''))
         
-        
-        self.PROMPT = prompt
+        # self.PROMPT = prompt.replace('\n', ' ').replace('\\n', ' ').replace('\t', '').replace('\\t', '')
         self.HEADLESS = headless
         super().__init__(self.HEADLESS)
     
@@ -118,16 +119,123 @@ class GPTPDFV2(BotMain):
             espera_elemento(self.WDW, (By.CSS_SELECTOR, 'input[type="file"]'), in_dom=True)
             self.DRIVER.find_element(By.CSS_SELECTOR, 'input[type="file"]').send_keys(self.TXT_CONTENT)
             
+            if isinstance(self.PROMPT, str):
+                faz_log('Documento enviado, aguardando entrada para o prompt')
+                espera_input_limpa_e_envia_send_keys(self.WDW130, self.PROMPT+' Adicione "GPT_RESPOSTA" apenas no final da sua resposta (isso é de suma importância) e deve ser tudo em português!', (By.CSS_SELECTOR, 'textarea[placeholder="Write your question"]'))
+                espera_elemento_disponivel_e_clica(self.WDW130, (By.CSS_SELECTOR, 'button[class*="ant-btn-default"]'))
+                faz_log('Esperando a resposta')
+                start_time = time.time()
+                timeout = 180  # Tempo limite em segundos
+
+                while True:
+                    try:
+                        text = espera_e_retorna_elemento_text(self.WDW, (By.CSS_SELECTOR, 'div[style="padding: 5px;"]>div:last-of-type>div:last-of-type span'))
+                        faz_log(f'Resposta até agora: [green]{text}[/green]')
+                        time.sleep(2)
+                    except:
+                        # Lidar com exceções, se necessário
+                        pass
+
+                    if 'AI RES' in text:
+                        break
+                    if 'try again.' in text.lower():
+                        text = text + '  Não foi possível ter uma interpretação adequada. Tente outro prompt'
+                        break
+
+                    elapsed_time = time.time() - start_time
+                    if elapsed_time >= timeout:
+                        # Tempo limite atingido, interromper o loop
+                        break
+                faz_log('Recuperando o id do documento')
+                self.apaga_arquivo_da_base_do_site()
+                self.DRIVER.close()
+                return text
+            elif isinstance(self.PROMPT, dict):
+                response = {}
+                for chave, valor in self.PROMPT.items():
+                    valor = re.sub(r'[\n\t\r\f\v\\]', '', valor)
+                    
+                    espera_elemento(self.WDW, (By.CSS_SELECTOR, 'textarea[placeholder="Write your question"]'), in_dom=True)
+                    sleep(2)
+                    self.DRIVER.refresh()
+                    espera_elemento(self.WDW, (By.CSS_SELECTOR, 'textarea[placeholder="Write your question"]'), in_dom=True)
+                    sleep(5)
+                    
+                    if len(response) == 0:
+                        espera_input_limpa_e_envia_send_keys(self.WDW130, valor+' Adicione "GPT_RESPOSTA" no final da sua resposta para eu saber quando acaba a sua resposta', (By.CSS_SELECTOR, 'textarea[placeholder="Write your question"]'))
+                    else:
+                        espera_input_limpa_e_envia_send_keys(self.WDW130, valor+' .Lembre-se de adicionar "GPT_RESPOSTA" no final', (By.CSS_SELECTOR, 'textarea[placeholder="Write your question"]'))
+                    espera_elemento_disponivel_e_clica(self.WDW130, (By.CSS_SELECTOR, 'button[class*="ant-btn-default"]'))
+                    faz_log('Esperando a resposta')
+
+
+                    tentativas = 10
+                    while True:
+                        try:
+                            text = espera_e_retorna_elemento_text(self.WDW, (By.CSS_SELECTOR, 'div[style="padding: 5px;"]>div:last-of-type>div:last-of-type span'))
+                            faz_log(f'Resposta até agora: [green]{text}[/green]')
+                            time.sleep(7)
+                        except:
+                            pass
+                        
+                        if 'GPT_RESPOSTA' in text:
+                            response[chave] = text
+                            break
+                        elif tentativas == 1:
+                            response[chave] = text
+                            break
+                        elif 'try again' in text.lower():
+                            response[chave] = text
+                            break
+                        else:
+                            tentativas -= 1
+                            continue
+                faz_log('Recuperando o id do documento')
+                self.apaga_arquivo_da_base_do_site()
+                self.DRIVER.close()
+                return response
+        except Exception as e:
+            faz_log(repr(e), 'c*')
+            faz_log(self.DRIVER.get_screenshot_as_base64(), 'i*')
+            self.DRIVER.quit()
+            raise ErroPDFAIException
+        
+    def apaga_arquivo_da_base_do_site(self):
+        url = self.DRIVER.current_url
+        id_ = re.sub(r'.*?/chat/', '', url)
+        self.DRIVER.get('https://askyourpdf.com/delete')
+        espera_elemento_e_envia_send_keys(self.WDW, id_, (By.CSS_SELECTOR, 'input'))
+        espera_elemento_disponivel_e_clica(self.WDW, (By.CSS_SELECTOR, 'button'))
+        sleep(2)
+        faz_log('Documento deletado da base de dados!')
+        os.remove(self.TXT_CONTENT)
+
+
+class GPTPDFV3(BotMain):    
+    def __init__(self, file_pdf: str, prompt:str, headless: bool=True) -> str:
+        self.FILE_PATH = os.path.abspath(file_pdf)
+        self.PROMPT = prompt
+        self.HEADLESS = headless
+        
+        super().__init__(self.HEADLESS)
+    
+    def run(self):
+        try:
+            faz_log('Indo para chatpdf')
+            self.DRIVER.get('https://www.chatpdf.com/')
+            espera_elemento(self.WDW, (By.CSS_SELECTOR, 'input[type="file"]'), in_dom=True)
+            self.DRIVER.find_element(By.CSS_SELECTOR, 'input[type="file"]').send_keys(self.FILE_PATH)
+            
             faz_log('Documento enviado, aguardando entrada para o prompt')
-            espera_input_limpa_e_envia_send_keys(self.WDW130, 'Adicione "AI RESPONSE" apenas no final da sua resposta (isso é de suma importância) e deve ser tudo em português! '+self.PROMPT, (By.CSS_SELECTOR, 'textarea[placeholder="Write your question"]'))
-            espera_elemento_disponivel_e_clica(self.WDW130, (By.CSS_SELECTOR, 'button[class*="ant-btn-default"]'))
+            espera_input_limpa_e_envia_send_keys(self.WDW130, self.PROMPT+' Adicione "GPT_RESPOSTA" apenas no final da sua resposta (isso é de suma importância) e deve ser tudo em português!', (By.CSS_SELECTOR, 'textarea[placeholder="Ask any question…"]'))
+            espera_elemento_disponivel_e_clica(self.WDW130, (By.CSS_SELECTOR, 'button[type="button"]'))
             faz_log('Esperando a resposta')
             start_time = time.time()
             timeout = 180  # Tempo limite em segundos
 
             while True:
                 try:
-                    text = espera_e_retorna_elemento_text(self.WDW, (By.CSS_SELECTOR, 'div[style="padding: 5px;"]>div:last-of-type>div:last-of-type span'))
+                    text = espera_e_retorna_lista_de_elementos_text(self.WDW, (By.CSS_SELECTOR, 'div[class="chat-message-row ai"]'))[-1]
                     faz_log(f'Resposta até agora: [green]{text}[/green]')
                     time.sleep(7)
                 except:
@@ -146,7 +254,7 @@ class GPTPDFV2(BotMain):
                     break
             faz_log('Recuperando o id do documento')
             self.apaga_arquivo_da_base_do_site()
-            self.DRIVER.close()
+            self.DRIVER.quit()
             return text
         except Exception as e:
             faz_log(repr(e), 'c*')
@@ -155,11 +263,7 @@ class GPTPDFV2(BotMain):
             raise ErroPDFAIException
         
     def apaga_arquivo_da_base_do_site(self):
-        url = self.DRIVER.current_url
-        id_ = re.sub(r'.*?/chat/', '', url)
-        self.DRIVER.get('https://askyourpdf.com/delete')
-        espera_elemento_e_envia_send_keys(self.WDW, id_, (By.CSS_SELECTOR, 'input'))
-        espera_elemento_disponivel_e_clica(self.WDW, (By.CSS_SELECTOR, 'button'))
+        espera_elemento_disponivel_e_clica(self.WDW, (By.CSS_SELECTOR, 'span[aria-label="delete"]'))
+        espera_elemento_disponivel_e_clica(self.WDW, (By.CSS_SELECTOR, 'button[class*="danger"]'))
         sleep(2)
         faz_log('Documento deletado da base de dados!')
-        os.remove(self.TXT_CONTENT)

@@ -6,7 +6,7 @@ Funções de front-end para PySimpleGUI
 import os
 import sys
 import PySimpleGUI as sg
-from FuncsForSPO.fpython.functions_for_py import retorna_home_user
+from FuncsForSPO.fpython.functions_for_py import *
 
 ########## For PySimpleGUI ########
 def resource_path(relative_path):
@@ -87,7 +87,7 @@ def popup_input(title: str, text: str, theme: str='Material1', back_color: str='
                     password_char=password_char
                     )
 
-def popup_get_folder(title: str='Recuperar Pasta', text: str='Insira o caminho da pasta...', default_path=os.path.join(retorna_home_user(), 'Downloads'), no_window=False, theme: str='Material1', back_color: str='#E0E3E4') -> str|None:
+def popup_get_folder(title: str='Recuperar Pasta', text: str='Insira o caminho da pasta...', default_path=os.path.join(os.path.expanduser("~"), 'Downloads'), no_window=False, theme: str='Material1', back_color: str='#E0E3E4') -> str|None:
     """Popup para buscar pasta (Não arquivo)
 
     Args:

@@ -1,0 +1,5 @@
+FAZ_ENVIO.py
+tests.py
+*.egg-info
+dist
+*_pycache*

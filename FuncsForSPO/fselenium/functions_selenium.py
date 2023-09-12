@@ -14,11 +14,11 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from webdriver_manager.chrome import ChromeDriverManager 
 from time import sleep
-from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fregex.functions_re import extrair_email
 from wget import download
 from subprocess import getoutput
 from FuncsForSPO.utils.utils import *
+from FuncsForSPO.fpython.functions_for_py import *
 
 def url_atual(driver) -> str:
     """
@@ -95,7 +95,7 @@ def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave, sleep_tim
                     continue
                 if palavra_chave in i:
                     baixou = True
-                    faz_log('Download concluido!')
+                    print('Download concluido!')
                     if return_file:
                         return arquivo_com_caminho_absoluto(_LOCAL_DE_DOWNLOAD, i)
                     else:
@@ -615,12 +615,11 @@ def espera_abrir_n_de_janelas_e_muda_para_a_ultima_janela(wdw:WebDriverWait, num
         num_de_janelas (int): Quantidade de janelas esperadas para abrie. O padrão é 2.
     """
     driver = wdw._driver
-    print(f'Você está na janela -> {driver.current_window_handle}')
-    wdw.until(EC.number_of_windows_to_be(num_de_janelas))
-    print(f'Agora, você tem {len(driver.window_handles)} janelas abertas')
-    todas_as_windows = driver.window_handles
-    driver.switch_to.window(todas_as_windows[-1])
-    print(f'Agora, você está na janela -> {driver.current_window_handle}')
+    try:
+        wdw.until(EC.number_of_windows_to_be(num_de_janelas))
+        return True
+    except TimeoutException:
+        return False
     
     
 def procura_pela_janela_que_contenha_no_titulo(driver, title_contain_switch : str) -> None: # quero que pelo menos um pedaco do titulo que seja str

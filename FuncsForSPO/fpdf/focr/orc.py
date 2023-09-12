@@ -32,7 +32,7 @@ import gdown
 import pytesseract
 from PIL import Image
 import fitz
-from alive_progress import alive_bar
+import uuid
 
 class ErroAPI(Exception):
     pass
@@ -73,7 +73,7 @@ def faz_ocr_em_pdf(file_pdf: str, type_extract='text', dir_exit: str='output', g
         bot = GetTextPDF(file_pdf=file_pdf, dir_exit=dir_exit, headless=headless, prints=prints)
         return bot.recupera_texto()
 
-    
+
 def faz_ocr_em_pdf_v2(file_pdf: str, headless: bool=True) -> str:
     bot = OCRPDFV2(file_pdf=file_pdf, headless=headless)
     bot.run()
@@ -164,16 +164,23 @@ def ocr_paycon(pdf_path, clear_task, user, password, sleep_for_request=5):
                 print(response_json.get('status'))
 
 
-def ocr_tesseract(pdf, dpi=300, config_tesseract=''):
+def ocr_tesseract(pdf, dpi=300, file_output=uuid.uuid4(), return_text=True, config_tesseract='', limit_pages=None):
     """
-    Performs OCR (Optical Character Recognition) on a PDF file using Tesseract OCR engine. If Tesseract is not installed, it will be downloaded automatically. The function takes the following parameters:
-    
-    - pdf: The path to the PDF file to be processed.
-    - dpi (optional): The resolution of the output image in dots per inch. Defaults to 300 DPI.
-    - config_tesseract (optional): Additional configuration options to be passed to the Tesseract engine. Defaults to an empty string.
-    
-    Returns a string containing the text extracted from the PDF file.
+    Perform optical character recognition (OCR) on a PDF using Tesseract.
+
+    Args:
+        pdf (str): The path to the input PDF file.
+        dpi (int, optional): The resolution in dots per inch (DPI) for the OCR process. Defaults to 300.
+        file_output (str, optional): The output file name for the OCR result. Defaults to a randomly generated UUID.
+        return_text (bool, optional): Specifies whether to return the OCR result as a string directly in the code or as the path to the output file. Defaults to True.
+        config_tesseract (str, optional): Additional configuration options for Tesseract. Defaults to an empty string.
+        limit_pages (int, optional): Maximum number of pages to process. If None, all pages are processed. Defaults to None.
+
+    Returns:
+        str: The OCR result as a string if `return_text` is True, otherwise the path to the output file.
     """
+
+    # se for return_text, retornará o texto no diretamente no código, se for false, retornará o caminho do arquivo com a resposta do OCR
 
     path_exit = arquivo_com_caminho_absoluto('temp_tess', 'Tesseract-OCR.zip')
     path_tesseract_extract = arquivo_com_caminho_absoluto('bin', 'Tesseract-OCR')
@@ -198,26 +205,37 @@ def ocr_tesseract(pdf, dpi=300, config_tesseract=''):
         deleta_diretorio('temp_tess')
     pytesseract.pytesseract.tesseract_cmd = path_tesseract
 
-    pdf_fitz = fitz.open(pdf)
     with fitz.open(pdf) as pdf_fitz:
         cria_dir_no_dir_de_trabalho_atual('pages')
+        limpa_diretorio('pages')
         faz_log(f'Convertendo PDF para páginas...')
-        with alive_bar(len(pdf_fitz), title='EXTRACT PAGES') as bar:
+        number_of_pages = len(pdf_fitz) if limit_pages is None else min(limit_pages, len(pdf_fitz))
+        with tqdm(total=number_of_pages, desc='EXTRACT PAGES') as bar:
             for i, page in enumerate(pdf_fitz):
+                if i >= number_of_pages:
+                    break
                 page = pdf_fitz.load_page(i)
                 mat = fitz.Matrix(dpi/72, dpi/72)  # Matriz de transformação usando DPI
                 pix = page.get_pixmap(matrix=mat)
                 image = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
                 image.save(f'pages/{i}.png')
-                bar()
-        all_text = ''
+                bar.update(1)
+        
 
         files = arquivos_com_caminho_absoluto_do_arquivo('pages')
-        with alive_bar(len(files), title='OCR') as bar:
+        with tqdm(total=len(files), desc='OCR') as bar:
             for i, image in enumerate(files):
                 text = pytesseract.image_to_string(image, config=config_tesseract)
-                all_text += text
-                bar()
+                with open(arquivo_com_caminho_absoluto('tempdir', f'{file_output}.txt'), 'a', encoding='utf-8') as f:
+                    f.write(text)
+                bar.update(1)
             else:
                 limpa_diretorio('pages')
-                return all_text
+                if return_text:
+                    text_all = ''
+                    with open(arquivo_com_caminho_absoluto('tempdir', f'{file_output}.txt'), 'r', encoding='utf-8') as f:
+                        text_all = f.read()
+                    os.remove(arquivo_com_caminho_absoluto('tempdir', f'{file_output}.txt'))
+                    return text_all
+                else:
+                    return os.path.abspath(arquivo_com_caminho_absoluto('tempdir', f'{file_output}.txt'))

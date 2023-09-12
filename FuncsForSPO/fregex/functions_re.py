@@ -6,7 +6,7 @@ Se necessário, colaborem =)
 
 ########### imports ##############
 import re
-from FuncsForSPO.fpython.functions_for_py import faz_log, pega_somente_numeros
+from FuncsForSPO.fpython.functions_for_py import *
 ########### imports ##############
 
 def extrair_datas_re_input(text: str, pattern: str) -> str:
