@@ -1,5 +1,3 @@
-4.17.1
-
 # FuncsForSPO - Funcoes para Selenium; Python; Openpyxl; SQLite3
 
 ## pip install FuncsForSPO | NECESSÁRIO PYTHON 3.10
@@ -19,7 +17,7 @@ pip install FuncsForSPO em seu ambiente virtual e pronto!
 
 Powered By [https://github.com/gabriellopesdesouza2002](https://github.com/gabriellopesdesouza2002)
 
-# Current Version -> 6.0.2
+# Current Version -> 6.7.0
 
 version==4.33.1 -> Melhoria e criação de diversas funções desde a versão 4.24
 
