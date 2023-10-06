@@ -1,89 +1,14 @@
-"""
-    ## DIREITOS RESERVADOS / RIGHTS RESERVED / DERECHOS RESERVADOS
-
-    ## https://online2pdf.com/pt/converter-pdf-para-txt-com-ocr
-
-    Esse robô envia o PDF para o site https://online2pdf.com/pt/converter-pdf-para-txt-com-ocr
-        e recupera um arquivo txt com o ocr
-    
-    Args:
-        file_pdf (str): Caminho do arquivo
-        dir_exit (str, optional): Local de saída do arquivo TXT. Defaults to `'output'`.
-        get_text_into_code (bool, optional): Retorna o texto do pdf no código. Defaults to True.
-        headless (bool, optional): executa como headless. Defaults to `True`.
-        prints (bool, optional): Mostra o acompanhamento do OCR. Defaults to `True`.
-        
-    Use:
-        >>> text = faz_ocr_em_pdf('MyPDF.pdf')
-        >>> print(text)
-        
-    """
-
 from FuncsForSPO.fpdf.focr.__ocr_online_v2 import OCRPDFV2
 from FuncsForSPO.fpdf.focr.__ocr_online import GetTextPDF
 from FuncsForSPO.fpython.functions_for_py import *
 from FuncsForSPO.fpdf.pdfutils.pdfutils import split_pdf
-import requests
-import json
-import os
-import base64
 from tqdm import tqdm
-import gdown
-import pytesseract
 from PIL import Image
-import fitz
-import uuid
-
-class ErroAPI(Exception):
-    pass
-
-def faz_ocr_em_pdf(file_pdf: str, type_extract='text', dir_exit: str='output', get_text_into_code: bool=True, headless: bool=True, prints=False) -> str:
-    """
-    ## DIREITOS RESERVADOS / RIGHTS RESERVED / DERECHOS RESERVADOS
-
-    ## https://online2pdf.com/pt/converter-pdf-para-txt-com-ocr
-
-    Esse robô envia o PDF para o site https://online2pdf.com/pt/converter-pdf-para-txt-com-ocr
-        e recupera um arquivo txt com o ocr
-    
-    Args:
-        file_pdf (str): Caminho do arquivo
-        dir_exit (str, optional): Local de saída do arquivo TXT. Defaults to `'output'`.
-        headless (bool, optional): executa como headless. Defaults to `True`.
-        prints (bool, optional): Mostra o acompanhamento do OCR. Defaults to `True`.
-        
-    Use:
-        >>> text = faz_ocr_em_pdf('MyPDF.pdf')
-        >>> print(text)
-
-    """
-    files = split_pdf(file_pdf)
-    if len(files) > 1:
-        faz_log(f'Serão processados {len(files)} PDF(s) no total | (São mais de 30 páginas no PDF)')
-        text_all = ''
-        with tqdm(total=len(files), desc="Progresso", unit="PDF") as pbar:
-            for i, file_ in enumerate(files):
-                # faz_log(f'Fazendo OCR do PDF {i+1} de {len(files)}: {os.path.basename(file_)}')
-                bot = GetTextPDF(file_pdf=file_, dir_exit=dir_exit, headless=headless, prints=prints)
-                text_all += bot.recupera_texto()
-                pbar.update(1)
-            else:
-                return text_all
-    else:
-        bot = GetTextPDF(file_pdf=file_pdf, dir_exit=dir_exit, headless=headless, prints=prints)
-        return bot.recupera_texto()
-
-
-def faz_ocr_em_pdf_v2(file_pdf: str, headless: bool=True) -> str:
-    bot = OCRPDFV2(file_pdf=file_pdf, headless=headless)
-    bot.run()
-
+import fitz, uuid, os, gdown, pytesseract
 
 def faz_ocr_em_pdf_offline(path_pdf: str, export_from_file_txt: str=False) -> str:
     """Converte pdf(s) em texto com pypdf
-    
-    ### pip install pypdf
-    
+        
     ## Atenção, só funciona corretamente em PDF's que o texto é selecionável!
     
     Use:
@@ -112,76 +37,34 @@ def faz_ocr_em_pdf_offline(path_pdf: str, export_from_file_txt: str=False) -> st
                 f.write(text)
         return text
 
-def ocr_paycon(pdf_path, clear_task, user, password, sleep_for_request=5):
-    auth = (user, password)
-    
-    # URL da rota de API
-    url = 'https://gabrielpaycon.pythonanywhere.com/pdf/ocr-pdf-tesseract-send-file'
+def ocr_tesseract(pdf, dpi=300, file_output=uuid.uuid4(), return_text=True, config_tesseract='', limit_pages=None, lang='por'):
+    """Executa OCR em um arquivo PDF usando Tesseract e retorna o texto extraído ou o caminho para o arquivo de texto.
 
-    # Arquivo PDF para enviar
-    with open(pdf_path, 'rb') as file:
-        print('fazendo base64')
-        base64_pdf = base64.b64encode(file.read()).decode('utf-8')
+    Esta função realiza o OCR em um arquivo PDF usando Tesseract. Se necessário, ela baixará e extrairá os binários 
+    do Tesseract. O PDF é convertido em imagens antes de realizar o OCR. O texto extraído é salvo em um arquivo, e 
+    o conteúdo desse arquivo ou o seu caminho podem ser retornados.
 
-        # Parâmetros da solicitação POST
-        params = {'file': base64_pdf}
-        data = json.dumps(params)
-
-        # Faz a solicitação POST
-        print('Enviando solicitação POST com o base64')
-        try:
-            response = requests.post(url, data=data, headers={'Content-Type': 'application/json'}, auth=auth)
-        except Exception as e:
-            print(e)
-            ocr_paycon(pdf_path, user, password)
-        print(response.json())
-        # Exibe a resposta da API
-        id_ = response.json().get('id')
-
-        while True:
-            # Define a URL da rota de API
-            url = 'https://gabrielpaycon.pythonanywhere.com/verify-work-ocr'
-
-            # Define o corpo da solicitação com o ID do trabalho de OCR
-            if clear_task:
-                params = {'id': id_, 'delete':'True'}
-            else:
-                params = {'id': id_, 'delete':'False'}
-            data = json.dumps(params)
-            # Envia a solicitação HTTP POST com o corpo JSON
-            sleep(sleep_for_request)
-            response = requests.post(url, data=data, headers={'Content-Type': 'application/json'})
-
-            # Extrai o texto da resposta JSON
-            try:
-                response_json = response.json()
-            except Exception as e:
-                print(e)
-                raise ErroAPI('ErroAPI')
-            if response_json.get('status') == 'finalizado':
-                return response_json.get('result')
-            else:
-                print(response_json.get('status'))
-
-
-def ocr_tesseract(pdf, dpi=300, file_output=uuid.uuid4(), return_text=True, config_tesseract='', limit_pages=None):
-    """
-    Perform optical character recognition (OCR) on a PDF using Tesseract.
+    Use:
+        >>> ocr_tesseract('meu_documento.pdf', dpi=300, return_text=True, lang='por')
+        Retorna o texto extraído do arquivo 'meu_documento.pdf'.
 
     Args:
-        pdf (str): The path to the input PDF file.
-        dpi (int, optional): The resolution in dots per inch (DPI) for the OCR process. Defaults to 300.
-        file_output (str, optional): The output file name for the OCR result. Defaults to a randomly generated UUID.
-        return_text (bool, optional): Specifies whether to return the OCR result as a string directly in the code or as the path to the output file. Defaults to True.
-        config_tesseract (str, optional): Additional configuration options for Tesseract. Defaults to an empty string.
-        limit_pages (int, optional): Maximum number of pages to process. If None, all pages are processed. Defaults to None.
+        pdf (str): O caminho para o arquivo PDF no qual o OCR será realizado.
+        dpi (int, optional): A resolução DPI para converter páginas PDF em imagens. Padrão é 300.
+        file_output (str, optional): O nome do arquivo de saída onde o texto OCR será salvo. Padrão é um UUID gerado.
+        return_text (bool, optional): Se True, retorna o texto extraído; se False, retorna o caminho para o arquivo de texto. 
+            Padrão é True.
+        config_tesseract (str, optional): Configurações adicionais para o Tesseract. Padrão é uma string vazia.
+        limit_pages (int, optional): Limita o número de páginas do PDF a serem processadas. Se None, todas as páginas serão processadas. 
+            Padrão é None.
+        lang (str, optional): O código de idioma usado pelo Tesseract para o OCR. Padrão é 'por' (português).
 
     Returns:
-        str: The OCR result as a string if `return_text` is True, otherwise the path to the output file.
+        str: Se `return_text` for True, retorna o texto extraído; se False, retorna o caminho para o arquivo de texto.
+
+    Raises:
+        Exception: Se ocorrer um erro durante o processamento, o OCR ou a escrita do arquivo.
     """
-
-    # se for return_text, retornará o texto no diretamente no código, se for false, retornará o caminho do arquivo com a resposta do OCR
-
     path_exit = arquivo_com_caminho_absoluto('temp_tess', 'Tesseract-OCR.zip')
     path_tesseract_extract = arquivo_com_caminho_absoluto('bin', 'Tesseract-OCR')
     path_tesseract = arquivo_com_caminho_absoluto(('bin', 'Tesseract-OCR'), 'tesseract.exe')
@@ -190,7 +73,7 @@ def ocr_tesseract(pdf, dpi=300, file_output=uuid.uuid4(), return_text=True, conf
         faz_log('Baixando binários do Tesseract, aguarde...')
         cria_dir_no_dir_de_trabalho_atual('temp_tess')
         cria_dir_no_dir_de_trabalho_atual('bin')
-        gdown.download('https://drive.google.com/uc?id=1yK0BwNuvEHhX1Nb2HjTP0ZaZvlhktpYR', path_exit, quiet=True)
+        gdown.download('https://drive.google.com/uc?id=1yX6I7906rzo3YHK5eTmdDOY4FulpQKJ-', path_exit, quiet=True)
         sleep(1)
         with zipfile.ZipFile(path_exit, 'r') as zip_ref:
             # Obtém o nome da pasta interna dentro do arquivo ZIP
@@ -218,14 +101,21 @@ def ocr_tesseract(pdf, dpi=300, file_output=uuid.uuid4(), return_text=True, conf
                 mat = fitz.Matrix(dpi/72, dpi/72)  # Matriz de transformação usando DPI
                 pix = page.get_pixmap(matrix=mat)
                 image = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
-                image.save(f'pages/{i}.png')
+                # Converte para escala de cinza
+                gray = image.convert('L')
+
+                # Aplica thresholding
+                threshold = 128  # Ajuste conforme necessário
+                binary = gray.point(lambda p: p > threshold and 255)
+
+                binary.save(f'pages/{i}.png')
                 bar.update(1)
         
 
         files = arquivos_com_caminho_absoluto_do_arquivo('pages')
         with tqdm(total=len(files), desc='OCR') as bar:
             for i, image in enumerate(files):
-                text = pytesseract.image_to_string(image, config=config_tesseract)
+                text = pytesseract.image_to_string(image, config=config_tesseract, lang=lang)
                 with open(arquivo_com_caminho_absoluto('tempdir', f'{file_output}.txt'), 'a', encoding='utf-8') as f:
                     f.write(text)
                 bar.update(1)

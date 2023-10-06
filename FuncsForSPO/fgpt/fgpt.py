@@ -74,12 +74,15 @@ def cria_diretorios_para_novo_projeto_python(with_draft=False, create_base_dir:b
         # CRIA ARQUIVO PYTHON EM SRC\\APP
         with open(APP_PATH, 'w', encoding='utf-8') as f:
             f.write("""from src.base.base import *
-    class RobotClass(Bot):
-        def __init__(self) -> None:
-            self.configs = read_json(CONFIG_PATH)
-            self.HEADLESS = self.configs['BOT']['HEADLESS']
-            self.DOWNLOAD_FILES = False
-            super().__init__(self.HEADLESS, self.DOWNLOAD_FILES)
+class RobotClass(Bot):
+    def __init__(self) -> None:
+        self.configs = read_json(CONFIG_PATH)
+        self.HEADLESS = self.configs['BOT']['HEADLESS']
+        self.DOWNLOAD_FILES = False
+        super().__init__(self.HEADLESS, self.DOWNLOAD_FILES)
+
+    def run(self):
+        self.DRIVER.get("https://google.com.br")  # aqui já está usando selenium dando get
     """)
     else:
         print('Criando arquivo com draft... É MUITO IMPORTANTE VOCÊ VER SE FICOU BOM COMO O GPT ESCREVEU O CÓDIGO!\nEscreve apenas no arquivo app.py, se precisar colocar dados do usuário no Json, adiicone manualmente')

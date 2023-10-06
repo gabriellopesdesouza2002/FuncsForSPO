@@ -63,7 +63,7 @@ def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave, sleep_tim
     """
     Verifica se um arquivo com uma palavra-chave foi baixado para um diretório especificado.
     :param diretorio_de_download: O caminho para o diretório de download.
-    :param palavra_chave: A palavra-chave a ser procurada nos nomes dos arquivos baixados.
+    :param palavra_chave: A palavra-chave a ser procurada nos nomes dos arquivos baixados. (usa-se regex), ".pdf|.jpg"
     :param sleep_time: O tempo a ser aguardado antes de verificar novamente o diretório de download.
     :param return_file: Se deve ou não retornar o caminho do arquivo baixado.
     :param timeout: O tempo máximo para esperar o arquivo ser baixado.
@@ -93,7 +93,7 @@ def verifica_se_baixou_o_arquivo(diretorio_de_download, palavra_chave, sleep_tim
                     lista_arquivos = [x.lower() for x in lista_arquivos]
                     baixou = False
                     continue
-                if palavra_chave in i:
+                if re.search(palavra_chave, i) != None:
                     baixou = True
                     print('Download concluido!')
                     if return_file:

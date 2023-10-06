@@ -1,4 +1,112 @@
+import pandas as pd
+from FuncsForSPO.fpython.functions_for_py import faz_log, cria_dir_no_dir_de_trabalho_atual
+import os
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, String, Integer
 
+def exportar_tabela_para_usuario(path_db, dir_result='Resultado', table_name='table', dict_rename_columns={}):
+    """Exporta uma tabela de um banco de dados para um arquivo Excel.
+
+    A função se conecta a um banco de dados, lê uma tabela específica e exporta 
+    essa tabela para um arquivo Excel, excluindo a coluna 'id' e renomeando 
+    outras colunas conforme especificado. Se a exportação falhar (por exemplo, 
+    se o arquivo Excel estiver aberto), um log de erro será criado.
+
+    Use:
+        >>> export_table_for_user('sqlite:///mydb.db', 'Resultado', 'minha_tabela', {'old_name': 'new_name'})
+        Tenta exportar a tabela 'minha_tabela' do banco de dados 'mydb.db' para um arquivo Excel,
+        renomeando colunas conforme o dicionário fornecido.
+
+    Args:
+        path_db (str): O caminho do banco de dados a ser conectado.
+        dir_result (str, optional): O nome do diretório onde o arquivo Excel será salvo. 
+            Padrão é 'Resultado'.
+        table_name (str, optional): O nome da tabela no banco de dados que será exportada. 
+            Padrão é 'table'.
+        dict_rename_columns (dict, optional): Um dicionário para renomear colunas, onde as chaves 
+            são os nomes originais das colunas e os valores são os novos nomes. Padrão é um dicionário vazio.
+
+    Returns:
+        None: A função não retorna nenhum valor. O resultado é um arquivo Excel exportado ou 
+            um log de erro se a exportação falhar.
+
+    Raises:
+        Exception: Se ocorrer um erro durante a exportação, o erro será logado e a execução 
+            da função será interrompida.
+    """
+
+    faz_log('Fazendo tabela resultado...')
+    engine = create_engine(path_db)  # cria a conexão
+    engine.connect() # conecta com o banco de dados
+    df = pd.read_sql_table(table_name, engine.connect()) # cria o dataframe
+    cria_dir_no_dir_de_trabalho_atual(dir_result)
+    del df['id']
+    
+    df.rename(columns=dict_rename_columns, inplace=True)
+
+    try:
+        # Remove qualquer caractere inválido --------------------------------------------------------|
+        df = pd.DataFrame(dict([ (k,pd.Series(v)) for k,v in df.items() ]))                         #|
+        cria_dir_no_dir_de_trabalho_atual(dir_result)                                              #|
+        df.to_excel(f'{dir_result}\\Resultado.xlsx', 'Saída', index=False, engine='xlsxwriter')         #|
+        faz_log('Exportada com sucesso!', color='green')
+    except Exception as e:
+        faz_log(repr(e), 'c*')
+        faz_log('Muito provavelmente a tabela está aberta, tentaremos novamente na próxima execução', color='red')
+
+
+def return_dataframe_from_column(file_, coluna, range_lines=10, sheet_name=0) -> pd.DataFrame:
+    """Retorna um DataFrame baseado em uma coluna específica de um arquivo Excel.
+
+    Esta função lê um arquivo Excel e tenta encontrar uma coluna específica 
+    dentro de um determinado intervalo de linhas. Se a coluna for encontrada, 
+    ela retorna o DataFrame completo com o cabeçalho definido para a linha 
+    onde a coluna foi encontrada. Caso contrário, ele registra um erro e 
+    retorna False.
+
+    Use:
+        >>> return_dataframe_from_column('example.xlsx', 'Nome da Coluna', range_lines=10)
+        Se a coluna for encontrada dentro do intervalo de linhas especificado, retorna o DataFrame;
+        caso contrário, retorna False.
+    
+    Args:
+        file_ (str): O caminho do arquivo Excel.
+        coluna (str): O nome da coluna a ser procurada no arquivo Excel.
+        range_lines (int, optional): O número de linhas para procurar a coluna desejada.
+            Padrão é 10.
+        sheet_name (int, str, optional): Nome ou índice da planilha a ser lida. Padrão é 0.
+        
+    Returns:
+        pd.DataFrame: Retorna um DataFrame se a coluna for encontrada dentro do 
+            range_lines especificado. 
+        False: Retorna False se a coluna não for encontrada dentro do range_lines 
+            especificado ou se algum erro ocorrer durante a leitura do arquivo.
+
+    Raises:
+        Exception: Se ocorrer um erro durante a leitura do arquivo Excel, exceto
+            se o cabeçalho não for encontrado dentro do range_lines especificado.
+    """
+
+    file_ = os.path.abspath(file_)
+    linha = 0
+    df = pd.read_excel(file_, header=linha, sheet_name=sheet_name)
+    while True:
+        if linha > range_lines:
+            faz_log('Não foi possível encontrar a coluna, tente com um range_lines maior, ou verifique o nome da coluna enviado')
+            return False
+        colunas = df.columns.to_list()
+        if not coluna in colunas:
+            print(f'Não foi encontrada a coluna na linha {linha}')
+            try:
+                df = pd.read_excel(file_, header=linha, sheet_name=sheet_name)
+            except:
+                pass
+            linha += 1
+        else:
+            print('Foi encontrado a coluna...')
+            return df
 
 USER_AGENTS = [
 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, como Gecko) Ubuntu Chromium/37.0.2062.94 Chrome/37.0.2062.94 Safari/537.36',
